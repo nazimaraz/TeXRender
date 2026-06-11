@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Formatting gate. Pinned to the clang-format major the codebase is formatted
+  # with (the .clang-format file uses options newer than Ubuntu's default 18),
+  # and to ubuntu-24.04 so the apt.llvm.org suite name stays correct.
+  format:
+    name: clang-format
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-format 22
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt-llvm.asc > /dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-format-22
+      - name: Check formatting
+        run: git ls-files '*.cpp' '*.hpp' | xargs clang-format-22 --dry-run -Werror
+
+  # Linux / GCC 14: build the dependency-free headless backend and run every test.
+  # No GPU, X11 or display required.
+  linux:
+    name: Linux · GCC 14 · headless
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_COMPILER=g++-14
+          -DTEXGUI_BACKEND=headless
+      - name: Build
+        run: cmake --build build -j
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Smoke-run the offscreen example
+        run: ./build/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.ppm
+
+  # Linux / GCC 14: build the raylib backend + examples — the most common
+  # consumer configuration. raylib comes from FetchContent (exercising that
+  # fallback on Linux), which needs the X11/GL dev headers to compile. The test
+  # suite still runs: no test opens a window (the e2e test injects a headless
+  # canvas).
+  linux-raylib:
+    name: Linux · GCC 14 · raylib
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev xorg-dev libgl1-mesa-dev
+      - name: Configure (raylib backend + examples + tests)
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_COMPILER=g++-14
+      - name: Build
+        run: cmake --build build -j
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+  # macOS / Apple Clang: build the real raylib backend (with examples) AND the
+  # headless backend, running the tests for each. This is the reference platform.
+  macos:
+    name: macOS · Apple Clang · raylib + headless
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - name: Install dependencies
+        run: brew install ninja freetype raylib tinyxml2
+      - name: Configure (raylib backend + examples + tests)
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build -j
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Configure (headless backend)
+        run: cmake -S . -B build-headless -G Ninja -DCMAKE_BUILD_TYPE=Release -DTEXGUI_BACKEND=headless
+      - name: Build (headless)
+        run: cmake --build build-headless -j
+      - name: Test (headless)
+        run: ctest --test-dir build-headless --output-on-failure
+
+  # Windows / MSVC: build the headless backend (FreeType + tinyxml2 come from
+  # FetchContent) and run every test, validating the MSVC support claim.
+  windows:
+    name: Windows · MSVC · headless
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEXGUI_BACKEND=headless
+      - name: Build
+        run: cmake --build build --config Release -j
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure

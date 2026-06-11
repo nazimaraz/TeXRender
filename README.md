@@ -1,0 +1,257 @@
+# latex-renderer
+
+[![CI](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+Render LaTeX math **directly into a GUI window** from C++.
+
+[MicroTeX](https://github.com/NanoMichael/MicroTeX) does the hard part — parsing
+LaTeX and laying out the boxes — but ships only Cairo / GDI+ / Qt / Skia
+backends. Tools like [latexpp](https://github.com/goldsborough/latexpp) only
+render to image files. **latex-renderer** drives MicroTeX through a small,
+pluggable rendering layer so a formula can be drawn live into a window.
+
+The GUI backend is [raylib](https://www.raylib.com/); a second, dependency-free
+**headless** surface rasterises into an in-memory RGBA buffer and ships in every
+build — inject it into a document to [render offscreen](#offscreen-rendering-no-window)
+(it also powers the GPU-less test suite). The `IDrawSurface` seam is proven by two
+implementations; adding SDL2/SFML/etc. means implementing one small interface —
+nothing in the core changes.
+
+![demo](docs/demo.png)
+
+## How it works
+
+```
+                 ┌──────────────────────────────────────────┐
+   LaTeX string  │  LatexDocument  ──▶  MicroTeX core        │  parse + layout
+                 │   │   (owns surface) (FetchContent)        │
+                 │   └─▶ RenderHandle.draw(x, y)              │
+                 │            │                               │
+                 │  Graphics2DAdapter : tex::Graphics2D       │  transforms, color,
+                 │       │   (FreeType glyph rasterisation)   │  glyph cache
+                 │       ▼                                    │
+                 │  IDrawSurface  ◀── RaylibSurface           │  paint primitives
+                 └──────────────────────────────────────────┘
+        you own the raylib window + render loop (InitWindow, BeginDrawing, ...)
+```
+
+You drive raylib yourself — `InitWindow`, `BeginDrawing`/`EndDrawing`,
+`WindowShouldClose`, `CloseWindow`. The library never wraps the window or the
+loop; it just paints a parsed formula into the current frame through a
+`RaylibSurface`.
+
+* **`tex::Graphics2D` is character-based** (`drawChar(wchar_t, x, y)`), drawing by
+  Unicode codepoint through each TeX font's cmap. So the integration rasterises
+  glyphs from the bundled TeX TrueType fonts with **FreeType** (in `GlyphCache`),
+  once, behind a backend-neutral seam.
+* **`IDrawSurface`** is the only interface a GUI backend implements — a handful of
+  paint primitives in screen pixels. The affine transform, color and glyph
+  caching all live in the shared `Graphics2DAdapter`. `RaylibSurface` is the
+  raylib implementation.
+
+## Build
+
+Requirements: a C++23 toolchain with `std::format`/`std::print` support — **GCC
+≥ 14, Clang ≥ 18 (libc++), MSVC ≥ 19.40, or a recent Apple Clang** — and CMake ≥
+3.21. That toolchain compiles texgui *itself*; consuming projects only need
+**C++17** (the standard texgui's public headers require and propagate). tinyxml2,
+FreeType and raylib are resolved with `find_package`, falling back to
+`FetchContent`; MicroTeX's core is always fetched and compiled from source. On
+macOS `brew install freetype raylib tinyxml2` makes configuration instant.
+
+```sh
+cmake -S . -B build
+cmake --build build -j
+./build/texgui_minimal      # draws a single formula in a window
+./build/texgui_demo         # cycle samples (SPACE/arrows), resize text (UP/DOWN)
+./build/texgui_offscreen    # render to formula.ppm — no window needed
+ctest --test-dir build      # run the unit tests
+```
+
+The smallest possible program is [`examples/minimal.cpp`](examples/minimal.cpp):
+parse one formula, draw it in a loop.
+
+## Using texgui in your project
+
+texgui builds its own dependencies (MicroTeX, FreeType, tinyxml2, raylib) via
+CMake `FetchContent`, so the simplest way to consume it is to fetch it the same
+way — no system packages required:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+    texgui
+    GIT_REPOSITORY https://github.com/nazimaraz/latex-renderer.git
+    GIT_TAG        v0.1.0        # pin a tag or commit for reproducible builds
+)
+FetchContent_MakeAvailable(texgui)
+
+target_link_libraries(my_app PRIVATE texgui::texgui)
+```
+
+Or, if you vendor the source, `add_subdirectory(path/to/latex-renderer)` and link
+`texgui::texgui` the same way. Either path skips texgui's own examples and tests
+automatically when it is built as a subproject. You still drive raylib yourself
+(`InitWindow`, the render loop, `CloseWindow`) — see [Usage](#usage).
+
+### Shipping the resource directory
+
+MicroTeX needs its `res/` directory (fonts + metrics) **at runtime**; you pass its
+path to `LatexDocument`. After configuring, CMake exposes that location as the
+`MICROTEX_RES_DIR` cache variable, available to your project once texgui has been
+made available. Bake it in, and/or copy `res/` next to your binary for shipping:
+
+```cmake
+# Hand the path to your code at compile time...
+target_compile_definitions(my_app PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+
+# ...and/or copy res/ next to the executable so it ships with your app:
+add_custom_command(TARGET my_app POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${MICROTEX_RES_DIR}" "$<TARGET_FILE_DIR:my_app>/res")
+```
+
+(A formal `install()` / `find_package(texgui)` flow isn't provided: texgui vendors
+its dependencies through `FetchContent`, so consuming it the same way is both
+simpler and more reliable than installing it system-wide.)
+
+## Usage
+
+Pure raylib — you own the window and the loop:
+
+```cpp
+#include <raylib.h>
+#include <texgui/latex_document.hpp>
+
+InitWindow(640, 360, "LaTeX");
+
+// Scope the document/handle so they are destroyed (freeing GPU glyph textures)
+// while the window is still alive — see the lifetime note below.
+{
+    TexGui::LatexDocument document("/path/to/MicroTeX/res");
+    auto formula = document.render(R"(\sqrt{\frac{a^2+b^2}{c}})", /*size*/ 50.f, /*argb*/ 0xff000000);
+
+    while (!WindowShouldClose())
+    {
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        formula.draw(40, 40);  // top-left at (40, 40), into the current frame
+        EndDrawing();
+    }
+}
+
+CloseWindow();
+```
+
+`document.render(...)` returns a move-only `RenderHandle` exposing `width()`,
+`height()`, `depth()`, `baseline()` and `set_foreground()`. A `RenderHandle`
+shares ownership of its document's runtime state, so it stays valid to draw and to
+destroy even if the `LatexDocument` is released first.
+
+The optional fourth argument, `wrap_width`, wraps the formula to that many pixels;
+the default (`0`) lays it out on a single unbounded line.
+
+**Malformed LaTeX throws.** `render()` throws a `std::exception`-derived error
+(MicroTeX's `tex::ex_parse`) when the input doesn't parse — fine for the trusted,
+literal formulas above, but for caller-supplied input use the non-throwing
+`try_render()`, which returns `std::optional<RenderHandle>`:
+
+```cpp
+if (auto formula = document.try_render(user_input, 50.f, 0xff000000))
+    formula->draw(40, 40);   // std::nullopt instead of an exception on a parse error
+```
+
+See [`examples/live_edit.cpp`](examples/live_edit.cpp) for a live editor built on
+`try_render`.
+
+**Destroy documents and handles before `CloseWindow()`.** The backend frees its GPU
+glyph textures when the last `RenderHandle`/`LatexDocument` is destroyed, which
+needs the window still alive; tear them down (e.g. by scoping them) before
+`CloseWindow()`.
+
+### Offscreen rendering (no window)
+
+A document draws into the surface it owns — by default the built backend's
+surface, but you can inject any `IDrawSurface` instead. Inject the dependency-free
+`HeadlessSurface` (available in every build, including raylib ones) to rasterise
+into an in-memory RGBA canvas and read the pixels back:
+
+```cpp
+#include <texgui/headless_surface.hpp>
+#include <texgui/latex_document.hpp>
+
+auto owned = std::make_unique<TexGui::HeadlessSurface>();
+auto& canvas = *owned;                          // keep a handle; the document takes ownership
+TexGui::LatexDocument document("/path/to/MicroTeX/res", std::move(owned));
+
+auto formula = document.render(R"(\int_0^1 x^2\,dx)", 48.f, 0xff000000);
+canvas.resize(formula.width() + 20, formula.height() + 20);
+canvas.clear(0xffffffff);                       // opaque white
+formula.draw(10, 10);
+
+canvas.write_ppm("formula.ppm");                // or canvas.pixels() for raw RGBA8
+```
+
+`LatexDocument::surface()` returns the surface a document draws into (the
+injected one, or the built backend's default). A runnable version of the above
+is [`examples/offscreen.cpp`](examples/offscreen.cpp) — the one example that
+builds under every backend, including `TEXGUI_BACKEND=headless`.
+
+## Threading and multiple documents
+
+* **Render on one thread.** A process-wide glyph cache — and the GPU textures
+  behind it — is shared by every formula, with no internal locking (raylib drawing
+  must happen on a single thread regardless). Parse, lay out and draw from one
+  thread. Constructing and destroying `LatexDocument`s *is* internally serialised.
+* **One resource root per process.** MicroTeX initialises from a single global
+  resource directory the first time a `LatexDocument` is created, and stays
+  initialised for the lifetime of the process (it cannot be safely re-initialised);
+  a later document built from a *different* `res_root` reuses the first. Use the
+  same `res_root` everywhere. Creating and destroying documents repeatedly is safe.
+
+Set `TEXGUI_DEBUG=1` to print diagnostics — failed font loads and resource-root
+conflicts — to stderr; output is silent otherwise.
+
+## Adding a backend
+
+Implement `IDrawSurface` from
+[`include/texgui/draw_surface.hpp`](include/texgui/draw_surface.hpp) — a handful
+of paint primitives plus `draw_glyph` — and inject it into the document. **No
+fork required:**
+
+```cpp
+TexGui::LatexDocument document(res_root, std::make_unique<MySdlSurface>());
+```
+
+The compact [`HeadlessSurface`](source/backend/headless/headless_surface.cpp) is a
+complete, dependency-free reference implementation to copy from. You keep using
+your toolkit's own windowing; only the paint primitives are abstracted. The core,
+`Graphics2DAdapter`, and the FreeType glyph cache are reused unchanged.
+
+To ship a backend in-tree instead (selected by `TEXGUI_BACKEND` as the default
+surface), add its sources plus a small `make_surface` factory file under
+`source/backend/<name>/` and a branch in `CMakeLists.txt`, the way the raylib
+backend does.
+
+## Tests
+
+```sh
+cmake -S . -B build -DTEXGUI_BACKEND=headless   # no GPU/display needed
+cmake --build build -j
+ctest --test-dir build --output-on-failure
+```
+
+The suite — transform math, the FreeType glyph cache against the bundled fonts,
+and an end-to-end formula render into an injected headless canvas, checked
+pixel-by-pixel — needs no window or GPU and runs under either backend;
+`TEXGUI_BACKEND=headless` additionally drops the raylib dependency entirely. CI
+exercises this on Linux, macOS and Windows, the raylib backend + examples on
+Linux and macOS, and gates formatting with clang-format.
+
+## License
+
+latex-renderer is released under the [MIT License](LICENSE). It builds on
+MicroTeX, raylib, FreeType, tinyxml2 and the bundled TeX fonts, each under its own
+(permissive) license — see [THIRD_PARTY.md](THIRD_PARTY.md) before redistributing
+a binary.
