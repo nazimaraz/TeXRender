@@ -5,6 +5,9 @@
 
 Render LaTeX math **directly into a GUI window** from C++.
 
+**[▶ Try the live editor in your browser](https://nazimaraz.github.io/latex-renderer/)** —
+the same C++ engine compiled to WebAssembly.
+
 [MicroTeX](https://github.com/NanoMichael/MicroTeX) does the hard part — parsing
 LaTeX and laying out the boxes — but ships only Cairo / GDI+ / Qt / Skia
 backends. Tools like [latexpp](https://github.com/goldsborough/latexpp) only
@@ -233,6 +236,31 @@ To ship a backend in-tree instead (selected by `TEXGUI_BACKEND` as the default
 surface), add its sources plus a small `make_surface` factory file under
 `source/backend/<name>/` and a branch in `CMakeLists.txt`, the way the raylib
 backend does.
+
+## WebAssembly
+
+The raylib backend compiles to WebAssembly, so the live editor runs in the
+browser: **<https://nazimaraz.github.io/latex-renderer/>**. With the
+[Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
+activated:
+
+```sh
+emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release
+cmake --build build-web -j
+python3 -m http.server -d build-web/site    # → http://localhost:8000
+```
+
+The build lands in `build-web/site/` as a self-contained static page —
+`index.html` + `.js`/`.wasm`, plus a ~2 MB `.data` pack holding MicroTeX's
+fonts and metrics, mounted at `/res` in the virtual filesystem. The `web`
+workflow rebuilds it on every push to `main` and publishes it to GitHub Pages.
+
+Two wasm-specific notes, both handled by the build: native wasm exceptions are
+enabled (`-fwasm-exceptions`) because MicroTeX reports parse errors by
+throwing, and [`examples/live_edit.cpp`](examples/live_edit.cpp) shows the
+standard raylib pattern for driving the same per-frame function from a native
+while-loop or the browser's requestAnimationFrame
+(`emscripten_set_main_loop`).
 
 ## Tests
 

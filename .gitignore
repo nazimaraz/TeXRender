@@ -1,5 +1,6 @@
 # Build output
 build/
+build-*/
 cmake-build-*/
 out/
 
@@ -8,9 +9,10 @@ CMakeCache.txt
 CMakeFiles/
 _deps/
 
-# IDE
+# IDE / local tooling
 .idea/
 .vscode/
+.claude/
 *.user
 
 # OS

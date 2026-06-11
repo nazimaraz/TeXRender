@@ -34,7 +34,11 @@ if(NOT Freetype_FOUND)
         GIT_TAG VER-2-13-2
         GIT_SHALLOW TRUE
     )
+    # FreeType 2.13's cmake_minimum_required(3.0) is below CMake 4's floor;
+    # this lets it configure under modern CMake without patching its sources.
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
     FetchContent_MakeAvailable(freetype)
+    unset(CMAKE_POLICY_VERSION_MINIMUM)
     # Normalise to the imported-target name used throughout this project.
     if(NOT TARGET Freetype::Freetype)
         add_library(Freetype::Freetype ALIAS freetype)
@@ -45,6 +49,10 @@ endif()
 if(TEXGUI_BACKEND STREQUAL "raylib")
     find_package(raylib QUIET)
     if(NOT raylib_FOUND)
+        if(EMSCRIPTEN)
+            # raylib's own platform switch: build its HTML5/WebGL backend.
+            set(PLATFORM "Web" CACHE STRING "raylib platform" FORCE)
+        endif()
         FetchContent_Declare(
             raylib
             GIT_REPOSITORY https://github.com/raysan5/raylib.git

@@ -1,0 +1,68 @@
+<!doctype html>
+<!-- Emscripten shell for the texgui live editor ({{{ SCRIPT }}} is replaced
+     by the generated loader at link time). -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>texgui — live LaTeX rendering in the browser</title>
+  <style>
+    body {
+      margin: 0;
+      background: #fafafa;
+      color: #1a1a2e;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    header { text-align: center; margin: 24px 16px 12px; }
+    header h1 { margin: 0 0 4px; font-size: 1.4rem; }
+    header p { margin: 0; color: #787882; font-size: 0.95rem; }
+    header a { color: #2860c8; text-decoration: none; }
+    header a:hover { text-decoration: underline; }
+    canvas {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 12px rgba(26, 26, 46, 0.08);
+      max-width: calc(100vw - 24px);
+    }
+    canvas:focus { outline: none; }
+    #status { color: #787882; font-size: 0.9rem; margin: 12px; min-height: 1.2em; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>texgui — live LaTeX editor</h1>
+    <p>
+      C++ → WebAssembly: <a href="https://github.com/NanoMichael/MicroTeX">MicroTeX</a> layout,
+      FreeType glyphs, <a href="https://www.raylib.com/">raylib</a> on WebGL.
+      Click the canvas, then type LaTeX.
+      &nbsp;·&nbsp; <a href="https://github.com/nazimaraz/latex-renderer">GitHub</a>
+    </p>
+  </header>
+  <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"></canvas>
+  <p id="status">Loading…</p>
+  <script>
+    var statusElement = document.getElementById('status');
+    var Module = {
+      canvas: (function () {
+        var canvas = document.getElementById('canvas');
+        canvas.addEventListener('webglcontextlost', function (e) {
+          statusElement.textContent = 'WebGL context lost — please reload the page.';
+          e.preventDefault();
+        }, false);
+        return canvas;
+      })(),
+      setStatus: function (text) {
+        statusElement.textContent = text;
+      },
+      onRuntimeInitialized: function () {
+        statusElement.textContent = '';
+      }
+    };
+  </script>
+  {{{ SCRIPT }}}
+</body>
+</html>

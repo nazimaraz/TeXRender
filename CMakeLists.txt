@@ -25,6 +25,15 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# WebAssembly (Emscripten) disables C++ exceptions by default, but MicroTeX
+# reports parse errors by throwing (render()/try_render() depend on catching
+# them). Build everything — dependencies included, hence before they are added
+# — with native wasm exception handling.
+if(EMSCRIPTEN)
+    add_compile_options(-fwasm-exceptions)
+    add_link_options(-fwasm-exceptions)
+endif()
+
 # ---------------------------------------------------------------------------
 # Dependencies: MicroTeX core, FreeType, tinyxml2, and the selected backend.
 # ---------------------------------------------------------------------------
@@ -96,18 +105,28 @@ target_compile_features(texgui INTERFACE cxx_std_17)
 # Example applications
 # ---------------------------------------------------------------------------
 if(TEXGUI_BUILD_EXAMPLES)
-    # name -> source file. texgui_offscreen renders through an injected
-    # HeadlessSurface into a PPM file, so it builds under any backend with no
-    # window or GPU; the raylib examples drive a real window themselves.
-    set(TEXGUI_EXAMPLES
-        texgui_offscreen examples/offscreen.cpp
-    )
-    if(TEXGUI_BACKEND STREQUAL "raylib")
-        list(APPEND TEXGUI_EXAMPLES
-            texgui_minimal examples/minimal.cpp
-            texgui_demo    examples/demo_main.cpp
-            texgui_live    examples/live_edit.cpp
+    if(EMSCRIPTEN AND TEXGUI_BACKEND STREQUAL "raylib")
+        # Browser build: only the web-adapted live editor (a blocking
+        # while-loop example would freeze the tab). It is emitted into
+        # <build>/site/ as index.html + .js/.wasm/.data — a directory ready
+        # for any static host (GitHub Pages).
+        set(TEXGUI_EXAMPLES
+            texgui_live examples/live_edit.cpp
         )
+    else()
+        # name -> source file. texgui_offscreen renders through an injected
+        # HeadlessSurface into a PPM file, so it builds under any backend with
+        # no window or GPU; the raylib examples drive a real window themselves.
+        set(TEXGUI_EXAMPLES
+            texgui_offscreen examples/offscreen.cpp
+        )
+        if(TEXGUI_BACKEND STREQUAL "raylib")
+            list(APPEND TEXGUI_EXAMPLES
+                texgui_minimal examples/minimal.cpp
+                texgui_demo    examples/demo_main.cpp
+                texgui_live    examples/live_edit.cpp
+            )
+        endif()
     endif()
     while(TEXGUI_EXAMPLES)
         list(POP_FRONT TEXGUI_EXAMPLES example_name example_source)
@@ -117,14 +136,38 @@ if(TEXGUI_BUILD_EXAMPLES)
         # build prove the public headers require nothing newer than that.
         set_target_properties(${example_name} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
         # MicroTeX needs its resource directory (fonts + metrics) at runtime.
-        target_compile_definitions(${example_name} PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+        # On the web that directory is packed into the .data file below and
+        # mounted at /res in the virtual filesystem.
+        if(EMSCRIPTEN)
+            target_compile_definitions(${example_name} PRIVATE TEXGUI_RES_DIR="/res")
+        else()
+            target_compile_definitions(${example_name} PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+        endif()
     endwhile()
+
+    if(TARGET texgui_live AND EMSCRIPTEN)
+        set_target_properties(texgui_live PROPERTIES
+            OUTPUT_NAME index
+            SUFFIX ".html"
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/site"
+        )
+        target_link_options(texgui_live PRIVATE
+            "-sUSE_GLFW=3"                # raylib's web backend speaks GLFW
+            "-sALLOW_MEMORY_GROWTH=1"
+            "-sSTACK_SIZE=2097152"        # MicroTeX's parser recurses; default 64K is tight
+            "SHELL:--preload-file ${MICROTEX_RES_DIR}@/res"
+            "SHELL:--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/examples/web/shell.html"
+        )
+        set_property(TARGET texgui_live APPEND PROPERTY
+            LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/examples/web/shell.html")
+    endif()
 endif()
 
 # ---------------------------------------------------------------------------
-# Unit tests
+# Unit tests (not for the wasm cross-build: they read the MicroTeX res/ tree
+# from the host filesystem, which the wasm sandbox cannot see)
 # ---------------------------------------------------------------------------
-if(TEXGUI_BUILD_TESTS)
+if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     enable_testing()
 
     # Pure transform math — no dependencies.

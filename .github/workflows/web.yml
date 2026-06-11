@@ -1,0 +1,46 @@
+name: Web demo
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Build the live editor to WebAssembly (raylib backend via Emscripten).
+  build:
+    name: Build (Emscripten)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 4.0.17 # keep in sync with the locally verified toolchain
+      - name: Configure
+        run: emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build-web -j
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build-web/site
+
+  # Publish to GitHub Pages on pushes to main. One-time repo setup:
+  # Settings -> Pages -> Source: "GitHub Actions".
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push'
+    needs: build
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment
