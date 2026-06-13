@@ -43,6 +43,8 @@ verify_backend() {
             exit 1
         fi
         printf '\n==> skipping %s package smoke: find_package(%s) is not available\n' "$backend" "$dependency_package"
+        printf '    install a CMake-discoverable %s package, or set TEXGUI_BACKEND_PACKAGE_REQUIRE=1 to fail on skips\n' \
+            "$dependency_package"
         return
     fi
 

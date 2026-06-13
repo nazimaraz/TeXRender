@@ -1,0 +1,9 @@
+# Color changes around fractions should still render rules and glyph ink.
+formula=\color{blue}{\frac{x^2+y^2}{z+1}}+\color{red}{1}
+text_size=54
+margin=12
+min_covered_pixels=170
+min_ink_width=65
+min_ink_height=35
+min_rule_run=12
+require_horizontal_rule=true

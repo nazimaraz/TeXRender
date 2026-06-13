@@ -56,7 +56,25 @@ scripts/verify-backend-packages.sh
 ```
 
 The script skips a backend when `find_package(raylib)` or `find_package(SDL2)`
-is not available, and verifies the package when it is.
+is not available, and verifies the package when it is. Set
+`TEXGUI_BACKEND_PACKAGE_REQUIRE=1` when preparing a machine specifically to
+prove GUI package exports; the script then fails instead of skipping a missing
+raylib/SDL2 package.
+
+## Shared Libraries
+
+Dynamic-linking consumers are covered by a dedicated install smoke:
+
+```sh
+scripts/verify-shared-library.sh
+```
+
+The script builds `BUILD_SHARED_LIBS=ON`, installs the package, verifies that a
+shared library was installed, compiles installed headers, checks CMake package
+components, and runs both the generic package consumer and the
+`examples/consumer-find-package` recipe with the runtime library path pointed at
+the installed prefix. By default it uses the dependency-free headless backend;
+set `TEXGUI_SHARED_BACKEND=svg` to exercise the SVG default surface as well.
 
 ## Conan
 
@@ -133,7 +151,11 @@ from the current checkout through vcpkg's portfile flow. It also fetches the
 pinned MicroTeX source archive in the portfile and passes it into CMake, so
 vcpkg can keep `FETCHCONTENT_FULLY_DISCONNECTED=ON` during configure. The port
 is intentionally local-development shaped: set `TEXGUI_VCPKG_SOURCE_DIR` or run
-the script, which sets it for you.
+the script, which sets it for you. After install, the script also configures the
+package component smoke through the vcpkg toolchain so `texgui/config.hpp`,
+`find_package(texgui COMPONENTS ...)`, and selected backend features agree with
+the installed port. It also checks that unavailable GUI components are rejected,
+matching the installed CMake package smoke.
 
 Before a vcpkg registry submission:
 
@@ -177,7 +199,7 @@ Run `scripts/verify-release.sh` before tagging. It validates CMake builds,
 install/export consumers, installed public headers, generated gallery artifacts,
 package-manager entry points when local tools are available, installed package
 component metadata, optional installed backend package exports, pkg-config
-consumers when pkg-config is available,
+consumers when pkg-config is available, shared-library install consumers,
 CPack archives, external consumers, path-with-spaces handling, release archive
 smoke, Markdown links, public API snapshot drift, and API documentation when
 Doxygen is installed. It also runs the registry-readiness metadata check when

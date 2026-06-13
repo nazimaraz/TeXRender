@@ -106,6 +106,10 @@ cmake_configure "$ROOT_DIR" "$SHARED_BUILD" \
 cmake_build "$SHARED_BUILD"
 run ctest --test-dir "$SHARED_BUILD" --output-on-failure
 
+if [[ "${TEXGUI_SKIP_SHARED_LIBRARY_SMOKE:-0}" != "1" ]]; then
+    run env BUILD_ROOT="${BUILD_ROOT}/shared-library" "$ROOT_DIR/scripts/verify-shared-library.sh"
+fi
+
 rm -rf "$INSTALL_PREFIX" "$PACKAGE_CONSUMER_BUILD" "$FIND_EXAMPLE_BUILD"
 run cmake --install "$HEADLESS_BUILD" --prefix "$INSTALL_PREFIX"
 cmake_configure "$ROOT_DIR/tests/package_consumer" "$PACKAGE_CONSUMER_BUILD" \

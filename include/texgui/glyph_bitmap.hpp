@@ -8,7 +8,9 @@ namespace TexGui
     ///
     /// The buffer is owned by the cache and remains valid for the duration of
     /// the draw call. `left` and `top` are FreeType bitmap bearings relative to
-    /// the glyph pen. `pitch` is the number of bytes between bitmap rows.
+    /// the glyph pen. `pitch` is the number of bytes between bitmap rows. Custom
+    /// backends should copy or upload data during `IDrawSurface::draw_glyph()`
+    /// if they need it after the call returns.
     struct GlyphBitmap
     {
         /// Pointer to 8-bit coverage values, one byte per pixel.

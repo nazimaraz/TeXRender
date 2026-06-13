@@ -1,0 +1,9 @@
+# Spacing commands should affect horizontal layout without creating rule ink.
+formula=a\,b\quad c\;d
+text_size=56
+margin=12
+min_covered_pixels=70
+min_ink_width=55
+min_ink_height=20
+min_rule_run=0
+require_horizontal_rule=false

@@ -3,6 +3,10 @@
 These examples are small on purpose: each one shows one dependency story without
 extra application structure.
 
+For application-shaped snippets such as HUD formulas, PNG generation, SVG export
+pipelines, custom renderer adapters, and safe user-input handling, see
+[`docs/recipes.md`](recipes.md).
+
 ## FetchContent
 
 Use this when you want a consuming CMake project to fetch texgui directly:

@@ -16,6 +16,8 @@ namespace TexGui
     ///
     /// Applications can either call this before constructing a default
     /// `LatexDocument`, or inject `std::make_unique<Sdl2Surface>(renderer)`.
+    /// Passing nullptr clears the default and makes the default constructor
+    /// unusable until a renderer is registered again.
     TEXGUI_EXPORT void set_default_sdl_renderer(SDL_Renderer* renderer) noexcept;
 
     /// Return the renderer currently used by default SDL2 surfaces.
@@ -25,7 +27,9 @@ namespace TexGui
     ///
     /// The renderer is borrowed and must outlive the surface and every
     /// RenderHandle using it. Destroy texgui handles/documents before destroying
-    /// the renderer so cached glyph textures can be released safely.
+    /// the renderer so cached glyph textures can be released safely. Rounded
+    /// rectangle calls currently fall back to regular rectangles because SDL2's
+    /// core renderer has no rounded-rectangle primitive.
     class TEXGUI_EXPORT Sdl2Surface final : public IDrawSurface
     {
     public:
@@ -48,8 +52,14 @@ namespace TexGui
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
 
         /// Release all cached SDL textures. Safe to call more than once.
+        ///
+        /// Call this before destroying the borrowed renderer if object lifetime
+        /// is not already scoped that way.
         void unload();
         /// Set the maximum number of cached glyph textures for this surface.
+        ///
+        /// Zero is clamped to one; lower values reduce texture memory at the
+        /// cost of more uploads.
         void set_max_textures(std::size_t max_textures);
         /// Maximum cached glyph textures for this surface.
         [[nodiscard]] std::size_t max_textures() const;

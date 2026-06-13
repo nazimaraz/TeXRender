@@ -7,7 +7,6 @@ from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
 
 class TexguiTestPackageConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    generators = "CMakeDeps", "CMakeToolchain"
     test_type = "explicit"
 
     def requirements(self):
@@ -15,6 +14,18 @@ class TexguiTestPackageConan(ConanFile):
 
     def layout(self):
         cmake_layout(self)
+
+    def generate(self):
+        deps = CMakeDeps(self)
+        deps.generate()
+
+        dependency = self.dependencies[self.tested_reference_str]
+        backend = str(dependency.options.backend)
+        tc = CMakeToolchain(self)
+        tc.variables["TEXGUI_EXPECT_BACKEND"] = backend
+        tc.variables["TEXGUI_EXPECT_HAS_RAYLIB"] = backend == "raylib"
+        tc.variables["TEXGUI_EXPECT_HAS_SDL2"] = backend == "sdl2"
+        tc.generate()
 
     def build(self):
         cmake = CMake(self)

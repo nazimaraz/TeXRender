@@ -14,7 +14,8 @@ namespace TexGui
     /// Use this directly when injecting a surface, or let LatexDocument create
     /// one by default when texgui is built with `TEXGUI_BACKEND=raylib`.
     /// Destroy or unload it before `CloseWindow()` so GPU glyph textures are
-    /// released while the raylib context is still alive.
+    /// released while the raylib context is still alive. Drawing must happen
+    /// inside the caller's active raylib frame.
     class TEXGUI_EXPORT RaylibSurface final : public IDrawSurface
     {
     public:
@@ -33,8 +34,14 @@ namespace TexGui
         void fill_round_rect(float x, float y, float w, float h, float rx, float ry) override;
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
         /// Release all cached GPU textures. Safe to call more than once.
+        ///
+        /// Call this before `CloseWindow()` if the surface may outlive formula
+        /// handles or if you want to drop texture memory proactively.
         void unload();
         /// Set the maximum number of cached glyph textures for this surface.
+        ///
+        /// Zero is clamped to one; lower values trade memory for more texture
+        /// uploads during repeated draws.
         void set_max_textures(std::size_t max_textures);
         /// Maximum cached glyph textures for this surface.
         [[nodiscard]] std::size_t max_textures() const;

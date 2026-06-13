@@ -23,6 +23,7 @@ on:
       - "scripts/verify-path-with-spaces.sh"
       - "scripts/verify-pkg-config.sh"
       - "scripts/verify-release-archive.sh"
+      - "scripts/verify-shared-library.sh"
   workflow_dispatch:
 
 concurrency:
@@ -116,6 +117,21 @@ jobs:
           CC: gcc-14
           CXX: g++-14
         run: scripts/verify-pkg-config.sh
+
+  shared-library:
+    name: Shared library install smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Verify shared library consumer
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: scripts/verify-shared-library.sh
 
   backend-packages:
     name: Installed backend package smoke

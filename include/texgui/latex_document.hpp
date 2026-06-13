@@ -22,6 +22,8 @@ namespace TexGui
     /// `render()` treats unset limits as trusted-input mode. The simple
     /// `try_render(latex, text_size, argb, wrap_width)` overload fills these
     /// limits with conservative defaults before parsing arbitrary user text.
+    /// Colors use packed `0xAARRGGBB`; alpha is honored by headless/SVG output
+    /// and mapped to the selected GUI backend's color model.
     struct RenderOptions
     {
         /// Sentinel that disables the input byte limit.
@@ -42,6 +44,9 @@ namespace TexGui
         /// Foreground color as 0xAARRGGBB.
         uint32_t argb = 0xff000000;
         /// Positive pixel width wraps layout; zero means unwrapped unless max_wrap_width is set.
+        ///
+        /// Wrapping is a layout hint passed to MicroTeX. It does not clip output;
+        /// callers should still size or clip their target surface as needed.
         int wrap_width = 0;
         /// Maximum accepted UTF-8 input size in bytes, or no_input_limit.
         std::size_t max_input_bytes = no_input_limit;
@@ -52,6 +57,10 @@ namespace TexGui
     };
 
     /// Machine-readable reason for a non-throwing render failure.
+    ///
+    /// Use this with `try_render_detailed()` when UI code needs to distinguish a
+    /// validation failure from a MicroTeX parse error without throwing through a
+    /// frame loop or request handler.
     enum class RenderErrorCode
     {
         none,
@@ -64,6 +73,10 @@ namespace TexGui
     };
 
     /// Diagnostic payload returned by the detailed non-throwing render API.
+    ///
+    /// `message` is intended for logs or developer-facing diagnostics. It may
+    /// include parser text from MicroTeX and should be sanitized/translated
+    /// before showing it directly to untrusted end users.
     struct RenderError
     {
         RenderErrorCode code = RenderErrorCode::none;
@@ -72,6 +85,9 @@ namespace TexGui
 
     /// Result object for callers that need an error code/message instead of
     /// only std::optional.
+    ///
+    /// The object is intentionally small and move-friendly: on success it owns a
+    /// `RenderHandle`; on failure `error()` describes why no handle was created.
     class RenderResult
     {
     public:
@@ -83,6 +99,7 @@ namespace TexGui
             : error_{std::move(error)}
         {}
 
+        /// Whether a render handle is present.
         [[nodiscard]] bool has_value() const noexcept
         {
             return handle_.has_value();
@@ -91,6 +108,7 @@ namespace TexGui
         {
             return has_value();
         }
+        /// Return the render handle, throwing `std::bad_optional_access` if empty.
         [[nodiscard]] RenderHandle& value() &
         {
             return handle_.value();
@@ -103,10 +121,12 @@ namespace TexGui
         {
             return std::move(handle_).value();
         }
+        /// Return the diagnostic payload. Meaningful when `has_value()` is false.
         [[nodiscard]] const RenderError& error() const noexcept
         {
             return error_;
         }
+        /// Convert into the compact optional form, discarding any error details.
         [[nodiscard]] std::optional<RenderHandle> into_optional() && noexcept
         {
             return std::move(handle_);
@@ -123,7 +143,8 @@ namespace TexGui
     /// are intentionally non-copyable and non-movable because MicroTeX has
     /// process-wide initialization and the selected surface often has graphics
     /// context lifetime requirements. Construct and use documents on the
-    /// rendering thread.
+    /// rendering thread. The first document in a process initializes MicroTeX's
+    /// resource root; later documents should use the same `res_root`.
     class TEXGUI_EXPORT LatexDocument
     {
     public:
@@ -133,7 +154,8 @@ namespace TexGui
         /// `surface` is null, texgui creates the default surface for the
         /// configured backend (`TEXGUI_BACKEND`). Pass a custom IDrawSurface to
         /// render into another target, for example HeadlessSurface for offscreen
-        /// RGBA output.
+        /// RGBA output. GUI surfaces are borrowed from their toolkit context, so
+        /// keep that context alive until documents and handles are destroyed.
         explicit LatexDocument(const std::string& res_root, std::unique_ptr<IDrawSurface> surface = nullptr);
         LatexDocument(const LatexDocument&) = delete;
         LatexDocument(LatexDocument&&) = delete;
@@ -152,7 +174,8 @@ namespace TexGui
         /// Throws a std::exception-derived error when parsing fails or the
         /// supplied options are invalid. `wrap_width > 0` wraps to that pixel
         /// width; zero lays out an unbounded line unless RenderOptions sets a
-        /// maximum effective width.
+        /// maximum effective width. The returned handle can be drawn repeatedly
+        /// without reparsing the formula.
         [[nodiscard]] RenderHandle render(const std::string& latex, float text_size, uint32_t argb, int wrap_width = 0) const;
         /// Parse and lay out trusted LaTeX input with explicit options.
         [[nodiscard]] RenderHandle render(const std::string& latex, const RenderOptions& options) const;

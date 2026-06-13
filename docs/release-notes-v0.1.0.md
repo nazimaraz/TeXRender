@@ -34,6 +34,11 @@ for embedding LaTeX math rendering into applications.
 - Installed-header and optional installed-backend package smoke checks for
   dependency-facing package exports.
 - Package component success/failure smoke checks for installed package metadata.
+- Installed shared-library package smoke checks for dynamic-linking consumers.
+- Copyable integration recipes for HUD rendering, PNG/SVG generation, custom
+  surfaces, safe user input, and portable feature checks.
+- Expanded structural visual regression formulas for nested fractions, large
+  operators, spacing commands, symbols, and colored rules.
 - Security threat model, dependency/license audit, and first public push dry-run
   checklist for public launch review.
 

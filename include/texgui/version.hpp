@@ -8,6 +8,10 @@
 
 namespace TexGui
 {
+    /// Compile-time semantic version constants for feature checks and logging.
+    ///
+    /// These values match `project(VERSION)` in CMake and are validated at
+    /// configure time.
     /// Major component of the texgui semantic version.
     inline constexpr int version_major = TEXGUI_VERSION_MAJOR;
     /// Minor component of the texgui semantic version.

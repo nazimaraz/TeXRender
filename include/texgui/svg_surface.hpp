@@ -14,7 +14,8 @@ namespace TexGui
     ///
     /// Lines and rectangles are emitted as native SVG elements. Glyphs arrive at
     /// this backend as FreeType bitmaps, so they are embedded as small RGBA PNG
-    /// data URIs inside the SVG.
+    /// data URIs inside the SVG. This keeps SVG export backend-neutral while
+    /// preserving MicroTeX's font rendering choices.
     class TEXGUI_EXPORT SvgSurface final : public IDrawSurface
     {
     public:
@@ -30,8 +31,13 @@ namespace TexGui
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
 
         /// Set the SVG viewport dimensions in pixels.
+        ///
+        /// Resize before drawing if the output should tightly fit a formula.
         void resize(int width, int height);
         /// Clear recorded elements and optionally set a background color.
+        ///
+        /// A fully transparent color clears the background instead of emitting a
+        /// background rectangle.
         void clear(uint32_t argb = 0x00000000);
 
         /// SVG viewport width in pixels.
@@ -41,6 +47,8 @@ namespace TexGui
         /// Number of recorded draw elements, excluding the root svg element.
         [[nodiscard]] std::size_t element_count() const;
         /// Return the complete SVG document.
+        ///
+        /// The string is self-contained and includes embedded glyph PNG data.
         [[nodiscard]] std::string svg() const;
         /// Write the complete SVG document to disk.
         [[nodiscard]] bool write_svg(const std::string& path) const;

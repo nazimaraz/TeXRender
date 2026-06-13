@@ -38,9 +38,9 @@ selects the default surface created by `LatexDocument`.
 | installed `find_package(texgui CONFIG REQUIRED)` | supported and tested |
 | installed public headers | selected backend headers only, compiled as C++17 |
 | CMake package components | `headless`, `svg`, `raylib`, `sdl2` |
-| shared library | supported for headless in CI |
-| Conan recipe | starter package metadata, headless/SVG/SDL2 validated in CI |
-| vcpkg manifest/overlay | starter metadata with overlay smoke test |
+| shared library | installed headless shared package consumed in release smoke |
+| Conan recipe | starter package metadata, headless/SVG/SDL2/shared validated in CI |
+| vcpkg manifest/overlay | starter metadata with overlay and component smoke tests |
 | CPack TGZ/ZIP archives | supported in release smoke for source and binary packages |
 | public package registries | planned after first public tag |
 

@@ -17,6 +17,8 @@ embedding LaTeX-style math rendering into caller-owned render loops.
 - Consume the library with `FetchContent`, `add_subdirectory`, installed
   `find_package(texgui CONFIG REQUIRED)`, pkg-config metadata, Conan metadata,
   or vcpkg metadata.
+- Build static or shared packages; release smoke verifies an installed shared
+  package through an external `find_package()` consumer.
 - Build native demos and the same live editor as a WebAssembly/GitHub Pages app.
 - Validate downstream dependency use with installed package consumers, external
   consumers, CPack smoke tests, path-with-spaces tests, and release archive
@@ -28,6 +30,8 @@ embedding LaTeX-style math rendering into caller-owned render loops.
 - API docs: https://nazimaraz.github.io/latex-renderer/api/
 - Integration examples:
   https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/integration-examples.md
+- Copyable recipes:
+  https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/recipes.md
 - Security threat model:
   https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/security-threat-model.md
 - Dependency/license audit:
@@ -61,7 +65,7 @@ cmake --install build --prefix /path/to/prefix
 ```
 
 ```cmake
-find_package(texgui CONFIG REQUIRED)
+find_package(texgui CONFIG REQUIRED COMPONENTS headless svg)
 target_link_libraries(my_app PRIVATE texgui::texgui)
 texgui_copy_resources(my_app)
 ```
@@ -127,6 +131,7 @@ scripts/verify-cpack.sh
 scripts/verify-external-consumers.sh
 scripts/verify-installed-headers.sh
 scripts/verify-backend-packages.sh
+scripts/verify-shared-library.sh
 scripts/verify-path-with-spaces.sh
 scripts/verify-pkg-config.sh
 scripts/check-registry-readiness.py

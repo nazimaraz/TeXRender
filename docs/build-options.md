@@ -116,7 +116,17 @@ cmake --build build-shared -j
 ctest --test-dir build-shared --output-on-failure
 ```
 
-The release verifier includes this shared-library smoke test.
+For install/package coverage, run:
+
+```sh
+scripts/verify-shared-library.sh
+```
+
+That smoke builds and installs a shared package, compiles installed public
+headers, verifies package components, and runs external `find_package()`
+consumers with the runtime library path pointed at the installed prefix. The
+release verifier includes both the in-tree shared build and this installed
+shared-library package check.
 
 ## Optional Visual Snapshots
 

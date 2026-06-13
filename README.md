@@ -12,6 +12,8 @@
 [![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
 [![Release smoke](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Public headers: C++17](https://img.shields.io/badge/public%20headers-C%2B%2B17-brightgreen.svg)](docs/api-compatibility.md)
+[![CMake package](https://img.shields.io/badge/CMake-package-064f8c.svg)](docs/integration-examples.md#installed-find_package)
 [![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
 
 Render LaTeX math from C++ into raylib/SDL2 windows, offscreen RGBA buffers, or SVG files.
@@ -51,6 +53,7 @@ changes.
 
 See the [gallery](docs/gallery.md), [examples index](docs/examples-index.md),
 [integration examples](docs/integration-examples.md),
+[copyable recipes](docs/recipes.md),
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
 [why-not-just-TeX FAQ](docs/why-not-just-tex.md),
 [backend authoring guide](docs/backend-authoring.md), and
@@ -182,7 +185,7 @@ cmake --install build --prefix /path/to/prefix
 ```
 
 ```cmake
-find_package(texgui CONFIG REQUIRED)
+find_package(texgui CONFIG REQUIRED COMPONENTS headless svg)
 
 target_link_libraries(my_app PRIVATE texgui::texgui)
 texgui_copy_resources(my_app)
@@ -200,6 +203,10 @@ and [`conanfile.py`](conanfile.py). They are intended as project-local manifests
 until the project is submitted to public registries. See
 [`docs/package-publishing.md`](docs/package-publishing.md) for the Conan/vcpkg
 validation and submission checklist.
+
+Shared-library packages are supported with `BUILD_SHARED_LIBS=ON`; run
+[`scripts/verify-shared-library.sh`](scripts/verify-shared-library.sh) to build,
+install, and consume a dynamic package from a temporary prefix.
 
 Installed builds also generate `texgui.pc` for pkg-config consumers. For static
 linking, use `pkg-config --cflags --libs --static texgui`; the generated

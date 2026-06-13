@@ -32,4 +32,5 @@ embed texgui.
   package, or pkg-config consumer directories.
 
 The longer command walk-throughs live in
-[`docs/integration-examples.md`](integration-examples.md).
+[`docs/integration-examples.md`](integration-examples.md), and copyable
+application patterns live in [`docs/recipes.md`](recipes.md).

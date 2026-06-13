@@ -24,6 +24,9 @@ namespace TexGui
     /// it stays valid to draw and destroy even if the LatexDocument object is
     /// released first. With GPU-backed surfaces, destroy handles before closing
     /// the graphics context so backend caches can release their resources.
+    ///
+    /// Drawing is immediate: `draw(x, y)` sends primitives to the document's
+    /// surface using the current transform/color state owned by the handle.
     class TEXGUI_EXPORT RenderHandle
     {
     public:
@@ -44,8 +47,13 @@ namespace TexGui
         [[nodiscard]] float baseline() const;
 
         /// Change the formula foreground color as 0xAARRGGBB.
+        ///
+        /// This updates the laid-out formula's color without reparsing it.
         void set_foreground(uint32_t argb) const;
         /// Draw the formula at the given top-left pixel position.
+        ///
+        /// The target surface decides whether coordinates are clipped, blended,
+        /// or forwarded to a GPU API.
         void draw(int x, int y) const;
 
     private:

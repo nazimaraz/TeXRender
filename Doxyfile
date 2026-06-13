@@ -19,6 +19,7 @@ INPUT                  = include \
                          docs/known-limitations.md \
                          docs/examples-index.md \
                          docs/integration-examples.md \
+                         docs/recipes.md \
                          docs/why-not-just-tex.md \
                          docs/api-compatibility.md \
                          docs/public-api-snapshot.txt \

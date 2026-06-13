@@ -31,6 +31,7 @@ follow [Semantic Versioning](https://semver.org/).
   backend texture cache sizing.
 - Shared-library symbol visibility via `TEXGUI_EXPORT`, including Windows DLL
   import/export definitions.
+- Installed shared-library package smoke test for dynamic-linking consumers.
 - Backend-neutral umbrella header `texgui/texgui.hpp`.
 - Generated `texgui/config.hpp` feature header with backend support macros and
   constexpr flags.
@@ -54,6 +55,8 @@ follow [Semantic Versioning](https://semver.org/).
   metadata for resource-copy helpers.
 - Local vcpkg overlay port smoke test for portfile-style package validation,
   with pinned MicroTeX source handoff for disconnected configure.
+- vcpkg overlay component smoke after install, verifying package features and
+  backend metadata through the vcpkg toolchain.
 - CPack source and binary archive configuration with local extraction/consumer
   smoke validation.
 - FreeType glyph rasterisation behind bounded LRU caches (CPU bitmaps and GPU
@@ -83,7 +86,7 @@ follow [Semantic Versioning](https://semver.org/).
   installed package consumer, pkg-config consumer smoke, C++17 public-header
   checks, strict warning build, SVG and SDL2 backend smoke, Windows
   shared-library install consumer, shared-library smoke, threaded lifetime
-  stress test, multi-formula structural visual
+  stress test, expanded multi-formula structural visual
   regression, optional exact PNG visual snapshots, visual failure artifacts,
   clang-format gate, ASan+UBSan pass, fuzz smoke, vcpkg/Conan validation,
   clang-tidy and CodeQL static analysis, coverage reporting, actionlint workflow
@@ -97,7 +100,7 @@ follow [Semantic Versioning](https://semver.org/).
   registry-readiness checker for format/build/test/docs/package-consumer/package-metadata
   checks before pushing.
 - Documentation: architecture, API notes, known limitations, integration
-  examples, gallery, build options, fuzzing, benchmarks, static analysis,
+  examples, copyable recipes, gallery, build options, fuzzing, benchmarks, static analysis,
   coverage, workflow linting, API compatibility, migration guide, release asset
   guide, v0.1.0 release body, local release rehearsal, why-not-just-TeX FAQ,
   backend authoring guide, GitHub launch, package publishing, registry

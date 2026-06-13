@@ -32,6 +32,7 @@ See also:
 - [Why not just TeX?](why-not-just-tex.md)
 - [Known limitations](known-limitations.md)
 - [Examples index](examples-index.md)
+- [Integration recipes](recipes.md)
 - [Build options](build-options.md)
 - [GitHub launch checklist](github-launch.md)
 - [First public push dry run](first-public-push-dry-run.md)

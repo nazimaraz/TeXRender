@@ -1,8 +1,10 @@
 #include <memory>
 #include <string>
+#include <string_view>
 #include <type_traits>
 #include <utility>
 #include <texgui/cache_options.hpp>
+#include <texgui/config.hpp>
 #include <texgui/formula_layout.hpp>
 #include <texgui/headless_surface.hpp>
 #include <texgui/latex_document.hpp>
@@ -16,9 +18,23 @@
 static_assert(TexGui::version_major == TEXGUI_VERSION_MAJOR);
 static_assert(std::is_move_constructible_v<TexGui::RenderHandle>);
 static_assert(!std::is_copy_constructible_v<TexGui::RenderHandle>);
+static_assert(TEXGUI_HAS_HEADLESS == 1);
+static_assert(TEXGUI_HAS_SVG == 1);
+
+#ifdef TEXGUI_EXPECT_BACKEND
+static_assert(TEXGUI_HAS_RAYLIB == TEXGUI_EXPECT_HAS_RAYLIB);
+static_assert(TEXGUI_HAS_SDL2 == TEXGUI_EXPECT_HAS_SDL2);
+static_assert(TexGui::has_raylib == static_cast<bool>(TEXGUI_EXPECT_HAS_RAYLIB));
+static_assert(TexGui::has_sdl2 == static_cast<bool>(TEXGUI_EXPECT_HAS_SDL2));
+#endif
 
 int main()
 {
+#ifdef TEXGUI_EXPECT_BACKEND
+    if (std::string_view{TexGui::build_backend} != TEXGUI_EXPECT_BACKEND)
+        return 10;
+#endif
+
     auto limits = TexGui::cache_limits();
     limits.max_cpu_glyphs = 32;
     limits.max_gpu_textures = 32;

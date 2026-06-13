@@ -1,6 +1,8 @@
 #pragma once
 
 /// Backend selected when this texgui target/package was built.
+///
+/// Values currently include `headless`, `svg`, `raylib`, and `sdl2`.
 #define TEXGUI_BACKEND_NAME "@TEXGUI_BACKEND@"
 
 /// Backend-neutral software RGBA surface support is always available.
@@ -15,6 +17,8 @@
 namespace TexGui
 {
     /// Backend selected when this texgui target/package was built.
+    ///
+    /// Useful in portable examples, logs, and package-manager smoke tests.
     inline constexpr const char* build_backend = TEXGUI_BACKEND_NAME;
     /// Whether `HeadlessSurface` is compiled into this target/package.
     inline constexpr bool has_headless = TEXGUI_HAS_HEADLESS != 0;

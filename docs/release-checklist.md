@@ -14,6 +14,8 @@ Use this before cutting a public tag.
   `cmake -S . -B build-sdl2 -DTEXGUI_BACKEND=sdl2 && cmake --build build-sdl2 -j && ctest --test-dir build-sdl2 --output-on-failure`
 - Configure/build/test shared headless:
   `cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXGUI_BACKEND=headless && cmake --build build-shared -j && ctest --test-dir build-shared --output-on-failure`
+- Verify installed shared-library consumption:
+  `scripts/verify-shared-library.sh`
 - Verify presets:
   `cmake --list-presets`
 - Smoke-run offscreen:
@@ -37,6 +39,8 @@ Use this before cutting a public tag.
   `scripts/verify-installed-headers.sh`
 - Verify installed GUI backend packages when dependencies are available:
   `scripts/verify-backend-packages.sh`
+- Fail on missing GUI package proof when using a prepared release machine:
+  `TEXGUI_BACKEND_PACKAGE_REQUIRE=1 scripts/verify-backend-packages.sh`
 - Confirm package components and feature metadata are covered by the installed
   header smoke: `headless`, `svg`, selected GUI backend, and rejected GUI
   backend components.
@@ -50,7 +54,8 @@ Use this before cutting a public tag.
   `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`,
   `conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"`,
   a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`,
-  and `VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`.
+  `VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`, and
+  `TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`.
 - Regenerate API docs locally if Doxygen is available:
   `doxygen Doxyfile`
 - Run static analysis and coverage locally when the tools are available; see
@@ -111,6 +116,7 @@ Use this before cutting a public tag.
 - Mention dependency modes: `FetchContent`, `add_subdirectory`, and installed
   `find_package(texgui CONFIG REQUIRED)`.
 - Mention shared-library support and CMake presets.
+- Mention installed shared-library consumer verification.
 - Mention `try_render_detailed()` for non-throwing user-input diagnostics.
 - Mention `HeadlessSurface::write_png()` for offscreen image output.
 - Mention `SvgSurface`, `TEXGUI_BACKEND=svg`, cache limits, and baseline layout
@@ -121,6 +127,7 @@ Use this before cutting a public tag.
   package metadata.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
+- Mention copyable integration recipes in [`docs/recipes.md`](recipes.md).
 - Mention API compatibility status and the current source-compatibility promise.
 - Mention migration expectations from [`docs/migration.md`](migration.md).
 - Mention CPack binary/source archives if you attach them to a release.
