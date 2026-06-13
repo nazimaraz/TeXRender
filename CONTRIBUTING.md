@@ -35,6 +35,11 @@ cmake --build build-fuzz --target texgui_try_render_fuzzer -j
 ./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256
 ```
 
+Static analysis and coverage are documented in
+[`docs/static-analysis.md`](docs/static-analysis.md) and
+[`docs/coverage.md`](docs/coverage.md). They run in CI, but local runs are useful
+before touching shared rendering or packaging code.
+
 ## Code style
 
 * Implementation files are C++23; the public headers in `include/texgui/` must
@@ -46,8 +51,8 @@ cmake --build build-fuzz --target texgui_try_render_fuzzer -j
   git ls-files '*.cpp' '*.hpp' | xargs clang-format -i
   ```
 
-* A [`.clang-tidy`](.clang-tidy) configuration is provided; running it is
-  encouraged but not enforced.
+* A [`.clang-tidy`](.clang-tidy) configuration is enforced in CI for project
+  translation units.
 * Match the existing naming: `lower_case` functions and variables, `CamelCase`
   types, `trailing_underscore_` for private members.
 

@@ -23,13 +23,16 @@ Use this before cutting a public tag.
   and a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`.
 - Regenerate API docs locally if Doxygen is available:
   `doxygen Doxyfile`
+- Run static analysis and coverage locally when the tools are available; see
+  [`docs/static-analysis.md`](static-analysis.md) and
+  [`docs/coverage.md`](coverage.md).
 
 ## GitHub Setup
 
 - Enable GitHub Pages with source set to "GitHub Actions".
 - Enable private vulnerability reporting in the Security tab.
-- Confirm the `Package managers`, `Benchmarks`, `Web demo` and `Release`
-  workflows are enabled.
+- Confirm the `Package managers`, `Static analysis`, `Coverage`, `Benchmarks`,
+  `Web demo` and `Release` workflows are enabled.
 - Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `freetype`,
   `webassembly`, `cmake`, `graphics`.
 - Add a short repository description:
@@ -52,5 +55,7 @@ Use this before cutting a public tag.
 - Keep `docs/demo.png` current.
 - Keep `docs/offscreen-example.png`, `docs/gallery.md` and
   `docs/performance-baseline.md` current.
+- Keep [`docs/case-study.md`](case-study.md) aligned with the public API and CI
+  story before using the project in a resume.
 - Optional: record a short GIF of the live editor for the README or release.
 - Link `docs/architecture.md` from the release body for developer reviewers.

@@ -19,3 +19,6 @@ See also:
 - [Embedding notes](api.md)
 - [Architecture](architecture.md)
 - [Known limitations](known-limitations.md)
+- [Static analysis](static-analysis.md)
+- [Coverage](coverage.md)
+- [Case study](case-study.md)

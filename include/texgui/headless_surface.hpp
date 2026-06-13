@@ -8,11 +8,12 @@
 
 namespace TexGui
 {
-    // A windowless IDrawSurface that composites into an in-memory RGBA8 canvas.
-    //
-    // Rendering is software alpha-compositing in sRGB space; rotation is ignored
-    // because this backend is primarily for reference rendering, tests, and CI.
-    // Draws are clipped to the canvas bounds.
+    /// Windowless IDrawSurface that composites into an in-memory RGBA8 canvas.
+    ///
+    /// Rendering is software alpha-compositing in sRGB space. Glyph rotation is
+    /// intentionally ignored because this backend is primarily for reference
+    /// rendering, tests, CI, and server-side/offscreen output. Draws are clipped
+    /// to the canvas bounds.
     class HeadlessSurface final : public IDrawSurface
     {
     public:
@@ -26,13 +27,20 @@ namespace TexGui
         void fill_round_rect(float x, float y, float w, float h, float rx, float ry) override;
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
 
+        /// Resize the canvas and clear it to transparent black.
         void resize(int width, int height);
+        /// Fill the whole canvas with an ARGB color.
         void clear(uint32_t argb = 0x00000000);
 
+        /// Canvas width in pixels.
         [[nodiscard]] int width() const;
+        /// Canvas height in pixels.
         [[nodiscard]] int height() const;
+        /// Raw RGBA8 pixels in row-major order.
         [[nodiscard]] const std::vector<unsigned char>& pixels() const;
+        /// Count pixels with non-zero alpha.
         [[nodiscard]] size_t covered_pixels() const;
+        /// Write the current canvas as a binary PPM image.
         [[nodiscard]] bool write_ppm(const std::string& path) const;
 
     private:

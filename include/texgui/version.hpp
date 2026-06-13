@@ -8,7 +8,10 @@
 
 namespace TexGui
 {
+    /// Major component of the texgui semantic version.
     inline constexpr int version_major = TEXGUI_VERSION_MAJOR;
+    /// Minor component of the texgui semantic version.
     inline constexpr int version_minor = TEXGUI_VERSION_MINOR;
+    /// Patch component of the texgui semantic version.
     inline constexpr int version_patch = TEXGUI_VERSION_PATCH;
 } // namespace TexGui

@@ -1,0 +1,58 @@
+name: Static analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clang-tidy:
+    name: clang-tidy
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang-tidy 22 and dependencies
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt-llvm.asc > /dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy-22 g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure compile database
+        run: >
+          cmake -S . -B build-tidy -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_COMPILER=g++-14
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          -DTEXGUI_BACKEND=headless
+          -DTEXGUI_BUILD_EXAMPLES=ON
+          -DTEXGUI_BUILD_TESTS=ON
+          -DTEXGUI_BUILD_BENCHMARKS=ON
+      - name: Select project translation units
+        run: |
+          python3 - <<'PY' > tidy-files.txt
+          import json
+          from pathlib import Path
+
+          root = Path.cwd().resolve()
+          prefixes = ("source/", "tests/", "benchmarks/", "examples/")
+          files = set()
+          for entry in json.loads(Path("build-tidy/compile_commands.json").read_text()):
+              path = Path(entry["file"]).resolve()
+              try:
+                  rel = path.relative_to(root).as_posix()
+              except ValueError:
+                  continue
+              if rel.startswith(prefixes):
+                  files.add(str(path))
+
+          for path in sorted(files):
+              print(path)
+          PY
+          test -s tidy-files.txt
+      - name: Run clang-tidy
+        run: xargs clang-tidy-22 -p build-tidy --warnings-as-errors='*' < tidy-files.txt

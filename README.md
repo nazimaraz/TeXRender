@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml)
 [![Package managers](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml)
+[![Static analysis](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml)
+[![Coverage](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml)
 [![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
@@ -38,7 +40,8 @@ nothing in the core changes.
   parser, transforms, FreeType glyph rasterization, and caches stay shared.
 
 See the [gallery](docs/gallery.md), [integration examples](docs/integration-examples.md),
-and hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/).
+hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/), and
+[case study](docs/case-study.md).
 
 ## How it works
 
@@ -345,8 +348,8 @@ needs no window or GPU and runs under either backend;
 `TEXGUI_BACKEND=headless` additionally drops the raylib dependency entirely. CI
 exercises this on Linux, macOS and Windows, the raylib backend + examples on
 Linux and macOS, runs the suite under ASan + UBSan, checks vcpkg/Conan
-packaging, uploads visual-regression artifacts on failure, and gates formatting
-with clang-format.
+packaging, uploads visual-regression artifacts on failure, gates formatting with
+clang-format, runs clang-tidy, and publishes coverage artifacts.
 
 Additional developer tools:
 
@@ -357,7 +360,10 @@ cmake --build build --target texgui_render_benchmark -j
 
 Fuzzing instructions live in [`docs/fuzzing.md`](docs/fuzzing.md); benchmark
 notes live in [`docs/benchmarks.md`](docs/benchmarks.md), with reference numbers
-in [`docs/performance-baseline.md`](docs/performance-baseline.md).
+in [`docs/performance-baseline.md`](docs/performance-baseline.md). Static
+analysis and coverage workflows are documented in
+[`docs/static-analysis.md`](docs/static-analysis.md) and
+[`docs/coverage.md`](docs/coverage.md).
 
 ## License
 

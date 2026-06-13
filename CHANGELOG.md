@@ -37,9 +37,10 @@ follow [Semantic Versioning](https://semver.org/).
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, strict warning build, structural visual regression,
   visual failure artifacts, clang-format gate, ASan+UBSan pass, fuzz smoke,
-  vcpkg/Conan validation, non-blocking benchmark output, wasm build.
+  vcpkg/Conan validation, clang-tidy static analysis, coverage reporting,
+  non-blocking benchmark output, wasm build.
 - Documentation: architecture, API notes, known limitations, integration
-  examples, gallery, fuzzing, benchmarks, performance baseline and release
-  checklist.
+  examples, gallery, fuzzing, benchmarks, static analysis, coverage,
+  performance baseline, resume-oriented case study and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

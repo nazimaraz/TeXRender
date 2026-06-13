@@ -7,6 +7,12 @@
 
 namespace TexGui
 {
+    /// raylib-backed drawing surface for rendering formulas inside a raylib frame.
+    ///
+    /// Use this directly when injecting a surface, or let LatexDocument create
+    /// one by default when texgui is built with `TEXGUI_BACKEND=raylib`.
+    /// Destroy or unload it before `CloseWindow()` so GPU glyph textures are
+    /// released while the raylib context is still alive.
     class RaylibSurface final : public IDrawSurface
     {
     public:
@@ -24,6 +30,7 @@ namespace TexGui
         void draw_round_rect(float x, float y, float w, float h, float rx, float ry, float width) override;
         void fill_round_rect(float x, float y, float w, float h, float rx, float ry) override;
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
+        /// Release all cached GPU textures. Safe to call more than once.
         void unload();
 
     private:

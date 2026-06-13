@@ -18,7 +18,10 @@ INPUT                  = include \
                          docs/gallery.md \
                          docs/benchmarks.md \
                          docs/fuzzing.md \
-                         docs/performance-baseline.md
+                         docs/performance-baseline.md \
+                         docs/static-analysis.md \
+                         docs/coverage.md \
+                         docs/case-study.md
 FILE_PATTERNS          = *.hpp *.md
 RECURSIVE              = YES
 USE_MDFILE_AS_MAINPAGE = docs/api-mainpage.md
