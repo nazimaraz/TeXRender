@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-verify-release}"
+GENERATOR="${GENERATOR:-Ninja}"
+HEADLESS_BUILD="${BUILD_ROOT}/headless"
+RAYLIB_BUILD="${BUILD_ROOT}/raylib"
+INSTALL_PREFIX="${BUILD_ROOT}/prefix"
+PACKAGE_CONSUMER_BUILD="${BUILD_ROOT}/package-consumer"
+FETCH_EXAMPLE_BUILD="${BUILD_ROOT}/fetch-example"
+FIND_EXAMPLE_BUILD="${BUILD_ROOT}/find-example"
+
+run() {
+    printf '\n==> %s\n' "$*"
+    "$@"
+}
+
+has() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+cmake_configure() {
+    local source="$1"
+    local build="$2"
+    shift 2
+    run cmake -S "$source" -B "$build" -G "$GENERATOR" "$@"
+}
+
+cmake_build() {
+    local build="$1"
+    shift
+    run cmake --build "$build" -j "$@"
+}
+
+cd "$ROOT_DIR"
+
+printf 'texgui release verification\n'
+printf 'root: %s\n' "$ROOT_DIR"
+printf 'build root: %s\n' "$BUILD_ROOT"
+mkdir -p "$BUILD_ROOT"
+
+if ! has cmake; then
+    printf 'cmake is required\n' >&2
+    exit 1
+fi
+
+if [[ "$GENERATOR" == "Ninja" ]] && ! has ninja; then
+    printf 'ninja is required for GENERATOR=Ninja\n' >&2
+    exit 1
+fi
+
+if has clang-format; then
+    printf '\n==> clang-format --dry-run\n'
+    git ls-files '*.cpp' '*.hpp' | xargs clang-format --dry-run -Werror
+else
+    printf '\n==> skipping clang-format: not installed\n'
+fi
+
+run git diff --check
+
+cmake_configure "$ROOT_DIR" "$HEADLESS_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTEXGUI_BACKEND=headless
+cmake_build "$HEADLESS_BUILD"
+run ctest --test-dir "$HEADLESS_BUILD" --output-on-failure
+run "$HEADLESS_BUILD/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.ppm"
+run "$HEADLESS_BUILD/texgui_render_benchmark"
+run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texgui_headless_batch" 'e^{i\pi} + 1 = 0'
+
+rm -rf "$INSTALL_PREFIX" "$PACKAGE_CONSUMER_BUILD" "$FIND_EXAMPLE_BUILD"
+run cmake --install "$HEADLESS_BUILD" --prefix "$INSTALL_PREFIX"
+cmake_configure "$ROOT_DIR/tests/package_consumer" "$PACKAGE_CONSUMER_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
+cmake_build "$PACKAGE_CONSUMER_BUILD"
+run ctest --test-dir "$PACKAGE_CONSUMER_BUILD" --output-on-failure
+
+cmake_configure "$ROOT_DIR/examples/consumer-find-package" "$FIND_EXAMPLE_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
+cmake_build "$FIND_EXAMPLE_BUILD"
+run cmake -E chdir "$FIND_EXAMPLE_BUILD" "$FIND_EXAMPLE_BUILD/texgui_find_package_example"
+
+rm -rf "$FETCH_EXAMPLE_BUILD"
+cmake_configure "$ROOT_DIR/examples/consumer-fetchcontent" "$FETCH_EXAMPLE_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTEXGUI_FETCHCONTENT_SOURCE_DIR="$ROOT_DIR"
+cmake_build "$FETCH_EXAMPLE_BUILD"
+run cmake -E chdir "$FETCH_EXAMPLE_BUILD" "$FETCH_EXAMPLE_BUILD/texgui_fetchcontent_example"
+
+cmake_configure "$ROOT_DIR" "$RAYLIB_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release
+cmake_build "$RAYLIB_BUILD"
+run ctest --test-dir "$RAYLIB_BUILD" --output-on-failure
+
+if has doxygen; then
+    run rm -rf "$ROOT_DIR/build-api-docs"
+    run doxygen "$ROOT_DIR/Doxyfile"
+else
+    printf '\n==> skipping Doxygen API docs: doxygen is not installed\n'
+fi
+
+if has actionlint; then
+    run actionlint
+else
+    printf '\n==> skipping actionlint: not installed\n'
+fi
+
+if has conan; then
+    run conan create "$ROOT_DIR" --build=missing \
+        -o '&:backend=headless' \
+        -o '&:with_examples=False' \
+        -o '&:with_tests=False' \
+        -o '&:with_benchmarks=False'
+else
+    printf '\n==> skipping Conan package validation: conan is not installed\n'
+fi
+
+if [[ -n "${VCPKG_ROOT:-}" && -x "${VCPKG_ROOT}/vcpkg" ]]; then
+    VCPKG_BUILD="${BUILD_ROOT}/vcpkg"
+    rm -rf "$VCPKG_BUILD"
+    cmake_configure "$ROOT_DIR" "$VCPKG_BUILD" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
+        -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON \
+        -DTEXGUI_BACKEND=headless \
+        -DTEXGUI_BUILD_EXAMPLES=OFF \
+        -DTEXGUI_BUILD_BENCHMARKS=OFF
+    cmake_build "$VCPKG_BUILD"
+    run ctest --test-dir "$VCPKG_BUILD" --output-on-failure
+else
+    printf '\n==> skipping vcpkg manifest validation: set VCPKG_ROOT to a vcpkg checkout\n'
+fi
+
+printf '\nrelease verification completed successfully\n'

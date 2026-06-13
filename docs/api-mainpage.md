@@ -21,4 +21,6 @@ See also:
 - [Known limitations](known-limitations.md)
 - [Static analysis](static-analysis.md)
 - [Coverage](coverage.md)
+- [Workflow linting](workflow-linting.md)
+- [Roadmap](roadmap.md)
 - [Case study](case-study.md)

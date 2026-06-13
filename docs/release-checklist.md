@@ -26,13 +26,17 @@ Use this before cutting a public tag.
 - Run static analysis and coverage locally when the tools are available; see
   [`docs/static-analysis.md`](static-analysis.md) and
   [`docs/coverage.md`](coverage.md).
+- Run the local release verifier:
+  `scripts/verify-release.sh`
+- Lint workflows locally when actionlint is available:
+  `scripts/lint-workflows.sh`
 
 ## GitHub Setup
 
 - Enable GitHub Pages with source set to "GitHub Actions".
 - Enable private vulnerability reporting in the Security tab.
-- Confirm the `Package managers`, `Static analysis`, `Coverage`, `Benchmarks`,
-  `Web demo` and `Release` workflows are enabled.
+- Confirm the `Package managers`, `Static analysis`, `Coverage`, `Workflow lint`,
+  `Benchmarks`, `Web demo` and `Release` workflows are enabled.
 - Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `freetype`,
   `webassembly`, `cmake`, `graphics`.
 - Add a short repository description:
@@ -57,5 +61,7 @@ Use this before cutting a public tag.
   `docs/performance-baseline.md` current.
 - Keep [`docs/case-study.md`](case-study.md) aligned with the public API and CI
   story before using the project in a resume.
+- Keep [`docs/roadmap.md`](roadmap.md) honest about near-term plans and
+  non-goals.
 - Optional: record a short GIF of the live editor for the README or release.
 - Link `docs/architecture.md` from the release body for developer reviewers.

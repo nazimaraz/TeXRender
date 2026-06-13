@@ -40,6 +40,15 @@ Static analysis and coverage are documented in
 [`docs/coverage.md`](docs/coverage.md). They run in CI, but local runs are useful
 before touching shared rendering or packaging code.
 
+For a full pre-release local pass, run:
+
+```sh
+scripts/verify-release.sh
+```
+
+Workflow linting is documented in
+[`docs/workflow-linting.md`](docs/workflow-linting.md).
+
 ## Code style
 
 * Implementation files are C++23; the public headers in `include/texgui/` must
@@ -53,6 +62,7 @@ before touching shared rendering or packaging code.
 
 * A [`.clang-tidy`](.clang-tidy) configuration is enforced in CI for project
   translation units.
+* GitHub Actions workflows are linted with actionlint in CI.
 * Match the existing naming: `lower_case` functions and variables, `CamelCase`
   types, `trailing_underscore_` for private members.
 

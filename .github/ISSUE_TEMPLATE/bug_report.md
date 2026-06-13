@@ -16,6 +16,12 @@ The smallest LaTeX input and code that shows the problem:
 // ...
 ```
 
+Formula:
+
+```tex
+% ...
+```
+
 **Expected / actual behaviour**
 
 For rendering bugs, a screenshot (or the PPM from `texgui_offscreen`) helps a lot.
@@ -26,6 +32,12 @@ For rendering bugs, a screenshot (or the PPM from `texgui_offscreen`) helps a lo
 - texgui version or commit:
 - Backend: raylib / headless / WebAssembly
 - How texgui was consumed: FetchContent / add_subdirectory / building this repo
+- Build type: Debug / Release / RelWithDebInfo
+
+**Regression?**
+
+- [ ] This worked in an older texgui version or commit:
+- [ ] I can reproduce this on the latest `main`
 
 **`TEXGUI_DEBUG=1` stderr output** (if relevant)
 

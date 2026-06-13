@@ -4,6 +4,7 @@
 [![Package managers](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml)
 [![Static analysis](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml)
 [![Coverage](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml)
+[![Workflow lint](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml)
 [![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
@@ -42,6 +43,7 @@ nothing in the core changes.
 See the [gallery](docs/gallery.md), [integration examples](docs/integration-examples.md),
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/), and
 [case study](docs/case-study.md).
+The [roadmap](docs/roadmap.md) lists planned work and non-goals.
 
 ## How it works
 
@@ -363,7 +365,8 @@ notes live in [`docs/benchmarks.md`](docs/benchmarks.md), with reference numbers
 in [`docs/performance-baseline.md`](docs/performance-baseline.md). Static
 analysis and coverage workflows are documented in
 [`docs/static-analysis.md`](docs/static-analysis.md) and
-[`docs/coverage.md`](docs/coverage.md).
+[`docs/coverage.md`](docs/coverage.md). Workflow linting is documented in
+[`docs/workflow-linting.md`](docs/workflow-linting.md).
 
 ## License
 

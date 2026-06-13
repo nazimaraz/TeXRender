@@ -33,14 +33,17 @@ follow [Semantic Versioning](https://semver.org/).
   wasm exceptions) with GitHub Pages deployment.
 - Generated Doxygen API reference published with the web demo.
 - Release automation for tagged GitHub releases with install archives and
-  SHA256 checksums.
+  SHA256 checksums plus grouped generated release notes.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, strict warning build, structural visual regression,
   visual failure artifacts, clang-format gate, ASan+UBSan pass, fuzz smoke,
   vcpkg/Conan validation, clang-tidy static analysis, coverage reporting,
-  non-blocking benchmark output, wasm build.
+  actionlint workflow linting, non-blocking benchmark output, wasm build.
+- Local release verifier script for format/build/test/docs/package-consumer
+  checks before pushing.
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, fuzzing, benchmarks, static analysis, coverage,
-  performance baseline, resume-oriented case study and release checklist.
+  workflow linting, roadmap, performance baseline, resume-oriented case study
+  and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0
