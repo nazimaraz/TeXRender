@@ -49,6 +49,20 @@ cmake --build build-headless --target texgui_headless_batch -j
 ./build-headless/texgui_headless_batch 'e^{i\pi}+1=0' '\int_0^1 x^2\,dx'
 ```
 
+## SVG Export
+
+[`examples/svg_export.cpp`](../examples/svg_export.cpp) renders one formula to a
+self-contained SVG:
+
+```sh
+cmake -S . -B build-svg -DTEXGUI_BACKEND=svg -DCMAKE_BUILD_TYPE=Release
+cmake --build build-svg --target texgui_svg_export -j
+./build-svg/texgui_svg_export '\sqrt{x+1}' formula.svg
+```
+
+You can also inject `TexGui::SvgSurface` from any backend build, the same way
+the offscreen examples inject `HeadlessSurface`.
+
 This is the shape to use for server-side preview generation, CI image snapshots,
 or command-line tools.
 

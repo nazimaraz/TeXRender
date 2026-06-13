@@ -2,6 +2,7 @@
 #include <cmath>
 #include <exception>
 #include <limits>
+#include <mutex>
 #include <optional>
 #include <stdexcept>
 #include <utility>
@@ -105,6 +106,7 @@ RenderHandle LatexDocument::render(const std::string& latex, const RenderOptions
     if (const auto error = validate_options(latex, options))
         throw_render_error(*error);
 
+    const auto lock = std::scoped_lock{detail::render_mutex()};
     const auto width = effective_wrap_width(options);
     const auto render = tex::LaTeX::parse(tex::utf82wide(latex), width, options.text_size, 0.f, options.argb);
     return {render, state_};
@@ -136,6 +138,7 @@ RenderResult LatexDocument::try_render_detailed(const std::string& latex, const 
         if (const auto error = validate_options(latex, options))
             return RenderResult{*error};
 
+        const auto lock = std::scoped_lock{detail::render_mutex()};
         const auto width = effective_wrap_width(options);
         auto* const render = tex::LaTeX::parse(tex::utf82wide(latex), width, options.text_size, 0.f, options.argb);
         return RenderResult{RenderHandle{render, state_}};

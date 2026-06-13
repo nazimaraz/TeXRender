@@ -14,13 +14,19 @@ ctest --test-dir build --output-on-failure
 cmake -S . -B build-headless -DTEXGUI_BACKEND=headless
 cmake --build build-headless -j
 ctest --test-dir build-headless --output-on-failure
+
+# SVG backend — validates serialized vector output
+cmake -S . -B build-svg -DTEXGUI_BACKEND=svg
+cmake --build build-svg -j
+ctest --test-dir build-svg --output-on-failure
 ```
 
-The full test suite runs windowless under either backend (the end-to-end and
-visual regression tests inject a `HeadlessSurface`). It also configures a tiny
-external CMake consumer to prove the dependency story stays intact. Please make
-sure both configurations build and pass before opening a PR, and add or extend a
-test under `tests/` when you change behaviour.
+The full test suite runs windowless under the headless and SVG backends (the
+end-to-end and visual regression tests inject a `HeadlessSurface` or
+`SvgSurface`). It also configures a tiny external CMake consumer to prove the
+dependency story stays intact. Please make sure the relevant configurations
+build and pass before opening a PR, and add or extend a test under `tests/` when
+you change behaviour.
 
 CMake presets cover the common local workflows:
 

@@ -1,0 +1,9 @@
+# Matrix layout with delimiters and multiple rows.
+formula=\left(\begin{array}{cc}a&b\\c&d\end{array}\right)
+text_size=48
+margin=12
+min_covered_pixels=120
+min_ink_width=35
+min_ink_height=35
+min_rule_run=0
+require_horizontal_rule=false

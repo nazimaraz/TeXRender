@@ -1,5 +1,5 @@
 PROJECT_NAME           = "texgui"
-PROJECT_BRIEF          = "C++ LaTeX math renderer with raylib and headless backends"
+PROJECT_BRIEF          = "C++ LaTeX math renderer with raylib, headless RGBA, and SVG backends"
 PROJECT_NUMBER         = 0.1.0
 
 OUTPUT_DIRECTORY       = build-api-docs

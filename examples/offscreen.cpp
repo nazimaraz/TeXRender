@@ -1,6 +1,6 @@
 // Render a formula offscreen — no window, GPU, or display — by injecting the
 // dependency-free HeadlessSurface, then write the canvas to a PNG/PPM file. Works
-// under any TEXGUI_BACKEND; it is the only example built for headless builds.
+// under any TEXGUI_BACKEND, including dependency-free headless and SVG builds.
 //
 //   texgui_offscreen [latex] [out.png]
 #include <cstdio>

@@ -1,5 +1,7 @@
 #include "render/ft_text_layout.hpp"
+#include "core/document_state.hpp"
 #include "render/glyph_cache.hpp"
+#include <mutex>
 
 using namespace TexGui;
 
@@ -10,6 +12,7 @@ FtTextLayout::FtTextLayout(std::wstring text, tex::sptr<FtFont> font)
 
 void FtTextLayout::getBounds(tex::Rect& bounds)
 {
+    const auto lock = std::scoped_lock{detail::render_mutex()};
     auto& cache = detail::shared_cache();
     const auto pixel_size = std::max(1, static_cast<int>(std::lround(font_->getSize())));
     const auto face_id = cache.face_for(font_->path());

@@ -12,6 +12,9 @@ primary public types are small:
 - `TexGui::HeadlessSurface` is the software RGBA backend for tests, servers, and
   PNG/PPM offscreen output.
 - `TexGui::RaylibSurface` is the raylib-backed GPU surface.
+- `TexGui::SvgSurface` is the self-contained SVG output surface.
+- `TexGui::CacheLimits` controls CPU glyph and backend texture cache sizes.
+- `texgui/formula_layout.hpp` provides baseline and anchor helpers.
 
 Start with `TexGui::LatexDocument`, then follow the surface type that matches
 your embedding mode.

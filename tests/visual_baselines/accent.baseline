@@ -1,0 +1,9 @@
+# Accent positioning over simple symbols.
+formula=\hat{x}+\vec{v}
+text_size=56
+margin=12
+min_covered_pixels=80
+min_ink_width=30
+min_ink_height=18
+min_rule_run=0
+require_horizontal_rule=false

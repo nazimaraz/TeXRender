@@ -17,12 +17,10 @@ library with a clear embedding story, not grow into a full TeX distribution.
 
 ## Rendering And API
 
-- Add one more GUI backend as a proof point, likely SDL2 or SFML.
-- Add optional SVG export helpers built on the existing `HeadlessSurface` PNG
-  output path.
-- Add a tiny layout helper for aligning formulas by baseline inside UI rows.
 - Improve headless rendering fidelity where it matters for regression testing.
-- Consider configurable cache sizes for long-running applications.
+- Add one more GUI backend as a proof point, likely SDL2 or SFML.
+- Consider compressed PNG output if file size becomes important for SVG glyph
+  data URIs.
 
 ## Packaging
 

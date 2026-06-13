@@ -16,8 +16,8 @@ The library therefore separates three jobs:
 
 - MicroTeX parses and lays out formulas.
 - texgui adapts MicroTeX's `tex::Graphics2D` calls into backend-neutral drawing.
-- A small `IDrawSurface` implementation paints into raylib, a software canvas, or
-  a future user-provided backend.
+- A small `IDrawSurface` implementation paints into raylib, a software canvas,
+  SVG output, or a future user-provided backend.
 
 ## C++ Design
 
@@ -27,6 +27,8 @@ The public API is deliberately small:
 - `RenderHandle` is move-only and owns one parsed/layouted formula.
 - `RenderOptions` provides guardrails for caller-supplied input.
 - `IDrawSurface` is the extension point for custom backends.
+- `SvgSurface` demonstrates the same backend contract targeting serialized
+  output instead of a framebuffer.
 
 Ownership is explicit. `LatexDocument` owns the surface, and `RenderHandle`
 shares the internal document state so handles remain valid even if the document
@@ -39,6 +41,7 @@ The core uses modern C++ where it helps:
 - move-only handles for parsed formulas
 - `std::unique_ptr` injection for custom surfaces
 - `std::optional` for non-throwing untrusted-input rendering
+- small value types for cache limits and formula layout helpers
 - `std::shared_ptr` only at the document/handle lifetime boundary
 - C++17 public headers, while implementation files can use newer C++ features
 
@@ -52,37 +55,43 @@ MicroTeX issues high-level drawing commands through `tex::Graphics2D`.
 - FreeType glyph rasterization
 - backend-neutral `IDrawSurface` calls
 
-The raylib backend uploads glyph bitmaps to textures and keeps them in an LRU
-cache. The headless backend composites straight RGBA pixels in software, which
-makes tests, CI, and server-side output possible without a GPU.
+The raylib backend uploads glyph bitmaps to textures and keeps them in a
+configurable LRU cache. The headless backend composites straight RGBA pixels in
+software, which makes tests, CI, and server-side output possible without a GPU.
+The SVG backend emits shape primitives directly and embeds glyph bitmaps as PNG
+data URIs.
 
 ## Constraints
 
 The project intentionally documents its constraints instead of hiding them:
 
 - MicroTeX initializes one resource root per process.
-- Rendering is single-threaded.
+- Shared render/cache paths are serialized, while GUI backends still follow
+  their own render-thread rules.
 - `try_render()` adds guardrails but is not a sandbox.
-- Installed package export is simplest with the headless backend or an installed
-  raylib package.
-- Headless output is stable enough for tests but not a perfect visual reference
-  for every GPU backend effect.
+- Installed package export is simplest with the headless/SVG backends or an
+  installed raylib package.
+- Headless and SVG output are stable enough for tests but not perfect visual
+  references for every GPU backend effect.
 
 Those tradeoffs are collected in
 [`docs/known-limitations.md`](known-limitations.md).
 
 ## Testing Strategy
 
-The test suite avoids a window or GPU by injecting `HeadlessSurface`.
+The test suite avoids a window or GPU by injecting `HeadlessSurface` and
+`SvgSurface`.
 
 Coverage includes:
 
 - transform math
-- FreeType glyph cache behavior
+- FreeType glyph cache behavior and configurable cache limits
 - public API render and error paths
+- formula baseline/layout helpers
 - untrusted input guardrails
 - software compositing
-- structural visual regression
+- SVG export
+- structural visual regression across several formula families
 - CMake consumer smoke tests
 - installed package consumer tests
 
@@ -113,6 +122,7 @@ For a resume review, this project demonstrates:
 - graphics backend abstraction without owning the application's window loop
 - API design with clear ownership and lifetime rules
 - testability through dependency injection
+- configurable caches, SVG export, and baseline layout utilities
 - sanitizer, fuzz, coverage, and static-analysis workflows
 - WebAssembly deployment of native C++ code
 - release automation with checksums and install artifacts

@@ -49,6 +49,16 @@
       }
     },
     {
+      "name": "svg-release",
+      "displayName": "SVG Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/svg-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TEXGUI_BACKEND": "svg"
+      }
+    },
+    {
       "name": "asan",
       "displayName": "Headless ASan + UBSan",
       "generator": "Ninja",
@@ -106,6 +116,10 @@
       "configurePreset": "headless-shared"
     },
     {
+      "name": "svg-release",
+      "configurePreset": "svg-release"
+    },
+    {
       "name": "asan",
       "configurePreset": "asan"
     },
@@ -144,6 +158,13 @@
     {
       "name": "headless-shared",
       "configurePreset": "headless-shared",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "svg-release",
+      "configurePreset": "svg-release",
       "output": {
         "outputOnFailure": true
       }

@@ -1,12 +1,15 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <texgui/cache_options.hpp>
 #include <texgui/draw_surface.hpp>
 #include <texgui/export.hpp>
+#include <texgui/formula_layout.hpp>
 #include <texgui/glyph_bitmap.hpp>
 #include <texgui/headless_surface.hpp>
 #include <texgui/latex_document.hpp>
 #include <texgui/render_handle.hpp>
+#include <texgui/svg_surface.hpp>
 #include <texgui/version.hpp>
 
 static_assert(TexGui::version_major == TEXGUI_VERSION_MAJOR);
@@ -29,5 +32,14 @@ int main()
     canvas.resize(2, 2);
     canvas.clear(0x00000000);
 
-    return result.has_value() || canvas.width() != 2 || options.text_size != 24.f ? 1 : 0;
+    auto svg = TexGui::SvgSurface{2, 2};
+    svg.clear(0xffffffff);
+
+    auto limits = TexGui::CacheLimits{};
+    limits.max_cpu_glyphs = 16;
+    limits.max_gpu_textures = 16;
+
+    return result.has_value() || canvas.width() != 2 || svg.width() != 2 || options.text_size != 24.f || limits.max_cpu_glyphs != 16
+               ? 1
+               : 0;
 }

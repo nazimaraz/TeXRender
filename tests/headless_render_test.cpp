@@ -9,8 +9,11 @@
 #include <memory>
 #include <print>
 #include <string>
+#include "texgui/cache_options.hpp"
+#include "texgui/formula_layout.hpp"
 #include "texgui/headless_surface.hpp"
 #include "texgui/latex_document.hpp"
+#include "texgui/svg_surface.hpp"
 #include "texgui/version.hpp"
 
 #ifndef TEXGUI_RES_DIR
@@ -50,6 +53,9 @@ int main()
         const auto formula = document.render(R"(x^2 + y^2 = z^2)", 40.f, 0xff000000);
         CHECK(formula.width() > 0);
         CHECK(formula.height() > 0);
+        CHECK(formula_box(formula).width == formula.width());
+        CHECK(top_for_baseline(formula, 100) == static_cast<int>(std::lround(100.f - formula.baseline())));
+        CHECK(aligned_top(formula, 100, FormulaAnchor::bottom) == 100 - formula.height());
 
         CHECK(document.try_render(R"(\sqrt{a})", 40.f, 0xff000000).has_value());
         CHECK(!document.try_render(R"(})", 40.f, 0xff000000).has_value()); // unbalanced '}' -> parse error
@@ -143,7 +149,19 @@ int main()
         CHECK(opaque[3] == 255);
     }
 
-    // 4) HeadlessSurface can write real PNG files without extra dependencies.
+    // 4) Cache limits are configurable and clamp zero to one.
+    {
+        const auto old_limits = cache_limits();
+        auto limits = old_limits;
+        limits.max_cpu_glyphs = 0;
+        limits.max_gpu_textures = 0;
+        set_cache_limits(limits);
+        CHECK(cache_limits().max_cpu_glyphs == 1);
+        CHECK(cache_limits().max_gpu_textures == 1);
+        set_cache_limits(old_limits);
+    }
+
+    // 5) HeadlessSurface can write real PNG files without extra dependencies.
     {
         auto canvas = HeadlessSurface{};
         CHECK(!canvas.write_png((std::filesystem::temp_directory_path() / "texgui-empty.png").string()));
@@ -161,6 +179,31 @@ int main()
         file.read(reinterpret_cast<char*>(signature.data()), static_cast<std::streamsize>(signature.size()));
         const auto expected = std::array<unsigned char, 8>{0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
         CHECK(signature == expected);
+        std::filesystem::remove(path);
+    }
+
+    // 6) SvgSurface can capture a formula as a self-contained SVG document.
+    {
+        auto owned = std::make_unique<SvgSurface>();
+        auto* const canvas = owned.get();
+        const auto document = LatexDocument{res, std::move(owned)};
+        const auto formula = document.render(R"(\sqrt{x+1})", 40.f, 0xff224466);
+        canvas->resize(formula.width() + 20, formula.height() + 20);
+        canvas->clear(0xffffffff);
+        formula.draw(10, 10);
+
+        const auto svg = canvas->svg();
+        CHECK(canvas->element_count() > 1);
+        CHECK(svg.find("<svg") != std::string::npos);
+        CHECK(svg.find("<image") != std::string::npos);
+        CHECK(svg.find("data:image/png;base64,") != std::string::npos);
+
+        const auto path = std::filesystem::temp_directory_path() / "texgui-svg-surface-test.svg";
+        CHECK(canvas->write_svg(path.string()));
+        auto file = std::ifstream{path};
+        auto first_line = std::string{};
+        std::getline(file, first_line);
+        CHECK(first_line.find("<svg") != std::string::npos);
         std::filesystem::remove(path);
     }
 

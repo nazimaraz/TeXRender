@@ -8,6 +8,7 @@
 #include <print>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "texgui/cache_options.hpp"
 
 #include <ranges>
 
@@ -128,8 +129,10 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     }
 
     lru_.push_front(key);
-    auto [it, inserted] = glyphs_.emplace(key, CachedGlyph{std::move(g), lru_.begin()});
-    while (glyphs_.size() > k_max_glyphs)
+    const auto emplaced = glyphs_.emplace(key, CachedGlyph{std::move(g), lru_.begin()});
+    const auto it = emplaced.first;
+    const auto max_glyphs = std::max<size_t>(1, cache_limits().max_cpu_glyphs);
+    while (glyphs_.size() > max_glyphs)
     {
         glyphs_.erase(lru_.back());
         lru_.pop_back();

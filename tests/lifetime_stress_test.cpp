@@ -2,6 +2,8 @@
 #include <optional>
 #include <print>
 #include <string>
+#include <thread>
+#include <vector>
 #include "texgui/headless_surface.hpp"
 #include "texgui/latex_document.hpp"
 
@@ -65,6 +67,30 @@ int main()
             formula.value().draw(6, 6);
             CHECK(canvas->covered_pixels() > 0);
         }
+    }
+
+    {
+        auto threads = std::vector<std::thread>{};
+        for (auto worker = 0; worker < 4; ++worker)
+        {
+            threads.emplace_back([&res] {
+                for (auto i = 0; i < 20; ++i)
+                {
+                    auto owned = std::make_unique<HeadlessSurface>();
+                    auto* const canvas = owned.get();
+                    const auto document = LatexDocument{res, std::move(owned)};
+                    if (auto formula = document.try_render(R"(\frac{x+1}{y+1})", 24.f, 0xff000000))
+                    {
+                        canvas->resize(formula->width() + 8, formula->height() + 8);
+                        canvas->clear(0x00000000);
+                        formula->draw(4, 4);
+                    }
+                }
+            });
+        }
+
+        for (auto& thread : threads)
+            thread.join();
     }
 
     if (g_failures == 0)

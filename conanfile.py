@@ -10,13 +10,13 @@ class LatexRendererConan(ConanFile):
     license = "MIT"
     author = "Nazim Can"
     url = "https://github.com/nazimaraz/latex-renderer"
-    description = "C++ LaTeX math renderer with raylib and headless RGBA backends"
-    topics = ("latex", "renderer", "raylib", "freetype", "cmake", "webassembly")
+    description = "C++ LaTeX math renderer with raylib, headless RGBA, and SVG backends"
+    topics = ("latex", "renderer", "raylib", "svg", "freetype", "cmake", "webassembly")
     package_type = "library"
 
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "backend": ["headless", "raylib"],
+        "backend": ["headless", "raylib", "svg"],
         "with_examples": [True, False],
         "with_tests": [True, False],
         "with_benchmarks": [True, False],

@@ -1,7 +1,7 @@
 {
   "name": "latex-renderer",
   "version-string": "0.1.0",
-  "description": "C++ LaTeX math renderer with raylib and headless RGBA backends",
+  "description": "C++ LaTeX math renderer with raylib, headless RGBA, and SVG backends",
   "homepage": "https://github.com/nazimaraz/latex-renderer",
   "license": "MIT",
   "dependencies": [

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <cstddef>
 #include <raylib.h>
 #include <unordered_map>
 #include "texgui/draw_surface.hpp"
@@ -33,9 +34,14 @@ namespace TexGui
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
         /// Release all cached GPU textures. Safe to call more than once.
         void unload();
+        /// Set the maximum number of cached glyph textures for this surface.
+        void set_max_textures(std::size_t max_textures);
+        /// Maximum cached glyph textures for this surface.
+        [[nodiscard]] std::size_t max_textures() const;
 
     private:
         [[nodiscard]] const Texture2D& texture_for(const GlyphBitmap& glyph);
+        void evict_excess_textures();
 
         struct CachedTexture
         {
@@ -43,10 +49,9 @@ namespace TexGui
             std::list<uint64_t>::iterator lru_it;
         };
 
-        static constexpr size_t k_max_textures = 1024;
-        static_assert(k_max_textures >= 1);
         std::unordered_map<uint64_t, CachedTexture> textures_;
         std::list<uint64_t> lru_;
+        std::size_t max_textures_ = 1024;
         Color color_{0, 0, 0, 255};
     };
 } // namespace TexGui

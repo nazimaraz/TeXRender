@@ -20,15 +20,16 @@ Useful presets:
 - `headless-release`: windowless Release build.
 - `raylib-release`: default GUI backend and examples.
 - `headless-shared`: shared-library build using the headless backend.
+- `svg-release`: SVG backend and export example.
 - `asan`: AddressSanitizer + UndefinedBehaviorSanitizer.
 - `coverage`: coverage-instrumented headless build.
 - `fuzz`: libFuzzer target for `try_render()`.
 
 ## Library Options
 
-- `TEXGUI_BACKEND`: `raylib` or `headless`. The selected backend controls the
-  default surface created by `LatexDocument`; `HeadlessSurface` is available in
-  every build.
+- `TEXGUI_BACKEND`: `raylib`, `headless`, or `svg`. The selected backend controls
+  the default surface created by `LatexDocument`; `HeadlessSurface` and
+  `SvgSurface` are available in every build for injection.
 - `TEXGUI_BUILD_EXAMPLES`: build example executables. Defaults on only when this
   project is top-level.
 - `TEXGUI_BUILD_TESTS`: build tests. Defaults on only when this project is
@@ -40,6 +41,10 @@ Useful presets:
   fetched from source because that target is not cleanly exportable.
 - `TEXGUI_WARNINGS_AS_ERRORS`: treat first-party warnings as errors. This never
   applies to MicroTeX or other third-party sources.
+
+Runtime cache limits are controlled from C++ with `TexGui::set_cache_limits()`.
+The CPU glyph limit is process-wide; the GPU texture limit is used by newly
+created `RaylibSurface` instances and can also be set per surface.
 
 ## Shared Libraries
 

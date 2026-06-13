@@ -1,7 +1,8 @@
 #include "texgui/render_handle.hpp"
-#include "render.h"
 #include "core/document_state.hpp"
+#include "render.h"
 #include "render/graphics2d_adapter.hpp"
+#include <mutex>
 
 using namespace TexGui;
 
@@ -74,6 +75,7 @@ void RenderHandle::draw(const int x, const int y) const
     if (!surface)
         return;
 
+    const auto lock = std::scoped_lock{detail::render_mutex()};
     auto adapter = Graphics2DAdapter{*surface};
     render_->draw(adapter, x, y);
 }

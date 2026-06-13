@@ -2,6 +2,7 @@
 #include <numbers>
 #include <rlgl.h>
 #include <vector>
+#include "texgui/cache_options.hpp"
 
 #include <ranges>
 
@@ -25,7 +26,9 @@ namespace
     }
 } // namespace
 
-RaylibSurface::RaylibSurface() = default;
+RaylibSurface::RaylibSurface()
+    : max_textures_{std::max<size_t>(1, cache_limits().max_gpu_textures)}
+{}
 
 RaylibSurface::~RaylibSurface()
 {
@@ -42,6 +45,37 @@ void RaylibSurface::unload()
 
     textures_.clear();
     lru_.clear();
+}
+
+void RaylibSurface::set_max_textures(const std::size_t max_textures)
+{
+    max_textures_ = std::max<std::size_t>(1, max_textures);
+    evict_excess_textures();
+}
+
+std::size_t RaylibSurface::max_textures() const
+{
+    return max_textures_;
+}
+
+void RaylibSurface::evict_excess_textures()
+{
+    if (textures_.size() <= max_textures_)
+        return;
+
+    if (IsWindowReady())
+        rlDrawRenderBatchActive();
+
+    while (textures_.size() > max_textures_)
+    {
+        if (const auto victim = textures_.find(lru_.back()); victim != textures_.end())
+        {
+            if (IsWindowReady())
+                UnloadTexture(victim->second.texture);
+            textures_.erase(victim);
+        }
+        lru_.pop_back();
+    }
 }
 
 void RaylibSurface::set_color(const uint32_t argb)
@@ -108,20 +142,9 @@ const Texture2D& RaylibSurface::texture_for(const GlyphBitmap& glyph)
     const auto texture = LoadTextureFromImage(image);
 
     lru_.push_front(glyph.key);
-    auto [it, inserted] = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()});
-    if (textures_.size() > k_max_textures)
-    {
-        rlDrawRenderBatchActive();
-        while (textures_.size() > k_max_textures)
-        {
-            if (const auto victim = textures_.find(lru_.back()); victim != textures_.end())
-            {
-                UnloadTexture(victim->second.texture);
-                textures_.erase(victim);
-            }
-            lru_.pop_back();
-        }
-    }
+    const auto emplaced = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()});
+    const auto it = emplaced.first;
+    evict_excess_textures();
 
     return it->second.texture;
 }

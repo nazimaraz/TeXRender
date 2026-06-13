@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.21)
 project(
     latex_renderer
     VERSION 0.1.0
-    DESCRIPTION "Render LaTeX into a GUI window via MicroTeX with a pluggable rendering backend"
+    DESCRIPTION "Render LaTeX formulas via MicroTeX with pluggable C++ rendering backends"
     LANGUAGES CXX
 )
 
@@ -24,8 +24,8 @@ unset(_texgui_version_header)
 # ---------------------------------------------------------------------------
 # Options
 # ---------------------------------------------------------------------------
-set(TEXGUI_BACKEND "raylib" CACHE STRING "GUI rendering backend to build (raylib, headless)")
-set_property(CACHE TEXGUI_BACKEND PROPERTY STRINGS raylib headless)
+set(TEXGUI_BACKEND "raylib" CACHE STRING "Rendering backend to build (raylib, headless, svg)")
+set_property(CACHE TEXGUI_BACKEND PROPERTY STRINGS raylib headless svg)
 option(TEXGUI_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TOP_LEVEL})
 option(TEXGUI_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(TEXGUI_BUILD_BENCHMARKS "Build the benchmark executables" ${PROJECT_IS_TOP_LEVEL})
@@ -82,8 +82,8 @@ include(cmake/texguiHelpers.cmake)
 # ---------------------------------------------------------------------------
 # TEXGUI_BACKEND picks which surface make_surface() creates by default (the
 # *_factory.cpp that gets compiled) and which backend-specific sources/libs are
-# pulled in. The windowless HeadlessSurface is dependency-free, so it ships in
-# every build (see the library sources below) for offscreen rendering.
+# pulled in. HeadlessSurface and SvgSurface are dependency-free, so they ship in
+# every build (see the library sources below) for offscreen/export rendering.
 if(TEXGUI_BACKEND STREQUAL "raylib")
     set(TEXGUI_BACKEND_SOURCES
         source/backend/raylib/raylib_surface.cpp
@@ -95,9 +95,14 @@ elseif(TEXGUI_BACKEND STREQUAL "headless")
         source/backend/headless/headless_factory.cpp
     )
     set(TEXGUI_BACKEND_LIBS "")
+elseif(TEXGUI_BACKEND STREQUAL "svg")
+    set(TEXGUI_BACKEND_SOURCES
+        source/backend/svg/svg_factory.cpp
+    )
+    set(TEXGUI_BACKEND_LIBS "")
 else()
     message(FATAL_ERROR
-        "Unsupported TEXGUI_BACKEND='${TEXGUI_BACKEND}'. Supported: 'raylib', 'headless'.")
+        "Unsupported TEXGUI_BACKEND='${TEXGUI_BACKEND}'. Supported: 'raylib', 'headless', 'svg'.")
 endif()
 
 # ---------------------------------------------------------------------------
@@ -105,6 +110,7 @@ endif()
 # ---------------------------------------------------------------------------
 add_library(texgui
     source/core/latex_document.cpp
+    source/core/cache_options.cpp
     source/core/render_handle.cpp
     source/core/document_state.cpp
     source/render/glyph_cache.cpp
@@ -112,6 +118,7 @@ add_library(texgui
     source/render/ft_font.cpp
     source/render/ft_text_layout.cpp
     source/render/graphics2d_adapter.cpp
+    source/backend/svg/svg_surface.cpp
     # The headless canvas is always available (offscreen rendering from any
     # backend); TEXGUI_BACKEND only selects the default surface.
     source/backend/headless/headless_surface.cpp
@@ -181,6 +188,7 @@ if(TEXGUI_BUILD_EXAMPLES)
         set(TEXGUI_EXAMPLES
             texgui_offscreen examples/offscreen.cpp
             texgui_headless_batch examples/headless_batch.cpp
+            texgui_svg_export examples/svg_export.cpp
         )
         if(TEXGUI_BACKEND STREQUAL "raylib")
             list(APPEND TEXGUI_EXAMPLES
@@ -244,6 +252,7 @@ endif()
 # ---------------------------------------------------------------------------
 if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     enable_testing()
+    find_package(Threads REQUIRED)
 
     # Pure transform math — no dependencies.
     add_executable(texgui_transform2d_test tests/transform2d_test.cpp)
@@ -255,10 +264,14 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     # FreeType glyph cache against the bundled TeX fonts — no window/GPU needed.
     add_executable(texgui_glyph_cache_test
         tests/glyph_cache_test.cpp
+        source/core/cache_options.cpp
         source/render/glyph_cache.cpp
     )
     target_link_libraries(texgui_glyph_cache_test PRIVATE Freetype::Freetype)
-    target_include_directories(texgui_glyph_cache_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source)
+    target_include_directories(texgui_glyph_cache_test PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/source
+    )
     texgui_target_warnings(texgui_glyph_cache_test)
     target_compile_features(texgui_glyph_cache_test PRIVATE cxx_std_23)
     target_compile_definitions(texgui_glyph_cache_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
@@ -289,7 +302,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     )
 
     add_executable(texgui_lifetime_stress_test tests/lifetime_stress_test.cpp)
-    target_link_libraries(texgui_lifetime_stress_test PRIVATE texgui::texgui)
+    target_link_libraries(texgui_lifetime_stress_test PRIVATE texgui::texgui Threads::Threads)
     texgui_target_warnings(texgui_lifetime_stress_test)
     target_compile_definitions(texgui_lifetime_stress_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     add_test(NAME lifetime_stress COMMAND texgui_lifetime_stress_test)
@@ -355,7 +368,8 @@ option(TEXGUI_INSTALL "Generate install and find_package(texgui) support" ${_tex
 if(TEXGUI_INSTALL AND TEXGUI_RAYLIB_FETCHED)
     message(FATAL_ERROR
         "TEXGUI_INSTALL=ON with a FetchContent-built raylib cannot be exported cleanly. "
-        "Install raylib so find_package(raylib) succeeds, or install with -DTEXGUI_BACKEND=headless.")
+        "Install raylib so find_package(raylib) succeeds, or install with -DTEXGUI_BACKEND=headless "
+        "or -DTEXGUI_BACKEND=svg.")
 endif()
 
 if(TEXGUI_INSTALL)

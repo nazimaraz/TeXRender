@@ -56,8 +56,6 @@ namespace TexGui
             std::list<uint64_t>::iterator lru_it;
         };
 
-        static constexpr size_t k_max_glyphs = 1024;
-        static_assert(k_max_glyphs >= 1);
         FT_LibraryRec_* library_{};
         std::unordered_map<std::string, FaceEntry> faces_;
         std::unordered_map<uint32_t, FT_FaceRec_*> faces_by_id_;

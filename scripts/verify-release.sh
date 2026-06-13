@@ -7,6 +7,7 @@ GENERATOR="${GENERATOR:-Ninja}"
 HEADLESS_BUILD="${BUILD_ROOT}/headless"
 RAYLIB_BUILD="${BUILD_ROOT}/raylib"
 SHARED_BUILD="${BUILD_ROOT}/headless-shared"
+SVG_BUILD="${BUILD_ROOT}/svg"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix"
 PACKAGE_CONSUMER_BUILD="${BUILD_ROOT}/package-consumer"
 FETCH_EXAMPLE_BUILD="${BUILD_ROOT}/fetch-example"
@@ -70,6 +71,14 @@ run "$HEADLESS_BUILD/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula
 run "$HEADLESS_BUILD/texgui_render_benchmark"
 run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texgui_headless_batch" 'e^{i\pi} + 1 = 0'
 
+rm -rf "$SVG_BUILD"
+cmake_configure "$ROOT_DIR" "$SVG_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTEXGUI_BACKEND=svg
+cmake_build "$SVG_BUILD"
+run ctest --test-dir "$SVG_BUILD" --output-on-failure
+run "$SVG_BUILD/texgui_svg_export" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.svg"
+
 rm -rf "$SHARED_BUILD"
 cmake_configure "$ROOT_DIR" "$SHARED_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -122,6 +131,11 @@ fi
 if has conan; then
     run conan create "$ROOT_DIR" --build=missing \
         -o '&:backend=headless' \
+        -o '&:with_examples=False' \
+        -o '&:with_tests=False' \
+        -o '&:with_benchmarks=False'
+    run conan create "$ROOT_DIR" --build=missing \
+        -o '&:backend=svg' \
         -o '&:with_examples=False' \
         -o '&:with_tests=False' \
         -o '&:with_benchmarks=False'

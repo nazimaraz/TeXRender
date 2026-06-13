@@ -8,12 +8,16 @@ Use this before cutting a public tag.
   `cmake -S . -B build && cmake --build build -j && ctest --test-dir build --output-on-failure`
 - Configure/build/test headless:
   `cmake -S . -B build-headless -DTEXGUI_BACKEND=headless && cmake --build build-headless -j && ctest --test-dir build-headless --output-on-failure`
+- Configure/build/test SVG:
+  `cmake -S . -B build-svg -DTEXGUI_BACKEND=svg && cmake --build build-svg -j && ctest --test-dir build-svg --output-on-failure`
 - Configure/build/test shared headless:
   `cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXGUI_BACKEND=headless && cmake --build build-shared -j && ctest --test-dir build-shared --output-on-failure`
 - Verify presets:
   `cmake --list-presets`
 - Smoke-run offscreen:
   `./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png`
+- Smoke-run SVG export:
+  `./build-svg/texgui_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg`
 - Verify install/export:
   `cmake --install build-headless --prefix /tmp/texgui-prefix`
 - Verify installed package consumption:
@@ -23,7 +27,8 @@ Use this before cutting a public tag.
 - Run a fuzz smoke if Clang/libFuzzer is available:
   `./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256`
 - Verify package-manager entry points:
-  `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`
+  `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`,
+  `conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"`,
   and a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`.
 - Regenerate API docs locally if Doxygen is available:
   `doxygen Doxyfile`
@@ -43,10 +48,10 @@ Use this before cutting a public tag.
 - Enable private vulnerability reporting in the Security tab.
 - Confirm the `Package managers`, `Static analysis`, `Coverage`, `Workflow lint`,
   `Benchmarks`, `Web demo` and `Release` workflows are enabled.
-- Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `freetype`,
-  `webassembly`, `cmake`, `graphics`.
+- Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `svg`,
+  `freetype`, `webassembly`, `cmake`, `graphics`.
 - Add a short repository description:
-  "C++ LaTeX math renderer for raylib, headless RGBA output, and WebAssembly."
+  "C++ LaTeX math renderer for raylib, headless RGBA output, SVG, and WebAssembly."
 
 ## Release Notes
 
@@ -58,6 +63,8 @@ Use this before cutting a public tag.
 - Mention shared-library support and CMake presets.
 - Mention `try_render_detailed()` for non-throwing user-input diagnostics.
 - Mention `HeadlessSurface::write_png()` for offscreen image output.
+- Mention `SvgSurface`, `TEXGUI_BACKEND=svg`, cache limits, and baseline layout
+  helpers.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 - Let the release workflow attach install archives and `SHA256SUMS` after pushing

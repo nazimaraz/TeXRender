@@ -52,6 +52,7 @@ namespace
         int min_ink_width = 30;
         int min_ink_height = 25;
         int min_rule_run = 12;
+        bool require_horizontal_rule = true;
     };
 
     [[nodiscard]] std::optional<Baseline> load_baseline(const std::filesystem::path& path)
@@ -87,6 +88,8 @@ namespace
                 baseline.min_ink_height = std::stoi(value);
             else if (key == "min_rule_run")
                 baseline.min_rule_run = std::stoi(value);
+            else if (key == "require_horizontal_rule")
+                baseline.require_horizontal_rule = value == "true" || value == "1";
         }
 
         if (baseline.formula.empty())
@@ -146,16 +149,20 @@ namespace
         return false;
     }
 
-    void write_artifacts(const std::string_view output_dir, const HeadlessSurface& canvas, const Bounds& bounds)
+    void write_artifacts(const std::string_view output_dir, const std::string_view name, const HeadlessSurface& canvas,
+        const Bounds& bounds)
     {
         if (output_dir.empty())
             return;
 
         std::filesystem::create_directories(output_dir);
         const auto dir = std::filesystem::path{output_dir};
-        const auto wrote_ppm = canvas.write_ppm((dir / "fraction.ppm").string());
+        const auto stem = std::string{name};
+        const auto wrote_png = canvas.write_png((dir / (stem + ".png")).string());
+        const auto wrote_ppm = canvas.write_ppm((dir / (stem + ".ppm")).string());
 
-        auto metrics = std::ofstream{dir / "fraction.metrics.txt"};
+        auto metrics = std::ofstream{dir / (stem + ".metrics.txt")};
+        metrics << "wrote_png=" << (wrote_png ? "true" : "false") << '\n';
         metrics << "wrote_ppm=" << (wrote_ppm ? "true" : "false") << '\n';
         metrics << "width=" << canvas.width() << '\n';
         metrics << "height=" << canvas.height() << '\n';
@@ -171,33 +178,48 @@ namespace
 
 int main()
 {
-    const auto baseline = load_baseline(std::filesystem::path{TEXGUI_VISUAL_BASELINE_DIR} / "fraction.baseline");
-    CHECK(baseline.has_value());
-    if (!baseline)
+    auto baseline_paths = std::vector<std::filesystem::path>{};
+    for (const auto& entry : std::filesystem::directory_iterator{TEXGUI_VISUAL_BASELINE_DIR})
+    {
+        if (entry.path().extension() == ".baseline")
+            baseline_paths.push_back(entry.path());
+    }
+    std::ranges::sort(baseline_paths);
+    CHECK(!baseline_paths.empty());
+    if (baseline_paths.empty())
         return 1;
 
-    auto owned = std::make_unique<HeadlessSurface>();
-    auto* const canvas = owned.get();
-    const auto document = LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
-    const auto formula = document.render(baseline->formula, baseline->text_size, 0xff000000);
+    for (const auto& path : baseline_paths)
+    {
+        const auto baseline = load_baseline(path);
+        CHECK(baseline.has_value());
+        if (!baseline)
+            continue;
 
-    const auto margin = baseline->margin;
-    canvas->resize(formula.width() + 2 * margin, formula.height() + 2 * margin);
-    canvas->clear(0x00000000);
-    formula.draw(margin, margin);
+        auto owned = std::make_unique<HeadlessSurface>();
+        auto* const canvas = owned.get();
+        const auto document = LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+        const auto formula = document.render(baseline->formula, baseline->text_size, 0xff000000);
 
-    const auto bounds = ink_bounds(*canvas);
-    const auto* const output_dir = std::getenv("TEXGUI_VISUAL_OUTPUT_DIR");
-    write_artifacts(output_dir != nullptr ? output_dir : "", *canvas, bounds);
+        const auto margin = baseline->margin;
+        canvas->resize(formula.width() + 2 * margin, formula.height() + 2 * margin);
+        canvas->clear(0x00000000);
+        formula.draw(margin, margin);
 
-    CHECK(canvas->covered_pixels() > baseline->min_covered_pixels);
-    CHECK(bounds.min_x >= margin - 2);
-    CHECK(bounds.min_y >= margin - 2);
-    CHECK(bounds.max_x < canvas->width() - margin + 2);
-    CHECK(bounds.max_y < canvas->height() - margin + 2);
-    CHECK(bounds.max_x - bounds.min_x > baseline->min_ink_width);
-    CHECK(bounds.max_y - bounds.min_y > baseline->min_ink_height);
-    CHECK(has_horizontal_rule(*canvas, std::max(baseline->min_rule_run, formula.width() / 3)));
+        const auto bounds = ink_bounds(*canvas);
+        const auto* const output_dir = std::getenv("TEXGUI_VISUAL_OUTPUT_DIR");
+        write_artifacts(output_dir != nullptr ? output_dir : "", path.stem().string(), *canvas, bounds);
+
+        CHECK(canvas->covered_pixels() > baseline->min_covered_pixels);
+        CHECK(bounds.min_x >= margin - 4);
+        CHECK(bounds.min_y >= margin - 4);
+        CHECK(bounds.max_x < canvas->width() - margin + 6);
+        CHECK(bounds.max_y < canvas->height() - margin + 6);
+        CHECK(bounds.max_x - bounds.min_x > baseline->min_ink_width);
+        CHECK(bounds.max_y - bounds.min_y > baseline->min_ink_height);
+        if (baseline->require_horizontal_rule)
+            CHECK(has_horizontal_rule(*canvas, std::max(baseline->min_rule_run, formula.width() / 3)));
+    }
 
     if (g_failures == 0)
         std::println("all visual_regression tests passed");

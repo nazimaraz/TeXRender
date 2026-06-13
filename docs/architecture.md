@@ -13,6 +13,7 @@ flowchart LR
     Adapter --> Surface["IDrawSurface"]
     Surface --> Raylib["RaylibSurface"]
     Surface --> Headless["HeadlessSurface"]
+    Surface --> Svg["SvgSurface"]
     Surface --> Custom["User backend"]
 ```
 
@@ -27,6 +28,7 @@ The primary objects are:
 - `IDrawSurface`: the backend interface for paint primitives and glyph bitmaps.
 - `HeadlessSurface`: a software RGBA canvas used by tests, CI and offscreen
   rendering.
+- `SvgSurface`: a serialized SVG target with embedded glyph PNGs.
 
 MicroTeX types do not appear in public headers. That keeps the integration
 replaceable and lets the CMake package expose a stable target without asking
@@ -41,8 +43,8 @@ backend-neutral `IDrawSurface` operations.
 
 Text rendering is character based in MicroTeX. The adapter therefore maps each
 TeX font and Unicode codepoint to a FreeType rasterized glyph. `GlyphCache`
-caches those CPU bitmaps with an LRU limit; `RaylibSurface` separately caches GPU
-textures with the same glyph key.
+caches those CPU bitmaps with a configurable LRU limit; `RaylibSurface`
+separately caches GPU textures with the same glyph key.
 
 ## Backend Model
 
@@ -62,9 +64,9 @@ add a factory file selected by `TEXGUI_BACKEND`.
 ## Global State
 
 MicroTeX initializes its resource tree once per process, so texgui documents
-should use one resource root consistently. Glyph caching is also process-wide and
-not internally locked. Rendering is intended for one thread, which matches raylib
-and most immediate-mode GUI render loops.
+should use one resource root consistently. Shared MicroTeX/glyph-cache render
+paths are serialized inside texgui. GUI backends still follow their toolkit
+threading rules, so raylib drawing belongs on the rendering thread.
 
 `try_render()` is the API for caller-supplied input. It catches parser failures
 and applies default guardrails for input size and extreme layout requests before

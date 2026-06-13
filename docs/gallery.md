@@ -14,3 +14,9 @@ WebAssembly.
 The headless backend renders into an RGBA buffer and can write PNG/PPM snapshots for
 tests, services, and command-line tooling. The PNG above is generated from
 `texgui_headless_batch`.
+
+## SVG Export
+
+`texgui_svg_export` writes a self-contained SVG. Shape primitives stay as SVG
+elements; glyphs are embedded as small PNG data URIs so the file has no runtime
+font dependency.

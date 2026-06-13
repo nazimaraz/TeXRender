@@ -15,12 +15,11 @@ MicroTeX initializes its resource directory once. The first `LatexDocument`
 chooses the process-wide resource root; later documents should use the same path.
 Different paths are ignored and can be reported with `TEXGUI_DEBUG=1`.
 
-## Single-Threaded Rendering
+## Threading Boundary
 
-The glyph cache is process-wide and not internally locked. Raylib rendering is
-also single-threaded. Parse, layout and draw formulas on the rendering thread.
-Repeated document creation/destruction and `RenderHandle` lifetime handoff are
-covered by tests, but concurrent rendering is not a supported contract.
+Shared MicroTeX/glyph-cache render paths are serialized, and repeated threaded
+document creation/render smoke tests are covered. GUI backends still inherit
+their toolkit rules: raylib drawing should happen on the render thread.
 
 ## Raylib Lifetime
 
@@ -37,9 +36,9 @@ high-risk workloads.
 
 ## Package Export With Fetched Raylib
 
-Installed CMake package export works for the headless backend and for raylib
-when raylib was found with `find_package(raylib)`. If raylib is pulled in through
-`FetchContent`, `TEXGUI_INSTALL` defaults off because exporting another
+Installed CMake package export works for the headless and SVG backends, and for
+raylib when raylib was found with `find_package(raylib)`. If raylib is pulled in
+through `FetchContent`, `TEXGUI_INSTALL` defaults off because exporting another
 project's build-tree target would make a fragile package.
 
 ## Headless Rendering Fidelity
@@ -47,3 +46,5 @@ project's build-tree target would make a fragile package.
 `HeadlessSurface` is designed for CI, offscreen output and regression testing. It
 uses software alpha compositing, writes PNG/PPM output, and ignores glyph
 rotation, so it is not meant to be a perfect reference for every backend effect.
+`SvgSurface` writes SVG primitives for shapes but embeds glyphs as PNG data URIs
+because glyphs are already rasterized by the time draw calls reach surfaces.

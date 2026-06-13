@@ -38,4 +38,10 @@ namespace TexGui::detail
     {
         return surface_.get();
     }
+
+    std::recursive_mutex& render_mutex()
+    {
+        static auto mutex = std::recursive_mutex{};
+        return mutex;
+    }
 } // namespace TexGui::detail

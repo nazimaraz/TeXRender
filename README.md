@@ -9,7 +9,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
 
-Render LaTeX math **directly into a GUI window** from C++.
+Render LaTeX math from C++ into raylib windows, offscreen RGBA buffers, or SVG files.
 
 **[▶ Try the live editor in your browser](https://nazimaraz.github.io/latex-renderer/)** —
 the same C++ engine compiled to WebAssembly.
@@ -20,12 +20,11 @@ backends. Tools like [latexpp](https://github.com/goldsborough/latexpp) only
 render to image files. **latex-renderer** drives MicroTeX through a small,
 pluggable rendering layer so a formula can be drawn live into a window.
 
-The GUI backend is [raylib](https://www.raylib.com/); a second, dependency-free
-**headless** surface rasterises into an in-memory RGBA buffer and ships in every
-build — inject it into a document to [render offscreen](#offscreen-rendering-no-window)
-(it also powers the GPU-less test suite). The `IDrawSurface` seam is proven by two
-implementations; adding SDL2/SFML/etc. means implementing one small interface —
-nothing in the core changes.
+The GUI backend is [raylib](https://www.raylib.com/); dependency-free
+**headless** and **SVG** surfaces ship in every build for offscreen rendering,
+server output, and tests. The `IDrawSurface` seam is proven by raylib, software
+RGBA, and SVG implementations; adding SDL2/SFML/etc. means implementing one
+small interface — nothing in the core changes.
 
 ![demo](docs/demo.png)
 
@@ -33,8 +32,9 @@ nothing in the core changes.
 
 * **No temporary images or subprocesses.** Parse a formula once, keep a
   `RenderHandle`, and draw it inside your normal frame loop.
-* **Windowed and windowless output.** The same API supports raylib overlays,
-  server-style headless rendering, tests, and WebAssembly.
+* **Windowed, raster, and SVG output.** The same API supports raylib overlays,
+  server-style headless rendering, self-contained SVG export, tests, and
+  WebAssembly.
 * **Dependency-shaped CMake.** Consumers can use `FetchContent`,
   `add_subdirectory`, installed `find_package`, vcpkg manifests, or Conan.
 * **Small backend contract.** Custom engines only implement `IDrawSurface`; the
@@ -94,6 +94,7 @@ cmake --build build -j
 ./build/texgui_minimal      # draws a single formula in a window
 ./build/texgui_demo         # cycle samples (SPACE/arrows), resize text (UP/DOWN)
 ./build/texgui_offscreen    # render to formula.png — no window needed
+./build/texgui_svg_export   # render to formula.svg
 ctest --test-dir build      # run the unit tests
 ```
 
@@ -111,8 +112,8 @@ cmake --build --preset headless-debug
 ctest --preset headless-debug
 ```
 
-See [`docs/build-options.md`](docs/build-options.md) for presets, shared-library
-builds, and the `TEXGUI_WARNINGS_AS_ERRORS` policy.
+See [`docs/build-options.md`](docs/build-options.md) for backend presets,
+shared-library builds, and the `TEXGUI_WARNINGS_AS_ERRORS` policy.
 
 ## Using texgui in your project
 
@@ -219,6 +220,10 @@ CloseWindow();
 shares ownership of its document's runtime state, so it stays valid to draw and to
 destroy even if the `LatexDocument` is released first.
 
+For UI rows, `texgui/formula_layout.hpp` provides small helpers such as
+`top_for_baseline()`, `draw_at_baseline()` and `draw_aligned()` so formulas can
+line up by baseline, center, top, or bottom without redoing metric math.
+
 The optional fourth argument, `wrap_width`, wraps the formula to that many pixels;
 the default (`0`) lays it out on a single unbounded line.
 
@@ -293,17 +298,34 @@ formula.draw(10, 10);
 canvas.write_png("formula.png");                // PNG, PPM, or raw RGBA8 pixels
 ```
 
+For vector-friendly output, inject `SvgSurface` instead:
+
+```cpp
+#include <texgui/svg_surface.hpp>
+
+auto owned = std::make_unique<TexGui::SvgSurface>();
+auto& svg = *owned;
+TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
+
+auto formula = document.render(R"(\sqrt{x+1})", 48.f, 0xff000000);
+svg.resize(formula.width() + 20, formula.height() + 20);
+svg.clear(0xffffffff);
+formula.draw(10, 10);
+svg.write_svg("formula.svg");
+```
+
 `LatexDocument::surface()` returns the surface a document draws into (the
 injected one, or the built backend's default). A runnable version of the above
-is [`examples/offscreen.cpp`](examples/offscreen.cpp) — the one example that
-builds under every backend, including `TEXGUI_BACKEND=headless`.
+is [`examples/offscreen.cpp`](examples/offscreen.cpp); SVG export lives in
+[`examples/svg_export.cpp`](examples/svg_export.cpp). Both build under every
+backend, including `TEXGUI_BACKEND=headless` and `TEXGUI_BACKEND=svg`.
 
 ## Threading and multiple documents
 
-* **Render on one thread.** A process-wide glyph cache — and the GPU textures
-  behind it — is shared by every formula, with no internal locking (raylib drawing
-  must happen on a single thread regardless). Parse, lay out and draw from one
-  thread. Constructing and destroying `LatexDocument`s *is* internally serialised.
+* **Prefer one rendering thread.** texgui serialises shared MicroTeX/glyph-cache
+  render paths, and threaded construction/render smoke tests run in CI. GPU
+  backends still inherit their toolkit's thread rules, so raylib drawing should
+  happen on the render thread.
 * **One resource root per process.** MicroTeX initialises from a single global
   resource directory the first time a `LatexDocument` is created, and stays
   initialised for the lifetime of the process (it cannot be safely re-initialised);
@@ -328,8 +350,9 @@ TexGui::LatexDocument document(res_root, std::make_unique<MySdlSurface>());
 ```
 
 The compact [`HeadlessSurface`](source/backend/headless/headless_surface.cpp) is a
-complete, dependency-free reference implementation to copy from. You keep using
-your toolkit's own windowing; only the paint primitives are abstracted. The core,
+complete, dependency-free raster reference implementation; [`SvgSurface`](source/backend/svg/svg_surface.cpp)
+shows the same contract targeting serialized vector output. You keep using your
+toolkit's own windowing; only the paint primitives are abstracted. The core,
 `Graphics2DAdapter`, and the FreeType glyph cache are reused unchanged.
 
 To ship a backend in-tree instead (selected by `TEXGUI_BACKEND` as the default
@@ -370,12 +393,13 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
 
-The suite — transform math, the FreeType glyph cache against the bundled fonts,
-input-limit/error-diagnostic checks, an end-to-end formula render into an
-injected headless canvas, PNG writing, handle lifetime stress, C++17 public
-header compatibility, structural visual regression, and a separate CMake
-consumer smoke test — needs no window or GPU and runs under either backend;
-`TEXGUI_BACKEND=headless` additionally drops the raylib dependency entirely. CI
+The suite — transform math, configurable FreeType glyph cache limits,
+input-limit/error-diagnostic checks, baseline layout helpers, end-to-end formula
+rendering into injected headless and SVG surfaces, PNG/SVG writing, threaded
+handle lifetime stress, C++17 public header compatibility, multi-formula visual
+regression, and a separate CMake consumer smoke test — needs no window or GPU
+and runs under the non-GUI backends; `TEXGUI_BACKEND=headless` additionally drops
+the raylib dependency entirely. CI
 exercises this on Linux, macOS and Windows, the raylib backend + examples on
 Linux and macOS, runs the suite under ASan + UBSan, checks vcpkg/Conan
 packaging, verifies workflow linting and shared-library builds, uploads

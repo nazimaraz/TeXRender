@@ -19,8 +19,9 @@ auto& canvas = *owned;
 TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
 ```
 
-Documents are non-copyable and non-movable. Construct and destroy them on the
-rendering thread.
+Documents are non-copyable and non-movable. texgui serializes shared
+MicroTeX/glyph-cache render paths, but GPU toolkits still have their own thread
+rules; draw raylib-backed documents on the render thread.
 
 ## `render()` and `try_render()`
 
@@ -101,6 +102,14 @@ The handle keeps the document's internal state alive, so it can outlive the
 `LatexDocument` object that produced it. With GPU-backed surfaces, destroy all
 handles before closing the graphics context so cached textures can be released.
 
+For alignment, include `texgui/formula_layout.hpp`:
+
+```cpp
+const auto y = TexGui::top_for_baseline(formula, row_baseline);
+formula.draw(x, y);
+TexGui::draw_aligned(formula, x, center_y, TexGui::FormulaAnchor::center);
+```
+
 ## `TexGui::IDrawSurface`
 
 Backends implement a small immediate-mode drawing interface:
@@ -121,6 +130,38 @@ canvas.write_ppm("formula.ppm");
 ```
 
 PNG writing is built in and does not require an image library dependency.
+
+`SvgSurface` records the same draw calls into a self-contained SVG document:
+
+```cpp
+auto owned = std::make_unique<TexGui::SvgSurface>();
+auto& svg = *owned;
+TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
+auto formula = document.render(R"(\sqrt{x+1})", 48.f, 0xff000000);
+svg.resize(formula.width() + 20, formula.height() + 20);
+svg.clear(0xffffffff);
+formula.draw(10, 10);
+svg.write_svg("formula.svg");
+```
+
+Shapes are emitted as SVG primitives. Glyphs are FreeType bitmaps embedded as
+small PNG data URIs because MicroTeX's drawing API reaches backends after glyph
+rasterization.
+
+## Cache Limits
+
+The shared CPU glyph cache and default backend texture cache limits are
+configurable:
+
+```cpp
+auto limits = TexGui::cache_limits();
+limits.max_cpu_glyphs = 2048;
+limits.max_gpu_textures = 512;
+TexGui::set_cache_limits(limits);
+```
+
+`RaylibSurface::set_max_textures()` can override the GPU texture limit for one
+surface.
 
 ## Resources
 

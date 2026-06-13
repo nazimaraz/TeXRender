@@ -51,11 +51,19 @@ jobs:
           python3 -m pip install --upgrade pip conan
       - name: Detect profile
         run: CC=gcc-14 CXX=g++-14 conan profile detect --force
-      - name: Create package
+      - name: Create headless package
         run: >
           CC=gcc-14 CXX=g++-14 conan create .
           --build=missing
           -o "&:backend=headless"
+          -o "&:with_examples=False"
+          -o "&:with_tests=False"
+          -o "&:with_benchmarks=False"
+      - name: Create SVG package
+        run: >
+          CC=gcc-14 CXX=g++-14 conan create .
+          --build=missing
+          -o "&:backend=svg"
           -o "&:with_examples=False"
           -o "&:with_tests=False"
           -o "&:with_benchmarks=False"

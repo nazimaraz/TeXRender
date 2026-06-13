@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include "texgui/draw_surface.hpp"
 
@@ -22,4 +23,6 @@ namespace TexGui::detail
     private:
         std::unique_ptr<IDrawSurface> surface_;
     };
+
+    [[nodiscard]] std::recursive_mutex& render_mutex();
 } // namespace TexGui::detail

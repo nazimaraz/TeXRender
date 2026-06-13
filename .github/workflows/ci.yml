@@ -92,6 +92,28 @@ jobs:
       - name: Build
         run: cmake --build build -j
 
+  svg:
+    name: Linux · GCC 14 · SVG backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_COMPILER=g++-14
+          -DTEXGUI_BACKEND=svg
+      - name: Build
+        run: cmake --build build -j
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Smoke-run SVG export
+        run: ./build/texgui_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg
+
   # Short PR fuzz smoke. This does not replace longer local/nightly campaigns;
   # it simply proves the harness builds and exercises parser error paths under
   # sanitizers.
