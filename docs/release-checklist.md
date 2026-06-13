@@ -48,8 +48,12 @@ Use this before cutting a public tag.
   `scripts/verify-pkg-config.sh`
 - Run the benchmark once in Release:
   `./build-headless/texgui_render_benchmark`
+- Compare benchmark output against the loose local baseline:
+  `./build-headless/texgui_render_benchmark | tee /tmp/texgui-benchmark.txt && python3 scripts/check-benchmark-baseline.py --input /tmp/texgui-benchmark.txt --warn-only`
 - Run a fuzz smoke if Clang/libFuzzer is available:
   `./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256`
+- Run the focused ThreadSanitizer smoke if your Clang runtime supports it:
+  `CXX=clang++ scripts/verify-thread-sanitizer.sh`
 - Verify package-manager entry points:
   `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`,
   `conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"`,
@@ -61,8 +65,6 @@ Use this before cutting a public tag.
 - Run static analysis and coverage locally when the tools are available; see
   [`docs/static-analysis.md`](static-analysis.md) and
   [`docs/coverage.md`](coverage.md).
-- Run the focused ThreadSanitizer smoke if your Clang runtime supports it; see
-  [`docs/static-analysis.md`](static-analysis.md).
 - Run the local release verifier:
   `scripts/verify-release.sh`
 - Run the fresh-clone verifier:
@@ -81,6 +83,8 @@ Use this before cutting a public tag.
   `scripts/check-doc-links.py`
 - Check package-registry metadata:
   `scripts/check-registry-readiness.py`
+- Check third-party notice and redistribution docs:
+  `scripts/check-third-party-notices.py`
 - Check public API snapshot drift:
   `scripts/check-public-api.py`
 - Run the public release preparation gate once a remote is configured:
@@ -127,6 +131,11 @@ Use this before cutting a public tag.
   package metadata.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
+- Mention third-party redistribution notes from [`THIRD_PARTY.md`](../THIRD_PARTY.md)
+  and [`docs/dependency-license-audit.md`](dependency-license-audit.md).
+- Mention the local MicroTeX safety patch and upstream follow-up from
+  [`docs/upstream-microtex-patch.md`](upstream-microtex-patch.md) if the pinned
+  MicroTeX revision still needs it.
 - Mention copyable integration recipes in [`docs/recipes.md`](recipes.md).
 - Mention API compatibility status and the current source-compatibility promise.
 - Mention migration expectations from [`docs/migration.md`](migration.md).

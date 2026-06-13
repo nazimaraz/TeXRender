@@ -1,32 +1,29 @@
 #include "render/glyph_cache.hpp"
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
-#include <format>
-#include <print>
+#include <mutex>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "texgui/cache_options.hpp"
-
-#include <ranges>
 
 using namespace TexGui;
 
 namespace
 {
-    [[nodiscard]] uint64_t glyph_key(const uint32_t face_id, const char32_t codepoint, const int pixel_size)
-    {
-        // face_id (16) | pixel_size (16) | codepoint (32)
-        return (static_cast<uint64_t>(face_id) << 48) | (static_cast<uint64_t>(pixel_size & 0xffff) << 32) |
-               static_cast<uint64_t>(codepoint);
-    }
-
     std::string& mutable_default_font_path()
     {
         static auto path = std::string{};
         return path;
+    }
+
+    std::mutex& default_font_path_mutex()
+    {
+        static auto mutex = std::mutex{};
+        return mutex;
     }
 } // namespace
 
@@ -41,12 +38,12 @@ GlyphCache::GlyphCache()
 
 GlyphCache::~GlyphCache()
 {
-    for (auto& entry : faces_ | std::views::values)
+    for (auto& entry : faces_)
     {
-        if (!entry.face)
+        if (!entry.second.face)
             continue;
 
-        FT_Done_Face(entry.face);
+        FT_Done_Face(entry.second.face);
     }
 
     if (!library_)
@@ -66,7 +63,7 @@ uint32_t GlyphCache::face_for(const std::string& path)
     auto face = FT_Face{};
     if (FT_New_Face(library_, path.c_str(), 0, &face) != 0)
     {
-        detail::debug_log(std::format("failed to load font file: {}", path));
+        detail::debug_log("failed to load font file: " + path);
         faces_[path] = FaceEntry{nullptr, 0};
         return 0;
     }
@@ -82,7 +79,12 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     if (face_id == 0 || pixel_size <= 0)
         return nullptr;
 
-    const auto key = glyph_key(face_id, codepoint, pixel_size);
+    const auto lookup = GlyphLookup{face_id, codepoint, pixel_size};
+    auto id_it = glyph_ids_.find(lookup);
+    if (id_it == glyph_ids_.end())
+        id_it = glyph_ids_.emplace(lookup, next_glyph_key_++).first;
+
+    const auto key = id_it->second;
     if (const auto cached = glyphs_.find(key); cached != glyphs_.end())
     {
         lru_.splice(lru_.begin(), lru_, cached->second.lru_it); // mark most-recently-used
@@ -100,7 +102,9 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     g.key = key;
     if (FT_Load_Char(face, codepoint, FT_LOAD_RENDER) != 0)
     {
-        detail::debug_log(std::format("failed to render glyph U+{:04X}", static_cast<uint32_t>(codepoint)));
+        auto message = std::array<char, 64>{};
+        std::snprintf(message.data(), message.size(), "failed to render glyph U+%04X", static_cast<uint32_t>(codepoint));
+        detail::debug_log(message.data());
     }
     else
     {
@@ -129,12 +133,15 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     }
 
     lru_.push_front(key);
-    const auto emplaced = glyphs_.emplace(key, CachedGlyph{std::move(g), lru_.begin()});
+    const auto emplaced = glyphs_.emplace(key, CachedGlyph{std::move(g), lookup, lru_.begin()});
     const auto it = emplaced.first;
     const auto max_glyphs = std::max<size_t>(1, cache_limits().max_cpu_glyphs);
     while (glyphs_.size() > max_glyphs)
     {
-        glyphs_.erase(lru_.back());
+        const auto oldest = lru_.back();
+        if (const auto old_glyph = glyphs_.find(oldest); old_glyph != glyphs_.end())
+            glyph_ids_.erase(old_glyph->second.lookup);
+        glyphs_.erase(oldest);
         lru_.pop_back();
     }
 
@@ -149,11 +156,13 @@ GlyphCache& detail::shared_cache()
 
 void detail::set_default_font_path(const std::string& path)
 {
+    const auto lock = std::scoped_lock{default_font_path_mutex()};
     mutable_default_font_path() = path;
 }
 
-const std::string& detail::default_font_path()
+std::string detail::default_font_path()
 {
+    const auto lock = std::scoped_lock{default_font_path_mutex()};
     return mutable_default_font_path();
 }
 
@@ -169,5 +178,5 @@ bool detail::debug_enabled()
 void detail::debug_log(const std::string& message)
 {
     if (debug_enabled())
-        std::println(stderr, "[texgui] {}", message);
+        std::fprintf(stderr, "[texgui] %s\n", message.c_str());
 }

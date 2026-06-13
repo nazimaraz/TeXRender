@@ -30,6 +30,15 @@ run git remote -v
 run cmake --list-presets
 run git diff --check
 
+if command -v python3 >/dev/null 2>&1; then
+    run python3 "$ROOT_DIR/scripts/check-doc-links.py"
+    run python3 "$ROOT_DIR/scripts/check-registry-readiness.py"
+    run python3 "$ROOT_DIR/scripts/check-third-party-notices.py"
+    run python3 "$ROOT_DIR/scripts/check-public-api.py"
+else
+    printf '\n==> skipping Python-based release checks: python3 is not installed\n'
+fi
+
 if command -v clang-format >/dev/null 2>&1; then
     printf '\n==> clang-format --dry-run\n'
     git ls-files '*.cpp' '*.hpp' | xargs clang-format --dry-run -Werror

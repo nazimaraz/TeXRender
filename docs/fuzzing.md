@@ -34,10 +34,15 @@ Short smoke:
 Longer local campaign:
 
 ```sh
+rm -rf fuzz-corpus
 mkdir -p fuzz-corpus
 cp tests/fuzz/corpus/* fuzz-corpus/
 ./build-fuzz/texgui_try_render_fuzzer fuzz-corpus -max_len=4096 -jobs=4 -workers=4
 ```
+
+Run against a copied corpus, as above. libFuzzer writes newly discovered inputs
+back into the corpus directory, so pointing it at `tests/fuzz/corpus/` directly
+will dirty the working tree with generated hash-named files.
 
 Useful sanitizer settings:
 
@@ -61,3 +66,8 @@ failure can be reproduced locally.
 The harness feeds arbitrary bytes through `LatexDocument::try_render()` with
 small `RenderOptions` limits. Successful parses are drawn into a headless canvas,
 so it covers parsing, layout, glyph lookup and software compositing.
+
+The seed corpus under `tests/fuzz/corpus/` intentionally mixes valid formulas
+and malformed fragments: nested fractions/scripts, matrices, accents, spacing
+commands, colors, Unicode text, and truncated input. Keep new seeds small and
+focused so crashes minimize cleanly.

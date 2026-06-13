@@ -36,8 +36,12 @@ jobs:
         run: |
           set -o pipefail
           ./build/texgui_render_benchmark | tee benchmark-results.txt
+      - name: Compare with local baseline
+        run: python3 scripts/check-benchmark-baseline.py --input benchmark-results.txt --warn-only
       - name: Upload benchmark output
         uses: actions/upload-artifact@v4
         with:
           name: render-benchmark-${{ github.run_id }}
-          path: benchmark-results.txt
+          path: |
+            benchmark-results.txt
+            docs/performance-baseline.json

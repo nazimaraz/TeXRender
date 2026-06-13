@@ -38,7 +38,7 @@ For the condensed final pass immediately before publishing, see
    - Package managers
    - Registry readiness
    - Static analysis
-   - Thread sanitizer, after its first scheduled/manual run
+   - Thread sanitizer, after its first PR, scheduled, or manual run
    - CodeQL
    - Coverage
    - Workflow lint

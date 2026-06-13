@@ -112,6 +112,22 @@ cmake --build build-headless --target texgui_custom_surface -j
 Real backends translate the same methods to their graphics API while texgui keeps
 ownership of parsing, layout, transforms, and glyph rasterization.
 
+## Formula Label Widget
+
+[`examples/formula_label_widget.cpp`](../examples/formula_label_widget.cpp) shows
+texgui wrapped inside a small reusable application object. It keeps a parsed
+`RenderHandle`, exposes layout metrics through `FormulaBox`, and draws the label
+baseline-aligned into an injected surface:
+
+```sh
+cmake -S . -B build-headless -DTEXGUI_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
+cmake --build build-headless --target texgui_formula_label_widget -j
+./build-headless/texgui_formula_label_widget
+```
+
+The example writes `formula-label-widget.png` and is intentionally shaped like a
+dependency being embedded into a larger UI layer.
+
 ## Raylib Overlay
 
 [`examples/raylib_overlay.cpp`](../examples/raylib_overlay.cpp) shows texgui as

@@ -9,13 +9,13 @@ compatibility matters more than ABI stability; see
 | Platform | Compiler | CI coverage | Notes |
 | --- | --- | --- | --- |
 | Linux | GCC 14 | yes | Headless, SVG, raylib, SDL2, sanitizers, package consumers |
-| Linux | Clang 22 | yes | Fuzz target, scheduled TSan smoke, clang-format/clang-tidy tooling |
+| Linux | Clang 22 | yes | Fuzz target, PR/scheduled TSan smoke, clang-format/clang-tidy tooling |
 | GitHub CodeQL | C/C++ analysis | yes | Manual headless CMake build for semantic analysis |
 | macOS | Apple Clang | yes | raylib and headless builds |
 | Windows | MSVC | yes | headless static/shared builds and installed consumer smoke |
 
-texgui itself uses C++23 internally. Public headers compile as C++17 and expose
-`texgui::texgui` with `cxx_std_17`.
+texgui itself and its public headers compile as C++17 and expose `texgui::texgui`
+with `cxx_std_17`.
 
 ## Backends
 

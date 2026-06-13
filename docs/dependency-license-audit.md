@@ -19,11 +19,16 @@ honest before publishing.
 ## Release Checks
 
 - Keep [`THIRD_PARTY.md`](../THIRD_PARTY.md) aligned with this inventory.
+- Run `python3 scripts/check-third-party-notices.py` before tagging; CI runs the
+  same check in the docs and registry-readiness jobs.
 - Preserve MicroTeX resource license files in installed archives.
 - Verify `cmake --install` puts resources under `share/texgui/res`.
 - Verify CPack/source archives do not include local build products.
 - For binary archives, document whether they are static or shared and which
   backend they were built with.
+- Keep [`docs/upstream-microtex-patch.md`](upstream-microtex-patch.md) aligned
+  with the local MicroTeX patch in `cmake/Dependencies.cmake`, and remove the
+  patch only after the pinned upstream revision includes the fix.
 - For package-manager submissions, follow each registry's license field and
   notice requirements rather than relying only on this repository's MIT license.
 

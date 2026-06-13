@@ -29,14 +29,22 @@ jobs:
         run: git ls-files '*.cpp' '*.hpp' | xargs clang-format-22 --dry-run -Werror
 
   docs:
-    name: Docs and public API
+    name: Docs, notices, and public API
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install documentation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen
       - name: Check local Markdown links
         run: python3 scripts/check-doc-links.py
+      - name: Check third-party notices
+        run: python3 scripts/check-third-party-notices.py
       - name: Check public API snapshot
         run: python3 scripts/check-public-api.py
+      - name: Generate API reference
+        run: doxygen Doxyfile
 
   # Linux / GCC 14: build the dependency-free headless backend and run every test.
   # No GPU, X11 or display required.

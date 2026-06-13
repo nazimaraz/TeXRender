@@ -14,6 +14,7 @@ embed texgui.
 | [`examples/headless_batch.cpp`](../examples/headless_batch.cpp) | any backend | Command-line batch PNG rendering without a window. |
 | [`examples/svg_export.cpp`](../examples/svg_export.cpp) | any backend | Writing a self-contained SVG file. |
 | [`examples/custom_surface.cpp`](../examples/custom_surface.cpp) | any backend | Implementing a custom `IDrawSurface`. |
+| [`examples/formula_label_widget.cpp`](../examples/formula_label_widget.cpp) | any backend | Wrapping texgui in a reusable app/widget object. |
 | [`examples/consumer-fetchcontent`](../examples/consumer-fetchcontent) | external CMake | Consuming texgui with `FetchContent`. |
 | [`examples/consumer-find-package`](../examples/consumer-find-package) | external CMake | Consuming an installed `find_package(texgui CONFIG REQUIRED)` package. |
 | [`examples/consumer-pkg-config`](../examples/consumer-pkg-config) | external Makefile | Consuming an installed package through `pkg-config`. |
@@ -28,6 +29,8 @@ embed texgui.
 - Integrating a custom renderer, engine command buffer, or test double: start
   with `custom_surface.cpp`, then read
   [`docs/backend-authoring.md`](backend-authoring.md).
+- Wrapping formulas inside your own UI/application objects: start with
+  `formula_label_widget.cpp`.
 - Adding texgui to another project: start with the FetchContent, installed
   package, or pkg-config consumer directories.
 

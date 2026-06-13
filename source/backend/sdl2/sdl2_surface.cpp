@@ -1,8 +1,8 @@
 #include "texgui/sdl2_surface.hpp"
 #include <algorithm>
 #include <cmath>
-#include <numbers>
 #include <stdexcept>
+#include <string>
 #include <vector>
 #include <SDL.h>
 #include "texgui/cache_options.hpp"
@@ -15,7 +15,7 @@ namespace
 
     [[nodiscard]] constexpr double to_degrees(const float radians)
     {
-        return static_cast<double>(radians) * (180.0 / std::numbers::pi_v<double>);
+        return static_cast<double>(radians) * (180.0 / 3.14159265358979323846);
     }
 
     [[nodiscard]] unsigned char channel(const uint32_t argb, const unsigned shift)

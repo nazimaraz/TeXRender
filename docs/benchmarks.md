@@ -23,4 +23,14 @@ work. It is not a substitute for profiling a real application frame loop.
 Current reference numbers are tracked in
 [`docs/performance-baseline.md`](performance-baseline.md). The non-blocking
 [`Benchmarks`](../.github/workflows/benchmarks.yml) workflow uploads raw output
-for CI runs so regressions are visible during review.
+for CI runs and compares them against
+[`docs/performance-baseline.json`](performance-baseline.json) in warn-only mode
+so large regressions are visible during review without creating noisy hard
+failures.
+
+To check a local run against the baseline:
+
+```sh
+./build/texgui_render_benchmark | tee /tmp/texgui-benchmark.txt
+python3 scripts/check-benchmark-baseline.py --input /tmp/texgui-benchmark.txt
+```

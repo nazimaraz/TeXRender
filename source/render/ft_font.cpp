@@ -1,6 +1,7 @@
 #include "render/ft_font.hpp"
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cstddef>
 #include <string>
 #include <string_view>
@@ -13,7 +14,7 @@ namespace
 {
     [[nodiscard]] std::string font_directory()
     {
-        const auto& base = detail::default_font_path();
+        const auto base = detail::default_font_path();
         const auto slash = base.find_last_of('/');
         return slash == std::string::npos ? std::string{} : base.substr(0, slash);
     }
@@ -25,6 +26,11 @@ namespace
         return variants[static_cast<size_t>((bold ? 1 : 0) | (italic ? 2 : 0))];
     }
 
+    [[nodiscard]] bool contains(const std::string& text, const std::string_view needle)
+    {
+        return text.find(needle) != std::string::npos;
+    }
+
     [[nodiscard]] std::string resolve_font(const std::string& family, const int style)
     {
         const auto dir = font_directory();
@@ -32,18 +38,18 @@ namespace
             return detail::default_font_path();
 
         auto lower = family;
-        std::ranges::transform(lower, lower.begin(), [](const unsigned char c) {
+        std::transform(lower.begin(), lower.end(), lower.begin(), [](const unsigned char c) {
             return static_cast<char>(std::tolower(c));
         });
         const auto file = [&] {
             using namespace std::string_view_literals;
-            if (lower.contains("mono") || lower.contains("typewriter"))
+            if (contains(lower, "mono") || contains(lower, "typewriter"))
                 return "tt10.ttf"sv;
 
-            if (lower.contains("sans"))
+            if (contains(lower, "sans"))
                 return variant_for(style, {"ss10.ttf"sv, "sb10.ttf"sv, "si10.ttf"sv, "sbi10.ttf"sv});
 
-            if (lower.contains("serif"))
+            if (contains(lower, "serif"))
                 return variant_for(style, {"r10.ttf"sv, "bx10.ttf"sv, "i10.ttf"sv, "bi10.ttf"sv});
 
             return variant_for(style, {""sv, "bx10.ttf"sv, "i10.ttf"sv, "bi10.ttf"sv});

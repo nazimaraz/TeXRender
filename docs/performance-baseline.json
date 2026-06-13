@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "date": "2026-06-14",
+  "platform": "macOS Apple Silicon",
+  "compiler": "Apple Clang",
+  "build": "Release, TEXGUI_BACKEND=headless",
+  "threshold_ratio": 1.4,
+  "metrics": {
+    "short": {
+      "cold render": 1.072,
+      "render": 0.134,
+      "draw headless": 0.529
+    },
+    "fraction": {
+      "cold render": 0.490,
+      "render": 0.134,
+      "draw headless": 1.720
+    },
+    "long": {
+      "cold render": 0.797,
+      "render": 0.646,
+      "draw headless": 1.742
+    }
+  }
+}

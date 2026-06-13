@@ -12,6 +12,10 @@ namespace TexGui
     ///
     /// These values match `project(VERSION)` in CMake and are validated at
     /// configure time.
+    ///
+    /// The version constants describe the texgui/latex-renderer package, not
+    /// the pinned MicroTeX revision. For dependency feature checks, prefer
+    /// `texgui/config.hpp` and CMake package component metadata.
     /// Major component of the texgui semantic version.
     inline constexpr int version_major = TEXGUI_VERSION_MAJOR;
     /// Minor component of the texgui semantic version.

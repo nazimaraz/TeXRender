@@ -1,12 +1,12 @@
 #include <algorithm>
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iterator>
 #include <memory>
 #include <optional>
-#include <print>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -31,7 +31,7 @@ namespace
     {
         if (!ok)
         {
-            std::println("FAIL: {}", expr);
+            std::printf("FAIL: %s\n", expr);
             ++g_failures;
         }
     }
@@ -225,7 +225,7 @@ int main()
         if (entry.path().extension() == ".baseline")
             baseline_paths.push_back(entry.path());
     }
-    std::ranges::sort(baseline_paths);
+    std::sort(baseline_paths.begin(), baseline_paths.end());
     CHECK(!baseline_paths.empty());
     if (baseline_paths.empty())
         return 1;
@@ -267,7 +267,7 @@ int main()
     }
 
     if (g_failures == 0)
-        std::println("all visual_regression tests passed");
+        std::printf("all visual_regression tests passed\n");
 
     return g_failures == 0 ? 0 : 1;
 }

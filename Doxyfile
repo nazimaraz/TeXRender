@@ -25,6 +25,7 @@ INPUT                  = include \
                          docs/public-api-snapshot.txt \
                          docs/security-threat-model.md \
                          docs/dependency-license-audit.md \
+                         docs/upstream-microtex-patch.md \
                          docs/migration.md \
                          docs/gallery.md \
                          docs/github-launch.md \
@@ -32,6 +33,7 @@ INPUT                  = include \
                          docs/local-release-rehearsal.md \
                          docs/release-body-v0.1.0.md \
                          docs/release-assets.md \
+                         docs/release-checklist.md \
                          docs/package-publishing.md \
                          docs/registry-submissions.md \
                          docs/release-notes-v0.1.0.md \
@@ -40,13 +42,14 @@ INPUT                  = include \
                          docs/benchmarks.md \
                          docs/fuzzing.md \
                          docs/performance-baseline.md \
+                         docs/performance-baseline.json \
                          docs/build-options.md \
                          docs/static-analysis.md \
                          docs/coverage.md \
                          docs/workflow-linting.md \
                          docs/roadmap.md \
                          docs/case-study.md
-FILE_PATTERNS          = *.hpp *.md
+FILE_PATTERNS          = *.hpp *.md *.json
 RECURSIVE              = YES
 USE_MDFILE_AS_MAINPAGE = docs/api-mainpage.md
 

@@ -1,10 +1,9 @@
 #include "texgui/raylib_surface.hpp"
-#include <numbers>
+#include <algorithm>
+#include <cstddef>
 #include <rlgl.h>
 #include <vector>
 #include "texgui/cache_options.hpp"
-
-#include <ranges>
 
 using namespace TexGui;
 
@@ -12,7 +11,7 @@ namespace
 {
     [[nodiscard]] constexpr float to_degrees(const float radians)
     {
-        return radians * (180.f / std::numbers::pi_v<float>);
+        return radians * (180.f / 3.14159265358979323846f);
     }
 
     [[nodiscard]] Color to_raylib(const uint32_t argb)
@@ -39,8 +38,8 @@ void RaylibSurface::unload()
 {
     if (IsWindowReady())
     {
-        for (const auto& entry : textures_ | std::views::values)
-            UnloadTexture(entry.texture);
+        for (const auto& entry : textures_)
+            UnloadTexture(entry.second.texture);
     }
 
     textures_.clear();
@@ -136,9 +135,12 @@ const Texture2D& RaylibSurface::texture_for(const GlyphBitmap& glyph)
         }
     }
 
-    const auto image = Image{
-        .data = rgba.data(), .width = glyph.width, .height = glyph.height, .mipmaps = 1, .format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8
-    };
+    auto image = Image{};
+    image.data = rgba.data();
+    image.width = glyph.width;
+    image.height = glyph.height;
+    image.mipmaps = 1;
+    image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     const auto texture = LoadTextureFromImage(image);
 
     lru_.push_front(glyph.key);

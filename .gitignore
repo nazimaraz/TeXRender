@@ -23,4 +23,7 @@ _deps/
 /shot_*.png
 
 # Default output of the offscreen example
+/formula.png
 /formula.ppm
+/formula-*.png
+/formula-label-widget.png

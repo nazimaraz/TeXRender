@@ -46,11 +46,10 @@ The core uses modern C++ where it helps:
 - `std::optional` for non-throwing untrusted-input rendering
 - small value types for cache limits and formula layout helpers
 - `std::shared_ptr` only at the document/handle lifetime boundary
-- C++17 public headers, while implementation files can use newer C++ features
+- C++17 public headers and implementation files, keeping the dependency easy to adopt
 
-That split is deliberate: users get a conservative dependency surface, while
-the implementation can still use C++23 facilities like `std::format` and
-`std::print` where they improve internal clarity.
+That baseline is deliberate: users get a conservative dependency surface without
+needing to relax their own toolchain requirements just to consume the library.
 
 ## Rendering Pipeline
 

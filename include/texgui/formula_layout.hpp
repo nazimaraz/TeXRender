@@ -6,36 +6,59 @@
 namespace TexGui
 {
     /// Public formula metrics collected from a RenderHandle.
+    ///
+    /// `height` is the full formula box height. `depth` is the portion below
+    /// the baseline, and `baseline` is the y offset from the formula top to the
+    /// baseline. Use these values to align formulas with surrounding UI text,
+    /// labels, table rows, or HUD elements without depending on MicroTeX types.
     struct FormulaBox
     {
+        /// Full formula width in pixels.
         int width = 0;
+        /// Full formula height in pixels.
         int height = 0;
+        /// Distance below the baseline in pixels.
         int depth = 0;
+        /// Distance from the top of the formula box to the baseline in pixels.
         float baseline = 0.f;
     };
 
     /// Vertical anchor used by layout helpers.
+    ///
+    /// Anchors describe which part of a formula should coincide with the y
+    /// coordinate passed to `draw_aligned()` or `aligned_top()`.
     enum class FormulaAnchor
     {
+        /// Align the formula's top edge to y.
         top,
+        /// Align the formula baseline to y.
         baseline,
+        /// Align the formula's vertical center to y.
         center,
+        /// Align the formula's bottom edge to y.
         bottom
     };
 
     /// Snapshot a formula's current metrics.
+    ///
+    /// This is a convenience for code that wants to store layout values without
+    /// keeping a reference to the handle in a layout pass.
     [[nodiscard]] inline FormulaBox formula_box(const RenderHandle& formula)
     {
         return FormulaBox{formula.width(), formula.height(), formula.depth(), formula.baseline()};
     }
 
     /// Return the top-left y coordinate needed to place a formula on a baseline.
+    ///
+    /// This is useful when aligning formulas with ordinary text baselines.
     [[nodiscard]] inline int top_for_baseline(const RenderHandle& formula, const int baseline_y)
     {
         return static_cast<int>(std::lround(static_cast<float>(baseline_y) - formula.baseline()));
     }
 
     /// Return the top-left y coordinate for a chosen vertical anchor.
+    ///
+    /// The returned value can be passed directly to `RenderHandle::draw()`.
     [[nodiscard]] inline int aligned_top(const RenderHandle& formula, const int y, const FormulaAnchor anchor)
     {
         switch (anchor)

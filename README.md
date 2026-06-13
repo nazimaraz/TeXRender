@@ -12,7 +12,7 @@
 [![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
 [![Release smoke](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Public headers: C++17](https://img.shields.io/badge/public%20headers-C%2B%2B17-brightgreen.svg)](docs/api-compatibility.md)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-brightgreen.svg)](docs/api-compatibility.md)
 [![CMake package](https://img.shields.io/badge/CMake-package-064f8c.svg)](docs/integration-examples.md#installed-find_package)
 [![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
 
@@ -60,9 +60,11 @@ hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
 [case study](docs/case-study.md).
 The [support matrix](docs/support-matrix.md), [API compatibility notes](docs/api-compatibility.md),
 and [migration guide](docs/migration.md) describe the public contract.
-The [security threat model](docs/security-threat-model.md) and
-[dependency/license audit](docs/dependency-license-audit.md) cover risk and
-redistribution notes. The [GitHub launch checklist](docs/github-launch.md),
+The [security threat model](docs/security-threat-model.md),
+[dependency/license audit](docs/dependency-license-audit.md), and
+[MicroTeX upstream patch note](docs/upstream-microtex-patch.md) cover risk,
+redistribution notes, and the one local third-party safety patch. The
+[GitHub launch checklist](docs/github-launch.md),
 [first public push dry run](docs/first-public-push-dry-run.md),
 [local release rehearsal](docs/local-release-rehearsal.md),
 [release asset guide](docs/release-assets.md), [registry submission guide](docs/registry-submissions.md),
@@ -107,13 +109,12 @@ For public API and lifetime details, see [`docs/api.md`](docs/api.md).
 
 ## Build
 
-Requirements: a C++23 toolchain with `std::format`/`std::print` support — **GCC
-≥ 14, Clang ≥ 18 (libc++), MSVC ≥ 19.40, or a recent Apple Clang** — and CMake ≥
-3.21. That toolchain compiles texgui *itself*; consuming projects only need
-**C++17** (the standard texgui's public headers require and propagate). tinyxml2,
-FreeType, raylib and SDL2 are resolved with `find_package`, falling back to
-`FetchContent`; MicroTeX's core is always fetched and compiled from source. On
-macOS `brew install freetype raylib sdl2 tinyxml2` makes configuration instant.
+Requirements: a C++17 toolchain and CMake ≥ 3.21. texgui itself and its public
+headers compile as C++17, and `texgui::texgui` propagates only `cxx_std_17` to
+consumers. tinyxml2, FreeType, raylib and SDL2 are resolved with `find_package`,
+falling back to `FetchContent`; MicroTeX's core is always fetched and compiled
+from source. On macOS `brew install freetype raylib sdl2 tinyxml2` makes
+configuration instant.
 
 ```sh
 cmake -S . -B build
@@ -131,6 +132,8 @@ parse one formula, draw it in a loop.
 More copyable consumer examples live in
 [`docs/examples-index.md`](docs/examples-index.md) and
 [`docs/integration-examples.md`](docs/integration-examples.md).
+For a dependency-shaped wrapper around a parsed formula, see
+[`examples/formula_label_widget.cpp`](examples/formula_label_widget.cpp).
 For the stable backend-neutral API surface, include `texgui/texgui.hpp`.
 Backend-specific headers are opt-in and installed only with packages that export
 their matching GUI dependency. Use `texgui/config.hpp` or CMake package
@@ -158,6 +161,14 @@ the same way — no system packages required:
 
 ```cmake
 include(FetchContent)
+
+# Pick the default surface before fetching. `headless` is the smallest
+# dependency path; use `raylib`, `sdl2`, or `svg` when that is what your app
+# wants LatexDocument to create by default.
+set(TEXGUI_BACKEND headless CACHE STRING "" FORCE)
+set(TEXGUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TEXGUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+
 FetchContent_Declare(
     texgui
     GIT_REPOSITORY https://github.com/nazimaraz/latex-renderer.git
@@ -173,6 +184,11 @@ Or, if you vendor the source, `add_subdirectory(path/to/latex-renderer)` and lin
 `texgui::texgui` the same way. Either path skips texgui's own examples and tests
 automatically when it is built as a subproject. You still drive raylib yourself
 or provide your own SDL/custom surface — see [Usage](#usage).
+
+The repository and package-manager name is `latex-renderer`; the C++ namespace,
+headers, CMake package, and exported target use the shorter `texgui`/`TexGui`
+name (`find_package(texgui CONFIG REQUIRED)`, `texgui::texgui`,
+`#include <texgui/...>`).
 
 ### find_package install
 
@@ -451,7 +467,7 @@ regression, and a separate CMake consumer smoke test — needs no window or GPU
 and runs under the non-GUI backends; `TEXGUI_BACKEND=headless` additionally drops
 GUI dependencies entirely. CI exercises this on Linux, macOS and Windows, the
 raylib backend + examples on Linux and macOS, the SDL2 backend on Linux, runs the
-suite under ASan + UBSan, runs scheduled TSan and fuzzing smoke, checks
+suite under ASan + UBSan, runs PR/scheduled TSan and fuzzing smoke, checks
 vcpkg/Conan packaging, verifies release archives and external consumers, verifies
 workflow linting and shared-library builds, uploads visual-regression artifacts
 on failure, gates formatting with clang-format, runs clang-tidy, and publishes
@@ -471,6 +487,9 @@ analysis and coverage workflows are documented in
 [`docs/static-analysis.md`](docs/static-analysis.md) and
 [`docs/coverage.md`](docs/coverage.md). Workflow linting is documented in
 [`docs/workflow-linting.md`](docs/workflow-linting.md).
+Benchmark tracking is documented in [`docs/benchmarks.md`](docs/benchmarks.md)
+and uses [`docs/performance-baseline.json`](docs/performance-baseline.json) for
+a loose local regression comparison.
 The current platform/backend promise is summarized in
 [`docs/support-matrix.md`](docs/support-matrix.md). Release download choices are
 explained in [`docs/release-assets.md`](docs/release-assets.md).
@@ -478,6 +497,8 @@ explained in [`docs/release-assets.md`](docs/release-assets.md).
 ## License
 
 latex-renderer is released under the [MIT License](LICENSE). It builds on
-MicroTeX, raylib, FreeType, tinyxml2 and the bundled TeX fonts, each under its own
-(permissive) license — see [THIRD_PARTY.md](THIRD_PARTY.md) before redistributing
-a binary.
+MicroTeX, raylib, SDL2, FreeType, tinyxml2 and the bundled TeX fonts, each under
+its own permissive license or permissive license option. See
+[THIRD_PARTY.md](THIRD_PARTY.md) and
+[`docs/dependency-license-audit.md`](docs/dependency-license-audit.md) before
+redistributing a binary.

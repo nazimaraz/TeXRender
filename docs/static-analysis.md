@@ -21,11 +21,11 @@ C/C++ analysis on pushes, pull requests, weekly schedule, and manual dispatch.
 It uses a manual headless CMake build so CodeQL observes the same project sources
 that normal CI compiles.
 
-The [`Thread sanitizer`](../.github/workflows/thread-sanitizer.yml) workflow is
-scheduled/manual. It builds focused headless tests with `-fsanitize=thread` and
-runs the lifetime stress and headless render tests under TSan. It is kept out of
-normal PR CI so contributor feedback stays fast while still exercising shared
-rendering paths regularly.
+The [`Thread sanitizer`](../.github/workflows/thread-sanitizer.yml) workflow
+runs on schedule, manual dispatch, and pull requests that touch shared rendering
+or threading-sensitive files. It builds focused headless tests with
+`-fsanitize=thread` and runs the lifetime stress and headless render tests under
+TSan.
 
 ## Local Run
 
@@ -46,16 +46,17 @@ the same way the workflow does.
 
 ## Local ThreadSanitizer Smoke
 
+Use the wrapper script when your Clang runtime supports ThreadSanitizer:
+
 ```sh
-cmake -S . -B build-tsan -G Ninja \
-  -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-  -DCMAKE_CXX_COMPILER=clang++ \
-  -DTEXGUI_BACKEND=headless \
-  -DTEXGUI_BUILD_EXAMPLES=OFF \
-  -DTEXGUI_BUILD_BENCHMARKS=OFF \
-  -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer" \
-  -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread"
-cmake --build build-tsan --target texgui_lifetime_stress_test texgui_headless_render_test -j
-TSAN_OPTIONS=halt_on_error=1 ./build-tsan/texgui_lifetime_stress_test
-TSAN_OPTIONS=halt_on_error=1 ./build-tsan/texgui_headless_render_test
+CXX=clang++ scripts/verify-thread-sanitizer.sh
+```
+
+Or use the CMake preset directly:
+
+```sh
+cmake --preset tsan
+cmake --build --preset tsan --target texgui_lifetime_stress_test texgui_headless_render_test
+TSAN_OPTIONS=halt_on_error=1 ./out/build/tsan/texgui_lifetime_stress_test
+TSAN_OPTIONS=halt_on_error=1 ./out/build/tsan/texgui_headless_render_test
 ```

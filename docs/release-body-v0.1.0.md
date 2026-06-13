@@ -23,6 +23,8 @@ embedding LaTeX-style math rendering into caller-owned render loops.
 - Validate downstream dependency use with installed package consumers, external
   consumers, CPack smoke tests, path-with-spaces tests, and release archive
   smoke tests.
+- Wrap parsed formulas inside app/UI objects with the new formula-label example,
+  and track large benchmark movement with a loose baseline comparison.
 
 ## Try It
 
@@ -36,6 +38,8 @@ embedding LaTeX-style math rendering into caller-owned render loops.
   https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/security-threat-model.md
 - Dependency/license audit:
   https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/dependency-license-audit.md
+- MicroTeX patch note:
+  https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/upstream-microtex-patch.md
 - Release asset guide:
   https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/release-assets.md
 
@@ -45,6 +49,9 @@ Fetch directly from CMake:
 
 ```cmake
 include(FetchContent)
+set(TEXGUI_BACKEND headless CACHE STRING "" FORCE)
+set(TEXGUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TEXGUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     texgui
     GIT_REPOSITORY https://github.com/nazimaraz/latex-renderer.git
@@ -98,7 +105,7 @@ latex-renderer is pre-1.0. The `0.1.x` line is source-compatibility focused for
 documented public headers and CMake targets. ABI stability is not promised before
 `1.0`; rebuild consumers when upgrading.
 
-Public headers are validated as C++17. The implementation uses C++23 internally.
+The implementation and public headers are validated as C++17.
 
 See:
 
@@ -135,8 +142,11 @@ scripts/verify-shared-library.sh
 scripts/verify-path-with-spaces.sh
 scripts/verify-pkg-config.sh
 scripts/check-registry-readiness.py
+scripts/check-third-party-notices.py
+scripts/check-benchmark-baseline.py --input benchmark-results.txt --warn-only
 ```
 
-CI also covers Linux, macOS, Windows, ASan/UBSan, ThreadSanitizer smoke,
-nightly fuzzing, CodeQL, clang-tidy, coverage, package-manager validation,
+CI also covers Linux, macOS, Windows, ASan/UBSan, PR/scheduled
+ThreadSanitizer smoke, nightly fuzzing, CodeQL, clang-tidy, Doxygen API
+generation, third-party notice drift, coverage, package-manager validation,
 WebAssembly, workflow linting, and release smoke tests.

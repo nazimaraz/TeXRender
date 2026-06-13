@@ -63,6 +63,7 @@ void RenderHandle::set_foreground(const uint32_t argb) const
     if (!render_)
         return;
 
+    const auto lock = std::scoped_lock{detail::render_mutex()};
     render_->setForeground(argb);
 }
 

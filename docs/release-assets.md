@@ -10,6 +10,10 @@ Use the GitHub source archive or the tagged repository when you want
 `FetchContent` or `add_subdirectory`:
 
 ```cmake
+include(FetchContent)
+set(TEXGUI_BACKEND headless CACHE STRING "" FORCE)
+set(TEXGUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TEXGUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     texgui
     GIT_REPOSITORY https://github.com/nazimaraz/latex-renderer.git

@@ -81,6 +81,21 @@
       }
     },
     {
+      "name": "tsan",
+      "displayName": "Headless ThreadSanitizer",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/tsan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=thread",
+        "TEXGUI_BACKEND": "headless",
+        "TEXGUI_BUILD_EXAMPLES": "OFF",
+        "TEXGUI_BUILD_BENCHMARKS": "OFF"
+      }
+    },
+    {
       "name": "coverage",
       "displayName": "Headless Coverage",
       "generator": "Ninja",
@@ -136,6 +151,10 @@
     {
       "name": "asan",
       "configurePreset": "asan"
+    },
+    {
+      "name": "tsan",
+      "configurePreset": "tsan"
     },
     {
       "name": "coverage",
@@ -196,6 +215,16 @@
       "environment": {
         "ASAN_OPTIONS": "detect_leaks=0",
         "UBSAN_OPTIONS": "print_stacktrace=1"
+      },
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "tsan",
+      "configurePreset": "tsan",
+      "environment": {
+        "TSAN_OPTIONS": "halt_on_error=1"
       },
       "output": {
         "outputOnFailure": true

@@ -42,7 +42,7 @@ if(PROJECT_IS_TOP_LEVEL AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYP
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -198,9 +198,8 @@ if(TEXGUI_BACKEND_LIBS)
     )
 endif()
 
-# texgui's own sources use C++23 (std::format/std::print), but the public
-# headers compile as C++17 — that is all we impose on consumers.
-target_compile_features(texgui PRIVATE cxx_std_23)
+# texgui's own sources and public headers compile as C++17.
+target_compile_features(texgui PRIVATE cxx_std_17)
 target_compile_features(texgui INTERFACE cxx_std_17)
 
 # ---------------------------------------------------------------------------
@@ -224,6 +223,7 @@ if(TEXGUI_BUILD_EXAMPLES)
             texgui_headless_batch examples/headless_batch.cpp
             texgui_svg_export examples/svg_export.cpp
             texgui_custom_surface examples/custom_surface.cpp
+            texgui_formula_label_widget examples/formula_label_widget.cpp
         )
         if(TEXGUI_BACKEND STREQUAL "raylib")
             list(APPEND TEXGUI_EXAMPLES
@@ -297,7 +297,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     add_executable(texgui_transform2d_test tests/transform2d_test.cpp)
     target_include_directories(texgui_transform2d_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source)
     texgui_target_warnings(texgui_transform2d_test)
-    target_compile_features(texgui_transform2d_test PRIVATE cxx_std_23)
+    target_compile_features(texgui_transform2d_test PRIVATE cxx_std_17)
     add_test(NAME transform2d COMMAND texgui_transform2d_test)
 
     # FreeType glyph cache against the bundled TeX fonts — no window/GPU needed.
@@ -312,7 +312,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
         ${CMAKE_CURRENT_SOURCE_DIR}/source
     )
     texgui_target_warnings(texgui_glyph_cache_test)
-    target_compile_features(texgui_glyph_cache_test PRIVATE cxx_std_23)
+    target_compile_features(texgui_glyph_cache_test PRIVATE cxx_std_17)
     target_compile_definitions(texgui_glyph_cache_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     add_test(NAME glyph_cache COMMAND texgui_glyph_cache_test)
 
@@ -322,6 +322,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     add_executable(texgui_headless_render_test tests/headless_render_test.cpp)
     target_link_libraries(texgui_headless_render_test PRIVATE texgui::texgui)
     texgui_target_warnings(texgui_headless_render_test)
+    target_compile_features(texgui_headless_render_test PRIVATE cxx_std_17)
     target_compile_definitions(texgui_headless_render_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     add_test(NAME headless_render COMMAND texgui_headless_render_test)
 
@@ -330,7 +331,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     add_executable(texgui_visual_regression_test tests/visual_regression_test.cpp)
     target_link_libraries(texgui_visual_regression_test PRIVATE texgui::texgui)
     texgui_target_warnings(texgui_visual_regression_test)
-    target_compile_features(texgui_visual_regression_test PRIVATE cxx_std_23)
+    target_compile_features(texgui_visual_regression_test PRIVATE cxx_std_17)
     target_compile_definitions(texgui_visual_regression_test PRIVATE
         TEXGUI_RES_DIR="${MICROTEX_RES_DIR}"
         TEXGUI_VISUAL_BASELINE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/visual_baselines"
@@ -343,6 +344,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     add_executable(texgui_lifetime_stress_test tests/lifetime_stress_test.cpp)
     target_link_libraries(texgui_lifetime_stress_test PRIVATE texgui::texgui Threads::Threads)
     texgui_target_warnings(texgui_lifetime_stress_test)
+    target_compile_features(texgui_lifetime_stress_test PRIVATE cxx_std_17)
     target_compile_definitions(texgui_lifetime_stress_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     add_test(NAME lifetime_stress COMMAND texgui_lifetime_stress_test)
 

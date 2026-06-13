@@ -1,5 +1,4 @@
-#include <format>
-#include <print>
+#include <cstdio>
 #include <string>
 #include "render/glyph_cache.hpp"
 
@@ -17,14 +16,14 @@ namespace
     {
         if (!ok)
         {
-            std::println("FAIL: {}", expr);
+            std::printf("FAIL: %s\n", expr);
             ++g_failures;
         }
     }
 
     std::string font_path()
     {
-        return std::format("{}/fonts/latin/cmr10.ttf", TEXGUI_RES_DIR);
+        return std::string{TEXGUI_RES_DIR} + "/fonts/latin/cmr10.ttf";
     }
 } // namespace
 
@@ -63,7 +62,7 @@ int main()
     CHECK(fresh != nullptr && !fresh->pixels.empty());
 
     if (g_failures == 0)
-        std::println("all glyph_cache tests passed");
+        std::printf("all glyph_cache tests passed\n");
 
     return g_failures == 0 ? 0 : 1;
 }

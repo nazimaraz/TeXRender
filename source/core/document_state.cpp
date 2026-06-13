@@ -1,5 +1,4 @@
 #include "core/document_state.hpp"
-#include <format>
 #include <mutex>
 #include "latex.h"
 #include "render/glyph_cache.hpp"
@@ -26,10 +25,10 @@ namespace TexGui::detail
         }
         else if (res_root != g_res_root)
         {
-            debug_log(std::format("ignoring resource root '{}'; MicroTeX is already initialised with '{}'", res_root, g_res_root));
+            debug_log("ignoring resource root '" + res_root + "'; MicroTeX is already initialised with '" + g_res_root + "'");
         }
 
-        set_default_font_path(std::format("{}/fonts/latin/cmr10.ttf", g_res_root));
+        set_default_font_path(g_res_root + "/fonts/latin/cmr10.ttf");
     }
 
     DocumentState::~DocumentState() = default;

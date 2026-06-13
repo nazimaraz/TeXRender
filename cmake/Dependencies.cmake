@@ -122,6 +122,29 @@ FetchContent_MakeAvailable(microtex)
 set(MICROTEX_SRC "${microtex_SOURCE_DIR}/src")
 set(MICROTEX_RES_DIR "${microtex_SOURCE_DIR}/res" CACHE INTERNAL "MicroTeX resource directory")
 
+# MicroTeX's IndexedArray binary search initializes the high bound to `_rows`
+# instead of the last valid row. Misses can read one row past static font tables
+# under ASan (for example accent next-larger lookups). Patch the fetched source
+# in the build tree before compiling the pinned core.
+set(_texgui_microtex_indexed_arr "${MICROTEX_SRC}/utils/indexed_arr.h")
+file(READ "${_texgui_microtex_indexed_arr}" _texgui_microtex_indexed_arr_text)
+set(_texgui_microtex_indexed_arr_before "int     l = 0, h = _rows;")
+set(_texgui_microtex_indexed_arr_after "int     l = 0, h = static_cast<int>(_rows) - 1;")
+if(_texgui_microtex_indexed_arr_text MATCHES "int     l = 0, h = _rows;")
+    string(REPLACE
+        "${_texgui_microtex_indexed_arr_before}"
+        "${_texgui_microtex_indexed_arr_after}"
+        _texgui_microtex_indexed_arr_text
+        "${_texgui_microtex_indexed_arr_text}")
+    file(WRITE "${_texgui_microtex_indexed_arr}" "${_texgui_microtex_indexed_arr_text}")
+elseif(NOT _texgui_microtex_indexed_arr_text MATCHES "int     l = 0, h = static_cast<int>\\(_rows\\) - 1;")
+    message(FATAL_ERROR "MicroTeX IndexedArray patch did not match ${_texgui_microtex_indexed_arr}")
+endif()
+unset(_texgui_microtex_indexed_arr)
+unset(_texgui_microtex_indexed_arr_text)
+unset(_texgui_microtex_indexed_arr_before)
+unset(_texgui_microtex_indexed_arr_after)
+
 # Authoritative core source list (mirrors MicroTeX's own target_sources, minus
 # every src/platform/** backend -- we provide Graphics2D/Font/TextLayout).
 set(MICROTEX_CORE_SOURCES

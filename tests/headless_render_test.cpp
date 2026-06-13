@@ -4,10 +4,11 @@
 // display needed.
 #include <exception>
 #include <array>
+#include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <memory>
-#include <print>
+#include <optional>
 #include <string>
 #include "texgui/cache_options.hpp"
 #include "texgui/formula_layout.hpp"
@@ -30,7 +31,7 @@ namespace
     {
         if (!ok)
         {
-            std::println("FAIL: {}", expr);
+            std::printf("FAIL: %s\n", expr);
             ++g_failures;
         }
     }
@@ -39,7 +40,7 @@ namespace
     {
         if (result.has_value() || result.error().code != code || result.error().message.empty())
         {
-            std::println("FAIL: {}", expr);
+            std::printf("FAIL: %s\n", expr);
             ++g_failures;
         }
     }
@@ -65,6 +66,9 @@ int main()
         CHECK(formula.height() > 0);
         CHECK(formula_box(formula).width == formula.width());
         CHECK(top_for_baseline(formula, 100) == static_cast<int>(std::lround(100.f - formula.baseline())));
+        CHECK(aligned_top(formula, 100, FormulaAnchor::top) == 100);
+        CHECK(aligned_top(formula, 100, FormulaAnchor::baseline) == top_for_baseline(formula, 100));
+        CHECK(aligned_top(formula, 100, FormulaAnchor::center) == 100 - formula.height() / 2);
         CHECK(aligned_top(formula, 100, FormulaAnchor::bottom) == 100 - formula.height());
 
         CHECK(document.try_render(R"(\sqrt{a})", 40.f, 0xff000000).has_value());
@@ -135,7 +139,29 @@ int main()
         CHECK(threw);
     }
 
-    // 2) Full pipeline into an injected headless canvas: drawing a non-empty
+    // 2) RenderHandle is move-only and keeps the document state alive after the
+    //    LatexDocument object itself is destroyed.
+    {
+        auto surviving = std::optional<RenderHandle>{};
+        auto* canvas = static_cast<HeadlessSurface*>(nullptr);
+        {
+            auto owned = std::make_unique<HeadlessSurface>();
+            canvas = owned.get();
+            const auto document = LatexDocument{res, std::move(owned)};
+            auto formula = document.render(R"(\int_0^1 x^2\,dx)", 42.f, 0xff111111);
+            CHECK(formula.width() > 0);
+            surviving = std::move(formula);
+        }
+
+        CHECK(surviving.has_value());
+        canvas->resize(surviving->width() + 24, surviving->height() + 24);
+        canvas->clear(0x00000000);
+        surviving->draw(12, 12);
+        CHECK(canvas->covered_pixels() > 0);
+        surviving.reset();
+    }
+
+    // 3) Full pipeline into an injected headless canvas: drawing a non-empty
     //    formula must leave visible pixels; drawing nothing must leave the
     //    canvas blank.
     {
@@ -155,7 +181,28 @@ int main()
         CHECK(canvas->covered_pixels() > 0); // the formula rendered something
     }
 
-    // 3) Direct HeadlessSurface compositing: pixels are stored as straight RGBA,
+    // 4) Repeated render/draw cycles remain valid under intentionally tiny cache
+    //    limits. This exercises cache eviction without depending on internals.
+    {
+        const auto old_limits = cache_limits();
+        set_cache_limits(CacheLimits{1, 1});
+
+        auto owned = std::make_unique<HeadlessSurface>();
+        auto* const canvas = owned.get();
+        const auto document = LatexDocument{res, std::move(owned)};
+        for (const auto* const latex : {R"(x)", R"(\sqrt{x+1})", R"(\frac{a}{b})", R"(\hat{x}+\vec{v})"})
+        {
+            auto formula = document.render(latex, 38.f, 0xff000000);
+            canvas->resize(formula.width() + 16, formula.height() + 16);
+            canvas->clear(0x00000000);
+            formula.draw(8, 8);
+            CHECK(canvas->covered_pixels() > 0);
+        }
+
+        set_cache_limits(old_limits);
+    }
+
+    // 5) Direct HeadlessSurface compositing: pixels are stored as straight RGBA,
     //    so transparent colors keep their source RGB and compose correctly over
     //    opaque destinations.
     {
@@ -180,7 +227,7 @@ int main()
         CHECK(opaque[3] == 255);
     }
 
-    // 4) Cache limits are configurable and clamp zero to one.
+    // 6) Cache limits are configurable and clamp zero to one.
     {
         const auto old_limits = cache_limits();
         auto limits = old_limits;
@@ -192,7 +239,7 @@ int main()
         set_cache_limits(old_limits);
     }
 
-    // 5) HeadlessSurface can write real PNG files without extra dependencies.
+    // 7) HeadlessSurface can write real PNG files without extra dependencies.
     {
         auto canvas = HeadlessSurface{};
         CHECK(!canvas.write_png((std::filesystem::temp_directory_path() / "texgui-empty.png").string()));
@@ -213,7 +260,7 @@ int main()
         std::filesystem::remove(path);
     }
 
-    // 6) SvgSurface can capture a formula as a self-contained SVG document.
+    // 8) SvgSurface can capture a formula as a self-contained SVG document.
     {
         auto owned = std::make_unique<SvgSurface>();
         auto* const canvas = owned.get();
@@ -239,7 +286,7 @@ int main()
     }
 
     if (g_failures == 0)
-        std::println("all headless_render tests passed");
+        std::printf("all headless_render tests passed\n");
 
     return g_failures == 0 ? 0 : 1;
 }

@@ -3,8 +3,7 @@
 #include <cmath>
 #include <cstdint>
 #include <fstream>
-#include <format>
-#include <numbers>
+#include <iomanip>
 #include <sstream>
 #include <string_view>
 
@@ -32,16 +31,20 @@ namespace
 
     [[nodiscard]] std::string number(const float value)
     {
-        return std::format("{:.3f}", value);
+        auto output = std::ostringstream{};
+        output << std::fixed << std::setprecision(3) << value;
+        return output.str();
     }
 
     [[nodiscard]] std::string paint_attributes(const uint32_t argb, const char* const paint_kind)
     {
         const auto c = color_from_argb(argb);
-        auto attrs = std::format(R"({}="#{:02x}{:02x}{:02x}")", paint_kind, c.r, c.g, c.b);
+        auto attrs = std::ostringstream{};
+        attrs << paint_kind << "=\"#" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c.r) << std::setw(2)
+              << static_cast<int>(c.g) << std::setw(2) << static_cast<int>(c.b) << std::dec << '"';
         if (c.a != 255)
-            attrs += std::format(R"( {}-opacity="{:.3f}")", paint_kind, static_cast<float>(c.a) / 255.f);
-        return attrs;
+            attrs << ' ' << paint_kind << "-opacity=\"" << number(static_cast<float>(c.a) / 255.f) << '"';
+        return attrs.str();
     }
 
     void append_u16_le(std::vector<unsigned char>& output, const uint16_t value)
@@ -185,7 +188,7 @@ namespace
 
     [[nodiscard]] constexpr float to_degrees(const float radians)
     {
-        return radians * (180.f / std::numbers::pi_v<float>);
+        return radians * (180.f / 3.14159265358979323846f);
     }
 } // namespace
 
@@ -235,35 +238,34 @@ std::string SvgSurface::paint_attributes(const char* const paint_kind) const
 
 void SvgSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float width)
 {
-    elements_.push_back(std::format(R"(<line x1="{}" y1="{}" x2="{}" y2="{}" {} stroke-width="{}" stroke-linecap="round"/>)",
-        number(x1), number(y1), number(x2), number(y2), paint_attributes("stroke"), number(width)));
+    elements_.push_back("<line x1=\"" + number(x1) + "\" y1=\"" + number(y1) + "\" x2=\"" + number(x2) + "\" y2=\"" + number(y2) +
+                        "\" " + paint_attributes("stroke") + " stroke-width=\"" + number(width) + "\" stroke-linecap=\"round\"/>");
 }
 
 void SvgSurface::draw_rect(const float x, const float y, const float w, const float h, const float width)
 {
-    elements_.push_back(std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" fill="none" {} stroke-width="{}"/>)", number(x),
-        number(y), number(w), number(h), paint_attributes("stroke"), number(width)));
+    elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
+                        "\" fill=\"none\" " + paint_attributes("stroke") + " stroke-width=\"" + number(width) + "\"/>");
 }
 
 void SvgSurface::fill_rect(const float x, const float y, const float w, const float h)
 {
-    elements_.push_back(std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" {}/>)", number(x), number(y), number(w),
-        number(h), paint_attributes("fill")));
+    elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
+                        "\" " + paint_attributes("fill") + "/>");
 }
 
 void SvgSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry,
     const float width)
 {
-    elements_.push_back(
-        std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" rx="{}" ry="{}" fill="none" {} stroke-width="{}"/>)", number(x),
-            number(y), number(w), number(h), number(rx), number(ry), paint_attributes("stroke"), number(width))
-    );
+    elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
+                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" fill=\"none\" " + paint_attributes("stroke") +
+                        " stroke-width=\"" + number(width) + "\"/>");
 }
 
 void SvgSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)
 {
-    elements_.push_back(std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" rx="{}" ry="{}" {}/>)", number(x), number(y),
-        number(w), number(h), number(rx), number(ry), paint_attributes("fill")));
+    elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
+                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" " + paint_attributes("fill") + "/>");
 }
 
 void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
@@ -292,21 +294,22 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
     const auto y = pen_y - static_cast<float>(glyph.top);
     auto transform = std::string{};
     if (std::fabs(angle) > 0.0001f)
-        transform = std::format(" transform=\"rotate({} {} {})\"", number(to_degrees(angle)), number(pen_x), number(pen_y));
+        transform = " transform=\"rotate(" + number(to_degrees(angle)) + ' ' + number(pen_x) + ' ' + number(pen_y) + ")\"";
 
-    elements_.push_back(std::format(R"(<image x="{}" y="{}" width="{}" height="{}" href="data:image/png;base64,{}"{}/>)", number(x),
-        number(y), glyph.width, glyph.height, base64(png_rgba(glyph.width, glyph.height, rgba)), transform));
+    elements_.push_back("<image x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + std::to_string(glyph.width) +
+                        "\" height=\"" + std::to_string(glyph.height) + "\" href=\"data:image/png;base64," +
+                        base64(png_rgba(glyph.width, glyph.height, rgba)) + "\"" + transform + "/>");
 }
 
 std::string SvgSurface::svg() const
 {
     auto out = std::ostringstream{};
-    out << std::format(R"(<svg xmlns="http://www.w3.org/2000/svg" width="{}" height="{}" viewBox="0 0 {} {}">)", width_, height_,
-        width_, height_);
+    out << "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" << width_ << "\" height=\"" << height_ << "\" viewBox=\"0 0 "
+        << width_ << ' ' << height_ << "\">";
     out << '\n';
     if (background_)
     {
-        out << std::format(R"(  <rect width="100%" height="100%" {}/>)", ::paint_attributes(*background_, "fill")) << '\n';
+        out << "  <rect width=\"100%\" height=\"100%\" " << ::paint_attributes(*background_, "fill") << "/>\n";
     }
     for (const auto& element : elements_)
         out << "  " << element << '\n';

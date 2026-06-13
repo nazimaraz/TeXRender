@@ -12,6 +12,7 @@ keep their notices intact.
 | [MicroTeX](https://github.com/NanoMichael/MicroTeX) | LaTeX parsing & box layout | MIT |
 | MicroTeX `res/` fonts | bundled TeX fonts (Computer Modern et al.) | Knuth License, SIL Open Font License (OFL), and the `dsrom` license — see `res/fonts/licences/` in the MicroTeX checkout |
 | [raylib](https://www.raylib.com/) | GUI / render backend | zlib/libpng |
+| [SDL2](https://www.libsdl.org/) | optional GUI / render backend | zlib |
 | [FreeType](https://freetype.org/) | glyph rasterisation | FTL **or** GPLv2 (dual-licensed) |
 | [tinyxml2](https://github.com/leethomason/tinyxml2) | MicroTeX resource parsing | zlib |
 
@@ -21,3 +22,5 @@ attribution) or GPLv2 — choose whichever fits your project's licensing.
 
 For the release redistribution checklist, see
 [`docs/dependency-license-audit.md`](docs/dependency-license-audit.md).
+For the local MicroTeX safety patch carried by this repository, see
+[`docs/upstream-microtex-patch.md`](docs/upstream-microtex-patch.md).

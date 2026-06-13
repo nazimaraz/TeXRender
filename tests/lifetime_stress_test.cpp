@@ -1,6 +1,6 @@
+#include <cstdio>
 #include <memory>
 #include <optional>
-#include <print>
 #include <string>
 #include <thread>
 #include <vector>
@@ -21,7 +21,7 @@ namespace
     {
         if (!ok)
         {
-            std::println("FAIL: {}", expr);
+            std::printf("FAIL: %s\n", expr);
             ++g_failures;
         }
     }
@@ -94,7 +94,7 @@ int main()
     }
 
     if (g_failures == 0)
-        std::println("all lifetime_stress tests passed");
+        std::printf("all lifetime_stress tests passed\n");
 
     return g_failures == 0 ? 0 : 1;
 }

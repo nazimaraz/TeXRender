@@ -1,6 +1,5 @@
 #include <cmath>
-#include <numbers>
-#include <print>
+#include <cstdio>
 #include "render/transform2d.hpp"
 
 using TexGui::Transform2D;
@@ -13,7 +12,7 @@ namespace
     {
         if (!ok)
         {
-            std::println("FAIL: {}", expr);
+            std::printf("FAIL: %s\n", expr);
             ++g_failures;
         }
     }
@@ -23,7 +22,7 @@ namespace
         return std::fabs(a - b) < 1e-4f;
     }
 
-    constexpr float k_pi = std::numbers::pi_v<float>;
+    constexpr float k_pi = 3.14159265358979323846f;
 } // namespace
 
 #define CHECK(cond) check((cond), #cond)
@@ -83,7 +82,7 @@ int main()
     }
 
     if (g_failures == 0)
-        std::println("all transform2d tests passed");
+        std::printf("all transform2d tests passed\n");
 
     return g_failures == 0 ? 0 : 1;
 }

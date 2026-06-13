@@ -16,6 +16,14 @@ These files are the public API:
 Implementation files under `source/`, bundled MicroTeX integration details, test
 helpers, and CI scripts are not API.
 
+## Naming
+
+The repository and package-manager package name is `latex-renderer`. The public
+C++ namespace, installed headers, CMake package, exported target, and pkg-config
+file use `texgui`/`TexGui`: `TexGui::LatexDocument`,
+`#include <texgui/texgui.hpp>`, `find_package(texgui CONFIG REQUIRED)`,
+`texgui::texgui`, and `texgui.pc`.
+
 ## Compatibility Promise
 
 For `0.1.x` releases:

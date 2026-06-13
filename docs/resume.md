@@ -11,7 +11,7 @@ backends through a small `IDrawSurface` interface.
 
 ## Resume Bullets
 
-- Built a C++23 LaTeX math renderer with C++17 public headers, pluggable
+- Built a C++17 LaTeX math renderer with C++17 public headers, pluggable
   raylib/SDL2/headless/SVG backends, and a backend-neutral FreeType glyph cache.
 - Designed a small ownership-oriented API around `LatexDocument`,
   move-only `RenderHandle`, injectable `IDrawSurface`, non-throwing
@@ -29,10 +29,12 @@ backends through a small `IDrawSurface` interface.
   readiness checks.
 - Implemented offscreen PNG/PPM output, self-contained SVG export, generated
   gallery assets, and a GitHub Pages WebAssembly live editor.
+- Added dependency-shaped examples, API-level lifetime/cache tests, fuzz seeds,
+  and benchmark baseline tracking to make the project reviewable as a library.
 
 ## Interview Talking Points
 
-- Why public headers require only C++17 while implementation files use C++23.
+- Why both public headers and implementation files stay compatible with C++17.
 - How `IDrawSurface` keeps the core independent of raylib, SDL2, or any future
   renderer.
 - Why GUI contexts are borrowed and why examples scope documents before window

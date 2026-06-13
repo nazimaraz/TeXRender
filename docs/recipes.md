@@ -24,6 +24,40 @@ while (!WindowShouldClose())
 For raylib and SDL2, destroy documents and handles before closing the graphics
 context so cached glyph textures can be released.
 
+## Reusable Formula Label
+
+For application UI code, wrap a parsed `RenderHandle` behind your own label or
+widget object instead of reparsing in every frame:
+
+```cpp
+class FormulaLabel
+{
+public:
+    FormulaLabel(const TexGui::LatexDocument& document, std::string source)
+        : document_(document)
+    {
+        set_formula(std::move(source));
+    }
+
+    void set_formula(std::string source)
+    {
+        formula_ = document_.render(source, 42.f, 0xff202840);
+    }
+
+    void draw(int x, int baseline_y) const
+    {
+        TexGui::draw_at_baseline(*formula_, x, baseline_y);
+    }
+
+private:
+    const TexGui::LatexDocument& document_;
+    std::optional<TexGui::RenderHandle> formula_;
+};
+```
+
+See [`examples/formula_label_widget.cpp`](../examples/formula_label_widget.cpp)
+for a complete dependency-shaped example.
+
 ## Offline PNG Generation
 
 Use `HeadlessSurface` for command-line tools, CI snapshots, and server-side

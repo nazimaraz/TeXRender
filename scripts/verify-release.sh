@@ -65,6 +65,7 @@ run git diff --check
 if has python3; then
     run python3 "$ROOT_DIR/scripts/check-doc-links.py"
     run python3 "$ROOT_DIR/scripts/check-registry-readiness.py"
+    run python3 "$ROOT_DIR/scripts/check-third-party-notices.py"
     run python3 "$ROOT_DIR/scripts/check-public-api.py"
 else
     printf '\n==> skipping Python-based docs/registry checks: python3 is not installed\n'
@@ -86,6 +87,10 @@ else
     printf '\n==> skipping README GIF generation: ffmpeg is not installed\n'
 fi
 run "$HEADLESS_BUILD/texgui_render_benchmark"
+run "$HEADLESS_BUILD/texgui_render_benchmark" > "${BUILD_ROOT}/benchmark-results.txt"
+if has python3; then
+    run python3 "$ROOT_DIR/scripts/check-benchmark-baseline.py" --input "${BUILD_ROOT}/benchmark-results.txt" --warn-only
+fi
 run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texgui_headless_batch" 'e^{i\pi} + 1 = 0'
 
 rm -rf "$SVG_BUILD"
@@ -164,6 +169,14 @@ if has actionlint; then
     run actionlint
 else
     printf '\n==> skipping actionlint: not installed\n'
+fi
+
+if [[ "${TEXGUI_SKIP_TSAN_SMOKE:-0}" != "1" ]]; then
+    if has clang++; then
+        run env BUILD_DIR="${BUILD_ROOT}/tsan" "$ROOT_DIR/scripts/verify-thread-sanitizer.sh"
+    else
+        printf '\n==> skipping ThreadSanitizer smoke: clang++ is not installed\n'
+    fi
 fi
 
 if has conan; then

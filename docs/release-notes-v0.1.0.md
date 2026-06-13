@@ -13,8 +13,7 @@ for embedding LaTeX math rendering into applications.
 - CMake consumption through `FetchContent`, `add_subdirectory`, installed
   `find_package(texgui CONFIG REQUIRED)`, installed pkg-config metadata, and
   package-manager starter metadata.
-- Public headers validated as C++17 while the implementation can use modern
-  C++23.
+- Implementation and public headers validated as C++17.
 - Backend-neutral umbrella header `texgui/texgui.hpp`, with installed packages
   exposing only the backend headers their dependencies support.
 - Generated `texgui/config.hpp`, CMake package feature metadata, and CMake
@@ -25,8 +24,10 @@ for embedding LaTeX math rendering into applications.
   smoke, nightly seeded fuzzing, static analysis, package consumers, registry
   metadata, release archive smoke, CPack archive smoke, external consumer smoke,
   path-with-spaces smoke, and the WebAssembly live editor.
+- CI docs gates for Doxygen API generation and third-party notice drift.
 - Public project hygiene: support policy, code of conduct, citation metadata,
   CODEOWNERS, release asset guide, and a why-not-just-TeX FAQ.
+- Documented local MicroTeX safety patch with an upstream issue/PR draft.
 - Fresh-clone release rehearsal and local cleanup helpers for final pre-push
   validation.
 - Public API snapshot and pkg-config consumer smoke checks for dependency-facing
@@ -37,8 +38,13 @@ for embedding LaTeX math rendering into applications.
 - Installed shared-library package smoke checks for dynamic-linking consumers.
 - Copyable integration recipes for HUD rendering, PNG/SVG generation, custom
   surfaces, safe user input, and portable feature checks.
+- A dependency-shaped formula-label example that wraps a parsed `RenderHandle`
+  inside a reusable application object.
 - Expanded structural visual regression formulas for nested fractions, large
   operators, spacing commands, symbols, and colored rules.
+- Expanded fuzz corpus seeds for malformed matrices, accents, Unicode, colors,
+  spacing commands, large operators, and nested scripts.
+- Benchmark baseline comparison in warn-only mode for visible performance drift.
 - Security threat model, dependency/license audit, and first public push dry-run
   checklist for public launch review.
 
