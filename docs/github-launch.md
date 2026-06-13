@@ -1,6 +1,8 @@
 # GitHub Launch Checklist
 
 Use this when the local repository is ready to become the public project.
+For the condensed final pass immediately before publishing, see
+[`docs/first-public-push-dry-run.md`](first-public-push-dry-run.md).
 
 ## One-Time Repository Setup
 
@@ -15,7 +17,7 @@ Use this when the local repository is ready to become the public project.
 
    ```sh
    scripts/verify-release.sh
-   scripts/verify-fresh-clone.sh
+   TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
    scripts/prepare-public-release.sh
    git push -u origin main
    ```

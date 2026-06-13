@@ -55,6 +55,8 @@ Use this before cutting a public tag.
   `scripts/verify-release.sh`
 - Run the fresh-clone verifier:
   `scripts/verify-fresh-clone.sh`
+- Run the full fresh-clone release rehearsal before the first public push:
+  `TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh`
 - Run the source archive verifier:
   `scripts/verify-release-archive.sh`
 - Run CPack archive validation:
@@ -71,6 +73,8 @@ Use this before cutting a public tag.
   `scripts/check-public-api.py`
 - Run the public release preparation gate once a remote is configured:
   `scripts/prepare-public-release.sh`
+- Follow the first public push dry run:
+  [`docs/first-public-push-dry-run.md`](first-public-push-dry-run.md)
 - Run warnings as errors at least once:
   `cmake -S . -B build-werror -DTEXGUI_BACKEND=headless -DTEXGUI_WARNINGS_AS_ERRORS=ON && cmake --build build-werror -j`
 - Lint workflows locally when actionlint is available:

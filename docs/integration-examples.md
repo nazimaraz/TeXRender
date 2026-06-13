@@ -42,7 +42,8 @@ It uses `find_package(texgui CONFIG REQUIRED)`, links `texgui::texgui`, then cal
 
 When texgui is installed, it also writes `texgui.pc` for non-CMake consumers.
 Use `--static` when linking the default static package so FreeType and tinyxml2
-are included in the link flags:
+are included in the link flags. A complete Makefile example lives in
+[`examples/consumer-pkg-config`](../examples/consumer-pkg-config):
 
 ```sh
 cmake -S . -B build-headless \
@@ -57,6 +58,7 @@ c++ -std=c++17 my_formula_tool.cpp \
   -DTEXGUI_RES_DIR=\"$(pkg-config --variable=resdir texgui)\" \
   $(pkg-config --cflags --libs --static texgui) \
   -o my_formula_tool
+make -C examples/consumer-pkg-config run
 ```
 
 The `resdir` variable points at the installed MicroTeX resource directory for

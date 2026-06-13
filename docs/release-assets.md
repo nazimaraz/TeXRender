@@ -62,8 +62,9 @@ That helper copies resources next to the executable and defines
 Before attaching or announcing release assets:
 
 - run `scripts/verify-release.sh`
-- run `scripts/verify-fresh-clone.sh`
+- run `TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh`
 - run `scripts/verify-release-archive.sh`
 - run `scripts/verify-cpack.sh`
+- run `scripts/verify-pkg-config.sh`
 - confirm the `Release smoke` workflow is green for the tag
 - confirm `SHA256SUMS` includes every uploaded archive

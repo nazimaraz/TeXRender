@@ -11,7 +11,8 @@ embedding LaTeX-style math rendering into caller-owned render loops.
 - Use a small public API built around `TexGui::LatexDocument`,
   `TexGui::RenderHandle`, `TexGui::IDrawSurface`, and `TexGui::RenderOptions`.
 - Consume the library with `FetchContent`, `add_subdirectory`, installed
-  `find_package(texgui CONFIG REQUIRED)`, Conan metadata, or vcpkg metadata.
+  `find_package(texgui CONFIG REQUIRED)`, pkg-config metadata, Conan metadata,
+  or vcpkg metadata.
 - Build native demos and the same live editor as a WebAssembly/GitHub Pages app.
 - Validate downstream dependency use with installed package consumers, external
   consumers, CPack smoke tests, path-with-spaces tests, and release archive
@@ -23,6 +24,10 @@ embedding LaTeX-style math rendering into caller-owned render loops.
 - API docs: https://nazimaraz.github.io/latex-renderer/api/
 - Integration examples:
   https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/integration-examples.md
+- Security threat model:
+  https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/security-threat-model.md
+- Dependency/license audit:
+  https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/dependency-license-audit.md
 - Release asset guide:
   https://github.com/nazimaraz/latex-renderer/blob/v0.1.0/docs/release-assets.md
 
@@ -112,11 +117,12 @@ This release is designed to be verified before publishing with:
 
 ```sh
 scripts/verify-release.sh
-scripts/verify-fresh-clone.sh
+TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
 scripts/verify-release-archive.sh
 scripts/verify-cpack.sh
 scripts/verify-external-consumers.sh
 scripts/verify-path-with-spaces.sh
+scripts/verify-pkg-config.sh
 scripts/check-registry-readiness.py
 ```
 

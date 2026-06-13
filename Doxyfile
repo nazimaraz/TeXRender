@@ -10,6 +10,8 @@ GENERATE_LATEX         = NO
 GENERATE_XML           = NO
 
 INPUT                  = include \
+                         SECURITY.md \
+                         THIRD_PARTY.md \
                          docs/api-mainpage.md \
                          docs/api.md \
                          docs/architecture.md \
@@ -19,9 +21,12 @@ INPUT                  = include \
                          docs/why-not-just-tex.md \
                          docs/api-compatibility.md \
                          docs/public-api-snapshot.txt \
+                         docs/security-threat-model.md \
+                         docs/dependency-license-audit.md \
                          docs/migration.md \
                          docs/gallery.md \
                          docs/github-launch.md \
+                         docs/first-public-push-dry-run.md \
                          docs/local-release-rehearsal.md \
                          docs/release-body-v0.1.0.md \
                          docs/release-assets.md \

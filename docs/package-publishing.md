@@ -15,7 +15,8 @@ The `Registry readiness` workflow runs the same check on package metadata PRs.
 
 Installed builds write `texgui.pc` next to the CMake package metadata. This is
 intended for small non-CMake tools and build systems that already use
-pkg-config:
+pkg-config. The complete example lives in
+[`examples/consumer-pkg-config`](../examples/consumer-pkg-config):
 
 ```sh
 scripts/verify-pkg-config.sh

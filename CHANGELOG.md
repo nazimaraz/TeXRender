@@ -53,7 +53,7 @@ follow [Semantic Versioning](https://semver.org/).
 - Examples: minimal window, sample browser, live editor, offscreen render to
   PNG/PPM, SVG export, headless batch output, raylib overlay, SDL2 minimal,
   custom surface, and copyable FetchContent / installed-package consumer
-  projects.
+  projects plus a non-CMake pkg-config Makefile consumer.
 - Benchmark executable for cold render, warm render and headless draw timing.
 - libFuzzer harness for `try_render()` with sanitizer-friendly input limits.
 - Seeded fuzz corpus and scheduled nightly fuzz workflow for longer malformed
@@ -93,6 +93,7 @@ follow [Semantic Versioning](https://semver.org/).
   guide, v0.1.0 release body, local release rehearsal, why-not-just-TeX FAQ,
   GitHub launch, package publishing, registry submissions, support matrix,
   v0.1.0 release notes, roadmap, performance baseline, resume notes,
+  dependency/license audit, security threat model, first public push dry run,
   resume-oriented case study and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

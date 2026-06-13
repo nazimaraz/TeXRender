@@ -16,6 +16,7 @@ embed texgui.
 | [`examples/custom_surface.cpp`](../examples/custom_surface.cpp) | any backend | Implementing a custom `IDrawSurface`. |
 | [`examples/consumer-fetchcontent`](../examples/consumer-fetchcontent) | external CMake | Consuming texgui with `FetchContent`. |
 | [`examples/consumer-find-package`](../examples/consumer-find-package) | external CMake | Consuming an installed `find_package(texgui CONFIG REQUIRED)` package. |
+| [`examples/consumer-pkg-config`](../examples/consumer-pkg-config) | external Makefile | Consuming an installed package through `pkg-config`. |
 
 ## Picking A Starting Point
 
@@ -26,8 +27,8 @@ embed texgui.
 - Exporting documents or reports: start with `svg_export.cpp`.
 - Integrating a custom renderer, engine command buffer, or test double: start
   with `custom_surface.cpp`.
-- Adding texgui to another project: start with the FetchContent or installed
-  package consumer directories.
+- Adding texgui to another project: start with the FetchContent, installed
+  package, or pkg-config consumer directories.
 
 The longer command walk-throughs live in
 [`docs/integration-examples.md`](integration-examples.md).

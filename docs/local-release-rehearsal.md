@@ -65,6 +65,7 @@ scripts/check-doc-links.py
 scripts/check-registry-readiness.py
 scripts/check-public-api.py
 scripts/verify-fresh-clone.sh
+TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
 scripts/verify-pkg-config.sh
 scripts/verify-release-archive.sh
 scripts/verify-cpack.sh

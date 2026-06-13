@@ -18,3 +18,6 @@ keep their notices intact.
 All of these are permissive. The one to be deliberate about is **FreeType**,
 which is dual-licensed under the FreeType License (BSD-style, requires
 attribution) or GPLv2 — choose whichever fits your project's licensing.
+
+For the release redistribution checklist, see
+[`docs/dependency-license-audit.md`](docs/dependency-license-audit.md).

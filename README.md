@@ -54,8 +54,11 @@ See the [gallery](docs/gallery.md), [examples index](docs/examples-index.md),
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
 [why-not-just-TeX FAQ](docs/why-not-just-tex.md), and [case study](docs/case-study.md).
 The [support matrix](docs/support-matrix.md), [API compatibility notes](docs/api-compatibility.md),
-and [migration guide](docs/migration.md) describe the public contract. The
-[GitHub launch checklist](docs/github-launch.md), [local release rehearsal](docs/local-release-rehearsal.md),
+and [migration guide](docs/migration.md) describe the public contract.
+The [security threat model](docs/security-threat-model.md) and
+[dependency/license audit](docs/dependency-license-audit.md) cover risk and
+redistribution notes. The [GitHub launch checklist](docs/github-launch.md),
+[first public push dry run](docs/first-public-push-dry-run.md), [local release rehearsal](docs/local-release-rehearsal.md),
 [release asset guide](docs/release-assets.md), [registry submission guide](docs/registry-submissions.md),
 and [roadmap](docs/roadmap.md) cover the public release path. Support and
 community expectations live in [SUPPORT.md](SUPPORT.md) and
@@ -193,7 +196,8 @@ validation and submission checklist.
 Installed builds also generate `texgui.pc` for pkg-config consumers. For static
 linking, use `pkg-config --cflags --libs --static texgui`; the generated
 `resdir` variable points at the installed MicroTeX resources for simple
-non-CMake tools.
+non-CMake tools. A complete Makefile consumer lives in
+[`examples/consumer-pkg-config`](examples/consumer-pkg-config).
 
 The public API is pre-1.0 and source-compatibility focused; see
 [`docs/api-compatibility.md`](docs/api-compatibility.md) for the current

@@ -24,6 +24,8 @@ See also:
 
 - [Embedding notes](api.md)
 - [API compatibility](api-compatibility.md)
+- [Security threat model](security-threat-model.md)
+- [Dependency and license audit](dependency-license-audit.md)
 - [Migration guide](migration.md)
 - [Architecture](architecture.md)
 - [Why not just TeX?](why-not-just-tex.md)
@@ -31,6 +33,7 @@ See also:
 - [Examples index](examples-index.md)
 - [Build options](build-options.md)
 - [GitHub launch checklist](github-launch.md)
+- [First public push dry run](first-public-push-dry-run.md)
 - [Local release rehearsal](local-release-rehearsal.md)
 - [v0.1.0 release body](release-body-v0.1.0.md)
 - [Release assets](release-assets.md)

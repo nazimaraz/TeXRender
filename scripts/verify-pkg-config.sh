@@ -6,7 +6,7 @@ BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-pkg-config}"
 GENERATOR="${GENERATOR:-Ninja}"
 BUILD_DIR="${BUILD_ROOT}/build"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix"
-CONSUMER_DIR="${BUILD_ROOT}/consumer"
+CONSUMER_BUILD_DIR="${BUILD_ROOT}/consumer"
 CXX_BIN="${CXX:-c++}"
 
 run() {
@@ -39,7 +39,7 @@ if ! has "$CXX_BIN"; then
 fi
 
 rm -rf "$BUILD_ROOT"
-mkdir -p "$CONSUMER_DIR"
+mkdir -p "$CONSUMER_BUILD_DIR"
 
 run cmake -S "$ROOT_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -79,34 +79,11 @@ fi
 export PKG_CONFIG_PATH="${pkg_config_path}${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
 run pkg-config --exists texgui
 run pkg-config --print-errors --exists --static texgui
-
-cat > "$CONSUMER_DIR/main.cpp" <<'EOF'
-#include <memory>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
-
-#ifndef TEXGUI_RES_DIR
-#error "define TEXGUI_RES_DIR from pkg-config --variable=resdir texgui"
-#endif
-
-int main()
-{
-    auto surface = std::make_unique<TexGui::HeadlessSurface>();
-    auto* const canvas = surface.get();
-    TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(surface));
-    const auto formula = document.render(R"(\sqrt{x+1})", 36.f, 0xff000000);
-    canvas->resize(formula.width() + 10, formula.height() + 10);
-    canvas->clear(0xffffffff);
-    formula.draw(5, 5);
-    return canvas->covered_pixels() > 0 ? 0 : 1;
-}
-EOF
-
-res_dir="$(pkg-config --variable=resdir texgui)"
-# pkg-config outputs compiler/linker fragments intentionally consumed by the
-# compiler command below. The smoke path avoids spaces so shell splitting is OK.
-run "$CXX_BIN" -std=c++17 "$CONSUMER_DIR/main.cpp" "-DTEXGUI_RES_DIR=\"$res_dir\"" $(pkg-config --cflags --libs --static texgui) \
-    -o "$CONSUMER_DIR/pkg-config-consumer"
-run "$CONSUMER_DIR/pkg-config-consumer"
+run make -C "$ROOT_DIR/examples/consumer-pkg-config" \
+    BUILD_DIR="$CONSUMER_BUILD_DIR" \
+    CXX="$CXX_BIN" \
+    PKG_CONFIG="pkg-config" \
+    PKG_CONFIG_FLAGS="--static" \
+    run
 
 printf '\npkg-config consumer smoke completed successfully\n'

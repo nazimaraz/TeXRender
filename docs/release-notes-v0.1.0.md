@@ -27,6 +27,8 @@ for embedding LaTeX math rendering into applications.
   validation.
 - Public API snapshot and pkg-config consumer smoke checks for dependency-facing
   changes.
+- Security threat model, dependency/license audit, and first public push dry-run
+  checklist for public launch review.
 
 ## Stability
 
