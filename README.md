@@ -275,7 +275,8 @@ and an end-to-end formula render into an injected headless canvas, checked
 pixel-by-pixel — needs no window or GPU and runs under either backend;
 `TEXGUI_BACKEND=headless` additionally drops the raylib dependency entirely. CI
 exercises this on Linux, macOS and Windows, the raylib backend + examples on
-Linux and macOS, and gates formatting with clang-format.
+Linux and macOS, runs the suite under ASan + UBSan, and gates formatting with
+clang-format.
 
 ## License
 

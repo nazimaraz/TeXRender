@@ -52,6 +52,35 @@ jobs:
       - name: Smoke-run the offscreen example
         run: ./build/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.ppm
 
+  # Address + UndefinedBehavior sanitizers over the full headless suite, with
+  # findings fatal (-fno-sanitize-recover). Leak detection stays off: the
+  # library deliberately keeps process-lifetime singletons (MicroTeX's global
+  # init, the shared glyph cache) — see the README's threading section.
+  sanitizers:
+    name: Linux · GCC 14 · ASan + UBSan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DCMAKE_CXX_COMPILER=g++-14
+          -DTEXGUI_BACKEND=headless
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+      - name: Build
+        run: cmake --build build -j
+      - name: Test
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1
+        run: ctest --test-dir build --output-on-failure
+
   # Linux / GCC 14: build the raylib backend + examples — the most common
   # consumer configuration. raylib comes from FetchContent (exercising that
   # fallback on Linux), which needs the X11/GL dev headers to compile. The test

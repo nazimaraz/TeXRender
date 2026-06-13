@@ -113,7 +113,7 @@ list(TRANSFORM MICROTEX_CORE_SOURCES PREPEND "${MICROTEX_SRC}/")
 add_library(microtex_core STATIC ${MICROTEX_CORE_SOURCES})
 add_library(microtex::core ALIAS microtex_core)
 
-target_include_directories(microtex_core PUBLIC "${MICROTEX_SRC}")
+target_include_directories(microtex_core SYSTEM PUBLIC "${MICROTEX_SRC}")
 # Pin MicroTeX's own sources to C++17 (its legacy code predates C++23 removals);
 # the PUBLIC feature still raises consumers to at least 17.
 target_compile_features(microtex_core PUBLIC cxx_std_17)

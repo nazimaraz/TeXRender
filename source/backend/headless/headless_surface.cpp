@@ -63,15 +63,23 @@ void HeadlessSurface::blend(const int x, const int y, const float coverage)
     if (x < 0 || y < 0 || x >= width_ || y >= height_ || coverage <= 0.f)
         return;
 
-    const auto alpha = std::clamp(coverage, 0.f, 1.f) * (static_cast<float>(a_) / 255.f);
+    const auto src_alpha = std::clamp(coverage, 0.f, 1.f) * (static_cast<float>(a_) / 255.f);
     const auto idx = (static_cast<size_t>(y) * static_cast<size_t>(width_) + static_cast<size_t>(x)) * 4u;
-    const auto mix = [alpha](const unsigned char dst, const unsigned char src) {
-        return static_cast<unsigned char>(std::lround(static_cast<float>(src) * alpha + static_cast<float>(dst) * (1.f - alpha)));
+    const auto dst_alpha = static_cast<float>(pixels_[idx + 3]) / 255.f;
+    const auto out_alpha = src_alpha + dst_alpha * (1.f - src_alpha);
+    if (out_alpha <= 0.f)
+        return;
+
+    const auto mix = [src_alpha, dst_alpha, out_alpha](const unsigned char dst, const unsigned char src) {
+        const auto src_channel = static_cast<float>(src) / 255.f;
+        const auto dst_channel = static_cast<float>(dst) / 255.f;
+        const auto out_channel = (src_channel * src_alpha + dst_channel * dst_alpha * (1.f - src_alpha)) / out_alpha;
+        return static_cast<unsigned char>(std::lround(std::clamp(out_channel, 0.f, 1.f) * 255.f));
     };
     pixels_[idx + 0] = mix(pixels_[idx + 0], r_);
     pixels_[idx + 1] = mix(pixels_[idx + 1], g_);
     pixels_[idx + 2] = mix(pixels_[idx + 2], b_);
-    pixels_[idx + 3] = std::max(pixels_[idx + 3], static_cast<unsigned char>(std::lround(alpha * 255.f)));
+    pixels_[idx + 3] = static_cast<unsigned char>(std::lround(std::clamp(out_alpha, 0.f, 1.f) * 255.f));
 }
 
 void HeadlessSurface::fill_rect(const float x, const float y, const float w, const float h)

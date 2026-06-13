@@ -7,6 +7,7 @@
 #include <string>
 #include "texgui/headless_surface.hpp"
 #include "texgui/latex_document.hpp"
+#include "texgui/version.hpp"
 
 #ifndef TEXGUI_RES_DIR
 #define TEXGUI_RES_DIR "res"
@@ -33,6 +34,9 @@ namespace
 int main()
 {
     const auto res = std::string{TEXGUI_RES_DIR};
+
+    // Compile-coverage for the public version header.
+    CHECK(TexGui::version_major == TEXGUI_VERSION_MAJOR);
 
     // 1) Default surface: a valid formula has positive metrics; try_render never
     //    throws and yields nullopt on malformed input while keeping a value on
@@ -65,6 +69,31 @@ int main()
 
         formula.draw(20, 20);
         CHECK(canvas->covered_pixels() > 0); // the formula rendered something
+    }
+
+    // 3) Direct HeadlessSurface compositing: pixels are stored as straight RGBA,
+    //    so transparent colors keep their source RGB and compose correctly over
+    //    opaque destinations.
+    {
+        auto canvas = HeadlessSurface{};
+        canvas.resize(1, 1);
+        canvas.clear(0x00000000);
+        canvas.set_color(0x80ff0000);
+        canvas.fill_rect(0, 0, 1, 1);
+        const auto& transparent = canvas.pixels();
+        CHECK(transparent[0] == 255);
+        CHECK(transparent[1] == 0);
+        CHECK(transparent[2] == 0);
+        CHECK(transparent[3] == 128);
+
+        canvas.clear(0xffffffff);
+        canvas.set_color(0x800000ff);
+        canvas.fill_rect(0, 0, 1, 1);
+        const auto& opaque = canvas.pixels();
+        CHECK(opaque[0] == 127);
+        CHECK(opaque[1] == 127);
+        CHECK(opaque[2] == 255);
+        CHECK(opaque[3] == 255);
     }
 
     if (g_failures == 0)

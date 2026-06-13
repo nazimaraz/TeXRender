@@ -7,6 +7,17 @@ project(
     LANGUAGES CXX
 )
 
+# The public version header is hand-written (so it is browsable in the repo);
+# fail the configure if it drifts from project(VERSION) above.
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/include/texgui/version.hpp" _texgui_version_header)
+if(NOT _texgui_version_header MATCHES "#define TEXGUI_VERSION_MAJOR ${PROJECT_VERSION_MAJOR}\n"
+   OR NOT _texgui_version_header MATCHES "#define TEXGUI_VERSION_MINOR ${PROJECT_VERSION_MINOR}\n"
+   OR NOT _texgui_version_header MATCHES "#define TEXGUI_VERSION_PATCH ${PROJECT_VERSION_PATCH}\n")
+    message(FATAL_ERROR
+        "include/texgui/version.hpp is out of sync with project(VERSION ${PROJECT_VERSION}).")
+endif()
+unset(_texgui_version_header)
+
 # ---------------------------------------------------------------------------
 # Options
 # ---------------------------------------------------------------------------
