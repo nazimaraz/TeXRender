@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TAG="${1:-}"
 REMOTE="${REMOTE:-origin}"
 RUN_ARCHIVE_SMOKE="${RUN_ARCHIVE_SMOKE:-1}"
+RUN_FRESH_CLONE_SMOKE="${RUN_FRESH_CLONE_SMOKE:-1}"
 
 run() {
     printf '\n==> %s\n' "$*"
@@ -34,6 +35,10 @@ if command -v clang-format >/dev/null 2>&1; then
     git ls-files '*.cpp' '*.hpp' | xargs clang-format --dry-run -Werror
 else
     printf '\n==> skipping clang-format: not installed\n'
+fi
+
+if [[ "$RUN_FRESH_CLONE_SMOKE" != "0" ]]; then
+    run "$ROOT_DIR/scripts/verify-fresh-clone.sh"
 fi
 
 if [[ "$RUN_ARCHIVE_SMOKE" != "0" ]]; then

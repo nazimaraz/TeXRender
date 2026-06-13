@@ -54,11 +54,12 @@ hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
 [why-not-just-TeX FAQ](docs/why-not-just-tex.md), and [case study](docs/case-study.md).
 The [support matrix](docs/support-matrix.md), [API compatibility notes](docs/api-compatibility.md),
 and [migration guide](docs/migration.md) describe the public contract. The
-[GitHub launch checklist](docs/github-launch.md), [release asset guide](docs/release-assets.md),
-[registry submission guide](docs/registry-submissions.md), and [roadmap](docs/roadmap.md)
-cover the public release path. Support and community expectations live in
-[SUPPORT.md](SUPPORT.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-Resume-focused bullets live in [`docs/resume.md`](docs/resume.md).
+[GitHub launch checklist](docs/github-launch.md), [local release rehearsal](docs/local-release-rehearsal.md),
+[release asset guide](docs/release-assets.md), [registry submission guide](docs/registry-submissions.md),
+and [roadmap](docs/roadmap.md) cover the public release path. Support and
+community expectations live in [SUPPORT.md](SUPPORT.md) and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Resume-focused bullets live in
+[`docs/resume.md`](docs/resume.md).
 
 ## How it works
 

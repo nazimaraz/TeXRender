@@ -51,6 +51,8 @@ Use this before cutting a public tag.
   [`docs/static-analysis.md`](static-analysis.md).
 - Run the local release verifier:
   `scripts/verify-release.sh`
+- Run the fresh-clone verifier:
+  `scripts/verify-fresh-clone.sh`
 - Run the source archive verifier:
   `scripts/verify-release-archive.sh`
 - Run CPack archive validation:
@@ -69,6 +71,8 @@ Use this before cutting a public tag.
   `cmake -S . -B build-werror -DTEXGUI_BACKEND=headless -DTEXGUI_WARNINGS_AS_ERRORS=ON && cmake --build build-werror -j`
 - Lint workflows locally when actionlint is available:
   `scripts/lint-workflows.sh`
+- Review generated local artifacts before final push:
+  `scripts/clean-local-artifacts.sh`
 
 ## GitHub Setup
 
@@ -106,6 +110,8 @@ Use this before cutting a public tag.
   attaching multiple archive types.
 - Include [`docs/support-matrix.md`](support-matrix.md) and
   [`docs/release-notes-v0.1.0.md`](release-notes-v0.1.0.md) in the release body.
+- Use [`docs/release-body-v0.1.0.md`](release-body-v0.1.0.md) as the first
+  GitHub release draft.
 - Let the release workflow attach install archives, CPack archives and
   `SHA256SUMS` after pushing a `vX.Y.Z` tag.
 - Follow [`docs/github-launch.md`](github-launch.md) for first push and

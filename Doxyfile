@@ -20,6 +20,8 @@ INPUT                  = include \
                          docs/migration.md \
                          docs/gallery.md \
                          docs/github-launch.md \
+                         docs/local-release-rehearsal.md \
+                         docs/release-body-v0.1.0.md \
                          docs/release-assets.md \
                          docs/package-publishing.md \
                          docs/registry-submissions.md \

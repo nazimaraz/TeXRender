@@ -22,6 +22,8 @@ for embedding LaTeX math rendering into applications.
   path-with-spaces smoke, and the WebAssembly live editor.
 - Public project hygiene: support policy, code of conduct, citation metadata,
   CODEOWNERS, release asset guide, and a why-not-just-TeX FAQ.
+- Fresh-clone release rehearsal and local cleanup helpers for final pre-push
+  validation.
 
 ## Stability
 
@@ -43,6 +45,7 @@ before `1.0`.
 - Source archive and SHA256 checksum from `scripts/verify-release-archive.sh`.
 - Source/binary CPack archives after `scripts/verify-cpack.sh` is green.
 - Release asset guide: [`docs/release-assets.md`](release-assets.md).
+- Release body draft: [`docs/release-body-v0.1.0.md`](release-body-v0.1.0.md).
 - GitHub Pages live editor URL.
 - README live-editor GIF refreshed with `scripts/record-live-editor-demo.sh`.
 - Generated API reference.

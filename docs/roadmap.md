@@ -6,6 +6,7 @@ library with a clear embedding story, not grow into a full TeX distribution.
 ## Near Term
 
 - Validate all GitHub Actions on the public repository after the first push.
+- Run the fresh-clone rehearsal from the final public commit.
 - Cut `v0.1.0` and verify release artifacts/checksums.
 - Watch the first scheduled `Nightly fuzz` run and triage any corpus growth or
   sanitizer findings.

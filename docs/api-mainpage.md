@@ -30,6 +30,8 @@ See also:
 - [Known limitations](known-limitations.md)
 - [Build options](build-options.md)
 - [GitHub launch checklist](github-launch.md)
+- [Local release rehearsal](local-release-rehearsal.md)
+- [v0.1.0 release body](release-body-v0.1.0.md)
 - [Release assets](release-assets.md)
 - [Package publishing](package-publishing.md)
 - [Registry submissions](registry-submissions.md)

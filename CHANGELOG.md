@@ -66,6 +66,8 @@ follow [Semantic Versioning](https://semver.org/).
 - Generated Doxygen API reference published with the web demo.
 - Release automation for tagged GitHub releases with install archives and
   SHA256 checksums, CPack archives, plus grouped generated release notes.
+- Fresh-clone release rehearsal and local artifact cleanup helpers for final
+  pre-push verification.
 - Public launch helper script that checks clean-tree/remote state, runs archive
   smoke, and optionally creates the local release tag.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
@@ -85,8 +87,9 @@ follow [Semantic Versioning](https://semver.org/).
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
   coverage, workflow linting, API compatibility, migration guide, release asset
-  guide, why-not-just-TeX FAQ, GitHub launch, package publishing, registry
-  submissions, support matrix, v0.1.0 release notes, roadmap, performance
-  baseline, resume notes, resume-oriented case study and release checklist.
+  guide, v0.1.0 release body, local release rehearsal, why-not-just-TeX FAQ,
+  GitHub launch, package publishing, registry submissions, support matrix,
+  v0.1.0 release notes, roadmap, performance baseline, resume notes,
+  resume-oriented case study and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

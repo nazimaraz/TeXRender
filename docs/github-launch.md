@@ -15,6 +15,7 @@ Use this when the local repository is ready to become the public project.
 
    ```sh
    scripts/verify-release.sh
+   scripts/verify-fresh-clone.sh
    scripts/prepare-public-release.sh
    git push -u origin main
    ```
@@ -72,10 +73,11 @@ git push origin v0.1.0
 
 The `Release` workflow builds install archives, CPack archives and checksum
 files. The `Release smoke` workflow validates source archives, CPack archives,
-external consumers and paths with spaces. Locally, `scripts/verify-cpack.sh`
-validates CPack binary/source archives before those artifacts are attached to a
-public release. Use [`docs/release-assets.md`](release-assets.md) to explain the
-download choices in the release body.
+external consumers and paths with spaces. Locally, `scripts/verify-fresh-clone.sh`
+and `scripts/verify-cpack.sh` validate the clean-clone and CPack paths before
+those artifacts are attached to a public release. Start the release text from
+[`docs/release-body-v0.1.0.md`](release-body-v0.1.0.md), and use
+[`docs/release-assets.md`](release-assets.md) to explain the download choices.
 
 ## First Failure Triage
 

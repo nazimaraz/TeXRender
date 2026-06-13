@@ -65,6 +65,7 @@ Package and release-facing checks:
 ```sh
 scripts/check-doc-links.py
 scripts/check-registry-readiness.py
+scripts/verify-fresh-clone.sh
 scripts/verify-cpack.sh
 scripts/verify-external-consumers.sh
 scripts/verify-path-with-spaces.sh
@@ -102,6 +103,8 @@ Workflow linting is documented in
 [`docs/workflow-linting.md`](docs/workflow-linting.md).
 ThreadSanitizer is intentionally scheduled/manual rather than required on every
 PR; see [`.github/workflows/thread-sanitizer.yml`](.github/workflows/thread-sanitizer.yml).
+Local clean-clone and cleanup rehearsal is documented in
+[`docs/local-release-rehearsal.md`](docs/local-release-rehearsal.md).
 
 ## Code style
 
