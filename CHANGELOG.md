@@ -32,8 +32,13 @@ follow [Semantic Versioning](https://semver.org/).
 - Shared-library symbol visibility via `TEXGUI_EXPORT`, including Windows DLL
   import/export definitions.
 - Backend-neutral umbrella header `texgui/texgui.hpp`.
+- Generated `texgui/config.hpp` feature header with backend support macros and
+  constexpr flags.
 - Selective installed public headers: raylib and SDL2 surface headers are
   packaged only when the selected installed backend exports that dependency.
+- CMake package metadata: `texgui_BACKEND`, `texgui_HAS_HEADLESS`,
+  `texgui_HAS_SVG`, `texgui_HAS_RAYLIB`, `texgui_HAS_SDL2`, and package
+  components for `headless`, `svg`, `raylib`, and `sdl2`.
 - `CMakePresets.json` for headless, raylib, SDL2, shared, sanitizer, coverage
   and fuzzing builds.
 - `TEXGUI_WARNINGS_AS_ERRORS` for first-party warning gates without applying
@@ -87,10 +92,10 @@ follow [Semantic Versioning](https://semver.org/).
   CI and release verification.
 - Local release verifier, CPack smoke, source archive smoke, external consumer
   smoke, path-with-spaces smoke, pkg-config smoke, installed-header smoke,
-  optional installed-backend package smoke, Markdown link checker,
-  public API snapshot checker, and registry-readiness checker for
-  format/build/test/docs/package-consumer/package-metadata checks before
-  pushing.
+  package-component success/failure smoke, optional installed-backend package
+  smoke, Markdown link checker, public API snapshot checker, and
+  registry-readiness checker for format/build/test/docs/package-consumer/package-metadata
+  checks before pushing.
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
   coverage, workflow linting, API compatibility, migration guide, release asset

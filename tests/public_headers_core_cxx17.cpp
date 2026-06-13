@@ -2,6 +2,7 @@
 #include <type_traits>
 #include <utility>
 #include <texgui/cache_options.hpp>
+#include <texgui/config.hpp>
 #include <texgui/draw_surface.hpp>
 #include <texgui/export.hpp>
 #include <texgui/formula_layout.hpp>
@@ -14,6 +15,10 @@
 #include <texgui/version.hpp>
 
 static_assert(TexGui::version_major == TEXGUI_VERSION_MAJOR);
+static_assert(TEXGUI_HAS_HEADLESS == 1);
+static_assert(TEXGUI_HAS_SVG == 1);
+static_assert(TexGui::has_headless);
+static_assert(TexGui::has_svg);
 static_assert(std::is_move_constructible_v<TexGui::RenderHandle>);
 static_assert(!std::is_copy_constructible_v<TexGui::RenderHandle>);
 static_assert(!std::is_copy_constructible_v<TexGui::LatexDocument>);

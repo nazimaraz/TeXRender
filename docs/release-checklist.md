@@ -37,6 +37,9 @@ Use this before cutting a public tag.
   `scripts/verify-installed-headers.sh`
 - Verify installed GUI backend packages when dependencies are available:
   `scripts/verify-backend-packages.sh`
+- Confirm package components and feature metadata are covered by the installed
+  header smoke: `headless`, `svg`, selected GUI backend, and rejected GUI
+  backend components.
 - Verify pkg-config consumption:
   `scripts/verify-pkg-config.sh`
 - Run the benchmark once in Release:
@@ -114,6 +117,8 @@ Use this before cutting a public tag.
   helpers.
 - Mention `Sdl2Surface` and `TEXGUI_BACKEND=sdl2`.
 - Mention `texgui/texgui.hpp` as the backend-neutral umbrella header.
+- Mention `texgui/config.hpp`, CMake package components, and `texgui_HAS_*`
+  package metadata.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 - Mention API compatibility status and the current source-compatibility promise.

@@ -50,13 +50,38 @@ created `RaylibSurface` instances and can also be set per surface.
 ## Public Headers
 
 Use `#include <texgui/texgui.hpp>` for the backend-neutral public API. It includes
-document/render types, cache options, layout helpers, `HeadlessSurface`,
-`SvgSurface`, and version constants.
+`texgui/config.hpp`, document/render types, cache options, layout helpers,
+`HeadlessSurface`, `SvgSurface`, and version constants.
 
 Backend-specific headers are deliberately opt-in. Installed packages include
 `raylib_surface.hpp` only for `TEXGUI_BACKEND=raylib` packages and
 `sdl2_surface.hpp` only for `TEXGUI_BACKEND=sdl2` packages. This keeps a
 headless or SVG install usable without GUI development headers.
+
+`texgui/config.hpp` exposes compile-time package features:
+
+```cpp
+#include <texgui/config.hpp>
+
+static_assert(TEXGUI_HAS_HEADLESS == 1);
+static_assert(TEXGUI_HAS_SVG == 1);
+if constexpr (TexGui::has_sdl2) {
+    // This package was built with TEXGUI_BACKEND=sdl2.
+}
+```
+
+Installed CMake packages expose matching metadata and components:
+
+```cmake
+find_package(texgui CONFIG REQUIRED COMPONENTS headless svg)
+
+message(STATUS "texgui backend: ${texgui_BACKEND}")
+message(STATUS "SDL2 support: ${texgui_HAS_SDL2}")
+```
+
+Supported components are `headless`, `svg`, `raylib`, and `sdl2`. Requesting a
+GUI component that the installed package was not built with fails during
+`find_package()`.
 
 ## SDL2 Backend
 

@@ -12,6 +12,8 @@ embedding LaTeX-style math rendering into caller-owned render loops.
   `TexGui::RenderHandle`, `TexGui::IDrawSurface`, and `TexGui::RenderOptions`.
 - Include the backend-neutral API through `texgui/texgui.hpp`; GUI backend
   headers are packaged only with installs that export their matching dependency.
+- Inspect backend support through `texgui/config.hpp`, `texgui_BACKEND`,
+  `texgui_HAS_*`, and CMake package components.
 - Consume the library with `FetchContent`, `add_subdirectory`, installed
   `find_package(texgui CONFIG REQUIRED)`, pkg-config metadata, Conan metadata,
   or vcpkg metadata.

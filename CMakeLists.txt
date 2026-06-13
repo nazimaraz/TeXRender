@@ -112,6 +112,31 @@ else()
         "Unsupported TEXGUI_BACKEND='${TEXGUI_BACKEND}'. Supported: 'raylib', 'headless', 'svg', 'sdl2'.")
 endif()
 
+set(TEXGUI_HAS_HEADLESS 1)
+set(TEXGUI_HAS_SVG 1)
+set(TEXGUI_HAS_RAYLIB 0)
+set(TEXGUI_HAS_SDL2 0)
+if(TEXGUI_BACKEND STREQUAL "raylib")
+    set(TEXGUI_HAS_RAYLIB 1)
+elseif(TEXGUI_BACKEND STREQUAL "sdl2")
+    set(TEXGUI_HAS_SDL2 1)
+endif()
+set(TEXGUI_HAS_RAYLIB_CMAKE FALSE)
+set(TEXGUI_HAS_SDL2_CMAKE FALSE)
+if(TEXGUI_HAS_RAYLIB)
+    set(TEXGUI_HAS_RAYLIB_CMAKE TRUE)
+endif()
+if(TEXGUI_HAS_SDL2)
+    set(TEXGUI_HAS_SDL2_CMAKE TRUE)
+endif()
+
+set(TEXGUI_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
+configure_file(
+    cmake/texguiConfig.hpp.in
+    "${TEXGUI_GENERATED_INCLUDE_DIR}/texgui/config.hpp"
+    @ONLY
+)
+
 # ---------------------------------------------------------------------------
 # The public library
 # ---------------------------------------------------------------------------
@@ -147,6 +172,7 @@ set_target_properties(texgui PROPERTIES
 )
 
 target_include_directories(texgui PUBLIC
+    $<BUILD_INTERFACE:${TEXGUI_GENERATED_INCLUDE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
@@ -415,6 +441,7 @@ if(TEXGUI_INSTALL)
     set(TEXGUI_INSTALL_RESDIR "${CMAKE_INSTALL_DATADIR}/texgui/res")
     set(TEXGUI_PUBLIC_HEADERS
         include/texgui/cache_options.hpp
+        "${TEXGUI_GENERATED_INCLUDE_DIR}/texgui/config.hpp"
         include/texgui/draw_surface.hpp
         include/texgui/export.hpp
         include/texgui/formula_layout.hpp

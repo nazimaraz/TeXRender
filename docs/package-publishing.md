@@ -30,7 +30,7 @@ resource-copy behavior change.
 ## Installed Headers And Backend Packages
 
 The installed-header smoke test compiles exactly the headers present in an
-installed prefix as C++17:
+installed prefix as C++17 and checks installed CMake package components:
 
 ```sh
 scripts/verify-installed-headers.sh
@@ -39,6 +39,14 @@ scripts/verify-installed-headers.sh
 Headless and SVG installs should not expose raylib or SDL2 headers. GUI backend
 installs expose only their selected backend header after that dependency is
 available through `find_package`.
+
+The same smoke verifies:
+
+- `find_package(texgui CONFIG REQUIRED COMPONENTS headless svg)` succeeds
+- a headless/SVG install rejects `COMPONENTS raylib` and `COMPONENTS sdl2`
+- a GUI backend install accepts its matching component and rejects the other GUI
+  component
+- `texgui_BACKEND`, `texgui_HAS_*`, and `texgui/config.hpp` agree
 
 To validate installed GUI backend packages when local dependencies are
 discoverable:
@@ -167,8 +175,9 @@ directories with spaces. Both run in the `Release smoke` workflow.
 
 Run `scripts/verify-release.sh` before tagging. It validates CMake builds,
 install/export consumers, installed public headers, generated gallery artifacts,
-package-manager entry points when local tools are available, optional installed
-backend package exports, pkg-config consumers when pkg-config is available,
+package-manager entry points when local tools are available, installed package
+component metadata, optional installed backend package exports, pkg-config
+consumers when pkg-config is available,
 CPack archives, external consumers, path-with-spaces handling, release archive
 smoke, Markdown links, public API snapshot drift, and API documentation when
 Doxygen is installed. It also runs the registry-readiness metadata check when

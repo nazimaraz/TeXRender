@@ -130,7 +130,9 @@ More copyable consumer examples live in
 [`docs/integration-examples.md`](docs/integration-examples.md).
 For the stable backend-neutral API surface, include `texgui/texgui.hpp`.
 Backend-specific headers are opt-in and installed only with packages that export
-their matching GUI dependency.
+their matching GUI dependency. Use `texgui/config.hpp` or CMake package
+variables such as `texgui_BACKEND` and `texgui_HAS_SDL2` when portable consumer
+code needs to inspect package features.
 
 Common contributor builds are also available as CMake presets:
 

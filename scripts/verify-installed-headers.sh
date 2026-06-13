@@ -27,6 +27,57 @@ require_header() {
     fi
 }
 
+component_build_name() {
+    local components="$1"
+    printf '%s' "$components" | tr ';' '-'
+}
+
+expected_feature() {
+    local feature_backend="$1"
+    if [[ "$BACKEND" == "$feature_backend" ]]; then
+        printf 'TRUE'
+    else
+        printf 'FALSE'
+    fi
+}
+
+verify_components() {
+    local components="$1"
+    local build_name
+    build_name="$(component_build_name "$components")"
+    local build_dir="${BUILD_ROOT}/components-${BACKEND}-${build_name}"
+    rm -rf "$build_dir"
+    run cmake -S "$ROOT_DIR/tests/package_components" -B "$build_dir" -G "$GENERATOR" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" \
+        "-DTEXGUI_REQUIRED_COMPONENTS=${components}" \
+        -DTEXGUI_EXPECT_BACKEND="$BACKEND" \
+        -DTEXGUI_EXPECT_HAS_RAYLIB="$(expected_feature raylib)" \
+        -DTEXGUI_EXPECT_HAS_SDL2="$(expected_feature sdl2)"
+    run cmake --build "$build_dir" -j
+    run ctest --test-dir "$build_dir" --output-on-failure
+}
+
+expect_component_failure() {
+    local component="$1"
+    local build_dir="${BUILD_ROOT}/components-${BACKEND}-reject-${component}"
+    rm -rf "$build_dir"
+    mkdir -p "$build_dir"
+    if cmake -S "$ROOT_DIR/tests/package_components" -B "$build_dir" -G "$GENERATOR" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" \
+        -DTEXGUI_REQUIRED_COMPONENTS="$component" \
+        -DTEXGUI_EXPECT_BACKEND="$BACKEND" \
+        -DTEXGUI_EXPECT_HAS_RAYLIB="$(expected_feature raylib)" \
+        -DTEXGUI_EXPECT_HAS_SDL2="$(expected_feature sdl2)" > "${build_dir}/configure.log" 2>&1
+    then
+        cat "${build_dir}/configure.log" >&2
+        printf 'expected find_package(texgui COMPONENTS %s) to fail for %s package\n' "$component" "$BACKEND" >&2
+        exit 1
+    fi
+    printf '\n==> expected component rejection succeeded: %s package rejected %s\n' "$BACKEND" "$component"
+}
+
 forbid_header() {
     local header="$1"
     if [[ -f "${INSTALL_PREFIX}/include/texgui/${header}" ]]; then
@@ -75,6 +126,7 @@ fi
 
 for header in \
     cache_options.hpp \
+    config.hpp \
     draw_surface.hpp \
     export.hpp \
     formula_layout.hpp \
@@ -110,6 +162,22 @@ run cmake -S "$ROOT_DIR/tests/installed_headers" -B "$CONSUMER_BUILD" -G "$GENER
     -DTEXGUI_INSTALLED_INCLUDE_DIR="$INSTALL_PREFIX/include"
 run cmake --build "$CONSUMER_BUILD" -j
 run ctest --test-dir "$CONSUMER_BUILD" --output-on-failure
+
+verify_components 'headless;svg'
+case "$BACKEND" in
+    raylib)
+        verify_components raylib
+        expect_component_failure sdl2
+        ;;
+    sdl2)
+        verify_components sdl2
+        expect_component_failure raylib
+        ;;
+    *)
+        expect_component_failure raylib
+        expect_component_failure sdl2
+        ;;
+esac
 
 printf '\ninstalled-header smoke completed successfully\n'
 printf 'backend: %s\n' "$BACKEND"

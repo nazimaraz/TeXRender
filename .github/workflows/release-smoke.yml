@@ -15,6 +15,7 @@ on:
       - "tests/consumer/**"
       - "tests/installed_headers/**"
       - "tests/backend_package_consumer/**"
+      - "tests/package_components/**"
       - "scripts/verify-cpack.sh"
       - "scripts/verify-backend-packages.sh"
       - "scripts/verify-external-consumers.sh"

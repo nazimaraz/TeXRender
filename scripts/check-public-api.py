@@ -17,6 +17,7 @@ def public_paths() -> list[Path]:
     paths = sorted((ROOT / "include/texgui").glob("*.hpp"))
     paths.extend(
         [
+            ROOT / "cmake/texguiConfig.hpp.in",
             ROOT / "cmake/texguiConfig.cmake.in",
             ROOT / "cmake/texguiHelpers.cmake",
             ROOT / "cmake/texgui.pc.in",

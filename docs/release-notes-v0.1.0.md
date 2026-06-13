@@ -17,6 +17,8 @@ for embedding LaTeX math rendering into applications.
   C++23.
 - Backend-neutral umbrella header `texgui/texgui.hpp`, with installed packages
   exposing only the backend headers their dependencies support.
+- Generated `texgui/config.hpp`, CMake package feature metadata, and CMake
+  package components for backend-aware consumers.
 - Non-throwing `try_render()` and `try_render_detailed()` paths for
   caller-supplied formulas.
 - CI coverage for Linux, macOS, Windows, sanitizers, ThreadSanitizer, fuzz
@@ -31,6 +33,7 @@ for embedding LaTeX math rendering into applications.
   changes.
 - Installed-header and optional installed-backend package smoke checks for
   dependency-facing package exports.
+- Package component success/failure smoke checks for installed package metadata.
 - Security threat model, dependency/license audit, and first public push dry-run
   checklist for public launch review.
 
