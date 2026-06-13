@@ -22,6 +22,17 @@ external CMake consumer to prove the dependency story stays intact. Please make
 sure both configurations build and pass before opening a PR, and add or extend a
 test under `tests/` when you change behaviour.
 
+CMake presets cover the common local workflows:
+
+```sh
+cmake --preset headless-debug
+cmake --build --preset headless-debug
+ctest --preset headless-debug
+```
+
+See [`docs/build-options.md`](docs/build-options.md) for all presets, shared
+library builds and project options.
+
 Optional developer checks:
 
 ```sh
@@ -62,6 +73,8 @@ Workflow linting is documented in
 
 * A [`.clang-tidy`](.clang-tidy) configuration is enforced in CI for project
   translation units.
+* `TEXGUI_WARNINGS_AS_ERRORS=ON` enables the same first-party warning policy used
+  by the strict CI job. Third-party code is still treated separately.
 * GitHub Actions workflows are linted with actionlint in CI.
 * Match the existing naming: `lower_case` functions and variables, `CamelCase`
   types, `trailing_underscore_` for private members.

@@ -5,7 +5,9 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 #include "texgui/draw_surface.hpp"
+#include "texgui/export.hpp"
 #include "texgui/render_handle.hpp"
 
 namespace TexGui
@@ -49,6 +51,72 @@ namespace TexGui
         int max_wrap_width = no_wrap_width_limit;
     };
 
+    /// Machine-readable reason for a non-throwing render failure.
+    enum class RenderErrorCode
+    {
+        none,
+        invalid_options,
+        input_too_large,
+        text_size_too_large,
+        wrap_width_too_large,
+        parse_error,
+        unexpected_failure
+    };
+
+    /// Diagnostic payload returned by the detailed non-throwing render API.
+    struct RenderError
+    {
+        RenderErrorCode code = RenderErrorCode::none;
+        std::string message;
+    };
+
+    /// Result object for callers that need an error code/message instead of
+    /// only std::optional.
+    class RenderResult
+    {
+    public:
+        RenderResult() = default;
+        explicit RenderResult(RenderHandle handle)
+            : handle_{std::move(handle)}
+        {}
+        explicit RenderResult(RenderError error)
+            : error_{std::move(error)}
+        {}
+
+        [[nodiscard]] bool has_value() const noexcept
+        {
+            return handle_.has_value();
+        }
+        [[nodiscard]] explicit operator bool() const noexcept
+        {
+            return has_value();
+        }
+        [[nodiscard]] RenderHandle& value() &
+        {
+            return handle_.value();
+        }
+        [[nodiscard]] const RenderHandle& value() const&
+        {
+            return handle_.value();
+        }
+        [[nodiscard]] RenderHandle&& value() &&
+        {
+            return std::move(handle_).value();
+        }
+        [[nodiscard]] const RenderError& error() const noexcept
+        {
+            return error_;
+        }
+        [[nodiscard]] std::optional<RenderHandle> into_optional() && noexcept
+        {
+            return std::move(handle_);
+        }
+
+    private:
+        std::optional<RenderHandle> handle_;
+        RenderError error_;
+    };
+
     /// Owner of MicroTeX document state and the drawing surface used by formulas.
     ///
     /// A document parses LaTeX into move-only RenderHandle objects. Documents
@@ -56,7 +124,7 @@ namespace TexGui
     /// process-wide initialization and the selected surface often has graphics
     /// context lifetime requirements. Construct and use documents on the
     /// rendering thread.
-    class LatexDocument
+    class TEXGUI_EXPORT LatexDocument
     {
     public:
         /// Construct a document using a MicroTeX resource directory.
@@ -98,6 +166,11 @@ namespace TexGui
             int wrap_width = 0) const noexcept;
         /// Non-throwing render path with caller-provided guardrails.
         [[nodiscard]] std::optional<RenderHandle> try_render(const std::string& latex, const RenderOptions& options) const noexcept;
+        /// Non-throwing render path that preserves a diagnostic failure reason.
+        [[nodiscard]] RenderResult try_render_detailed(const std::string& latex, float text_size, uint32_t argb,
+            int wrap_width = 0) const noexcept;
+        /// Non-throwing render path with caller-provided guardrails and diagnostics.
+        [[nodiscard]] RenderResult try_render_detailed(const std::string& latex, const RenderOptions& options) const noexcept;
 
     private:
         std::shared_ptr<detail::DocumentState> state_;

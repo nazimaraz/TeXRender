@@ -24,7 +24,7 @@ Formula:
 
 **Expected / actual behaviour**
 
-For rendering bugs, a screenshot (or the PPM from `texgui_offscreen`) helps a lot.
+For rendering bugs, a screenshot (or the PNG/PPM from `texgui_offscreen`) helps a lot.
 
 **Environment**
 

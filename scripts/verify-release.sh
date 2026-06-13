@@ -6,6 +6,7 @@ BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-verify-release}"
 GENERATOR="${GENERATOR:-Ninja}"
 HEADLESS_BUILD="${BUILD_ROOT}/headless"
 RAYLIB_BUILD="${BUILD_ROOT}/raylib"
+SHARED_BUILD="${BUILD_ROOT}/headless-shared"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix"
 PACKAGE_CONSUMER_BUILD="${BUILD_ROOT}/package-consumer"
 FETCH_EXAMPLE_BUILD="${BUILD_ROOT}/fetch-example"
@@ -61,12 +62,23 @@ run git diff --check
 
 cmake_configure "$ROOT_DIR" "$HEADLESS_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless
+    -DTEXGUI_BACKEND=headless \
+    -DTEXGUI_WARNINGS_AS_ERRORS=ON
 cmake_build "$HEADLESS_BUILD"
 run ctest --test-dir "$HEADLESS_BUILD" --output-on-failure
-run "$HEADLESS_BUILD/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.ppm"
+run "$HEADLESS_BUILD/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
 run "$HEADLESS_BUILD/texgui_render_benchmark"
 run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texgui_headless_batch" 'e^{i\pi} + 1 = 0'
+
+rm -rf "$SHARED_BUILD"
+cmake_configure "$ROOT_DIR" "$SHARED_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=ON \
+    -DTEXGUI_BACKEND=headless \
+    -DTEXGUI_BUILD_EXAMPLES=OFF \
+    -DTEXGUI_BUILD_BENCHMARKS=OFF
+cmake_build "$SHARED_BUILD"
+run ctest --test-dir "$SHARED_BUILD" --output-on-failure
 
 rm -rf "$INSTALL_PREFIX" "$PACKAGE_CONSUMER_BUILD" "$FIND_EXAMPLE_BUILD"
 run cmake --install "$HEADLESS_BUILD" --prefix "$INSTALL_PREFIX"

@@ -120,6 +120,7 @@ target_include_directories(microtex_core SYSTEM PRIVATE "${MICROTEX_SRC}")
 # the PUBLIC feature still raises consumers to at least 17.
 target_compile_features(microtex_core PUBLIC cxx_std_17)
 set_target_properties(microtex_core PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+set_target_properties(microtex_core PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 # tinyxml2 exports either an imported target or a bare `tinyxml2` target.
 if(TARGET tinyxml2::tinyxml2)

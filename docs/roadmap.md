@@ -13,11 +13,13 @@ library with a clear embedding story, not grow into a full TeX distribution.
 - Add a short README GIF of the live editor.
 - Expand Doxygen comments as public API questions come in.
 - Track coverage and static-analysis findings from the first real CI runs.
+- Validate shared-library builds on public Windows/macOS/Linux CI after push.
 
 ## Rendering And API
 
 - Add one more GUI backend as a proof point, likely SDL2 or SFML.
-- Add optional SVG or PNG export helpers built on `HeadlessSurface`.
+- Add optional SVG export helpers built on the existing `HeadlessSurface` PNG
+  output path.
 - Add a tiny layout helper for aligning formulas by baseline inside UI rows.
 - Improve headless rendering fidelity where it matters for regression testing.
 - Consider configurable cache sizes for long-running applications.
@@ -35,7 +37,6 @@ library with a clear embedding story, not grow into a full TeX distribution.
 - Keep sanitizer, clang-tidy, coverage, and visual-regression artifacts green.
 - Add small regression cases for any malformed input or rendering issue reported
   by users.
-- Add workflow linting with actionlint before first public push.
 
 ## Non-Goals
 

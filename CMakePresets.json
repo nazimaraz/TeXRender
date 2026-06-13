@@ -1,0 +1,170 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "headless-debug",
+      "displayName": "Headless Debug",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/headless-debug",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "TEXGUI_BACKEND": "headless",
+        "TEXGUI_WARNINGS_AS_ERRORS": "ON"
+      }
+    },
+    {
+      "name": "headless-release",
+      "displayName": "Headless Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/headless-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TEXGUI_BACKEND": "headless"
+      }
+    },
+    {
+      "name": "raylib-release",
+      "displayName": "Raylib Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/raylib-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TEXGUI_BACKEND": "raylib"
+      }
+    },
+    {
+      "name": "headless-shared",
+      "displayName": "Headless Shared Library",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/headless-shared",
+      "cacheVariables": {
+        "BUILD_SHARED_LIBS": "ON",
+        "CMAKE_BUILD_TYPE": "Release",
+        "TEXGUI_BACKEND": "headless"
+      }
+    },
+    {
+      "name": "asan",
+      "displayName": "Headless ASan + UBSan",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/asan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined",
+        "TEXGUI_BACKEND": "headless"
+      }
+    },
+    {
+      "name": "coverage",
+      "displayName": "Headless Coverage",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/coverage",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "--coverage -O0 -g",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage",
+        "TEXGUI_BACKEND": "headless"
+      }
+    },
+    {
+      "name": "fuzz",
+      "displayName": "try_render libFuzzer",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/fuzz",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "TEXGUI_BACKEND": "headless",
+        "TEXGUI_BUILD_BENCHMARKS": "OFF",
+        "TEXGUI_BUILD_EXAMPLES": "OFF",
+        "TEXGUI_BUILD_FUZZERS": "ON",
+        "TEXGUI_BUILD_TESTS": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "headless-debug",
+      "configurePreset": "headless-debug"
+    },
+    {
+      "name": "headless-release",
+      "configurePreset": "headless-release"
+    },
+    {
+      "name": "raylib-release",
+      "configurePreset": "raylib-release"
+    },
+    {
+      "name": "headless-shared",
+      "configurePreset": "headless-shared"
+    },
+    {
+      "name": "asan",
+      "configurePreset": "asan"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "fuzz",
+      "configurePreset": "fuzz",
+      "targets": ["texgui_try_render_fuzzer"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "headless-debug",
+      "configurePreset": "headless-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "headless-release",
+      "configurePreset": "headless-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "raylib-release",
+      "configurePreset": "raylib-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "headless-shared",
+      "configurePreset": "headless-shared",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "asan",
+      "configurePreset": "asan",
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=0",
+        "UBSAN_OPTIONS": "print_stacktrace=1"
+      },
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

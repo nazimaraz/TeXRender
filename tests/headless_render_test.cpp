@@ -3,6 +3,9 @@
 // canvas is pure software, so this runs under any backend — no GPU, window, or
 // display needed.
 #include <exception>
+#include <array>
+#include <filesystem>
+#include <fstream>
 #include <memory>
 #include <print>
 #include <string>
@@ -51,6 +54,15 @@ int main()
         CHECK(document.try_render(R"(\sqrt{a})", 40.f, 0xff000000).has_value());
         CHECK(!document.try_render(R"(})", 40.f, 0xff000000).has_value()); // unbalanced '}' -> parse error
         CHECK(!document.try_render("x", 600.f, 0xff000000).has_value());
+
+        const auto parse_error = document.try_render_detailed(R"(})", 40.f, 0xff000000);
+        CHECK(!parse_error.has_value());
+        CHECK(parse_error.error().code == RenderErrorCode::parse_error);
+        CHECK(!parse_error.error().message.empty());
+
+        const auto text_size_error = document.try_render_detailed("x", 600.f, 0xff000000);
+        CHECK(!text_size_error.has_value());
+        CHECK(text_size_error.error().code == RenderErrorCode::text_size_too_large);
 
         auto limited = RenderOptions{};
         limited.text_size = 40.f;
@@ -129,6 +141,27 @@ int main()
         CHECK(opaque[1] == 127);
         CHECK(opaque[2] == 255);
         CHECK(opaque[3] == 255);
+    }
+
+    // 4) HeadlessSurface can write real PNG files without extra dependencies.
+    {
+        auto canvas = HeadlessSurface{};
+        CHECK(!canvas.write_png((std::filesystem::temp_directory_path() / "texgui-empty.png").string()));
+
+        canvas.resize(2, 1);
+        canvas.clear(0x00000000);
+        canvas.set_color(0xffff0000);
+        canvas.fill_rect(0, 0, 1, 1);
+
+        const auto path = std::filesystem::temp_directory_path() / "texgui-headless-surface-test.png";
+        CHECK(canvas.write_png(path.string()));
+
+        auto file = std::ifstream{path, std::ios::binary};
+        auto signature = std::array<unsigned char, 8>{};
+        file.read(reinterpret_cast<char*>(signature.data()), static_cast<std::streamsize>(signature.size()));
+        const auto expected = std::array<unsigned char, 8>{0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
+        CHECK(signature == expected);
+        std::filesystem::remove(path);
     }
 
     if (g_failures == 0)

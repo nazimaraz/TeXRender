@@ -20,9 +20,9 @@ int main()
     canvas->clear(0xffffffff);
     formula->draw(12, 12);
 
-    if (!canvas->write_ppm("fetchcontent-example.ppm"))
+    if (!canvas->write_png("fetchcontent-example.png"))
         return 2;
 
-    std::cout << "wrote fetchcontent-example.ppm\n";
+    std::cout << "wrote fetchcontent-example.png\n";
     return 0;
 }

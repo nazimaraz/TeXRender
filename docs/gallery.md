@@ -11,6 +11,6 @@ WebAssembly.
 
 ![headless formula output](offscreen-example.png)
 
-The headless backend renders into an RGBA buffer and can write PPM snapshots for
+The headless backend renders into an RGBA buffer and can write PNG/PPM snapshots for
 tests, services, and command-line tooling. The PNG above is generated from
 `texgui_headless_batch`.

@@ -30,6 +30,11 @@ option(TEXGUI_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TOP_L
 option(TEXGUI_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(TEXGUI_BUILD_BENCHMARKS "Build the benchmark executables" ${PROJECT_IS_TOP_LEVEL})
 option(TEXGUI_BUILD_FUZZERS "Build libFuzzer targets (Clang/libFuzzer)" OFF)
+option(TEXGUI_WARNINGS_AS_ERRORS "Treat warnings in texgui first-party targets as errors" OFF)
+
+if(BUILD_SHARED_LIBS)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
 
 # Default to Release, but only when texgui is the top-level project: a
 # dependency must not force a build type into the consuming project's cache.
@@ -49,6 +54,20 @@ if(EMSCRIPTEN)
     add_compile_options(-fwasm-exceptions)
     add_link_options(-fwasm-exceptions)
 endif()
+
+function(texgui_target_warnings target)
+    if(MSVC)
+        target_compile_options(${target} PRIVATE /W4)
+        if(TEXGUI_WARNINGS_AS_ERRORS)
+            target_compile_options(${target} PRIVATE /WX)
+        endif()
+    else()
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+        if(TEXGUI_WARNINGS_AS_ERRORS)
+            target_compile_options(${target} PRIVATE -Werror)
+        endif()
+    endif()
+endfunction()
 
 # ---------------------------------------------------------------------------
 # Dependencies: MicroTeX core, FreeType, tinyxml2, and the selected backend.
@@ -99,6 +118,19 @@ add_library(texgui
     ${TEXGUI_BACKEND_SOURCES}
 )
 add_library(texgui::texgui ALIAS texgui)
+texgui_target_warnings(texgui)
+
+target_compile_definitions(texgui PRIVATE TEXGUI_BUILDING_LIBRARY)
+get_target_property(_texgui_library_type texgui TYPE)
+if(_texgui_library_type STREQUAL "SHARED_LIBRARY" OR _texgui_library_type STREQUAL "MODULE_LIBRARY")
+    target_compile_definitions(texgui INTERFACE TEXGUI_SHARED)
+endif()
+unset(_texgui_library_type)
+
+set_target_properties(texgui PROPERTIES
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN YES
+)
 
 target_include_directories(texgui PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -144,7 +176,7 @@ if(TEXGUI_BUILD_EXAMPLES)
         )
     else()
         # name -> source file. texgui_offscreen renders through an injected
-        # HeadlessSurface into a PPM file, so it builds under any backend with
+        # HeadlessSurface into an image file, so it builds under any backend with
         # no window or GPU; the raylib examples drive a real window themselves.
         set(TEXGUI_EXAMPLES
             texgui_offscreen examples/offscreen.cpp
@@ -163,6 +195,7 @@ if(TEXGUI_BUILD_EXAMPLES)
         list(POP_FRONT TEXGUI_EXAMPLES example_name example_source)
         add_executable(${example_name} ${example_source})
         target_link_libraries(${example_name} PRIVATE texgui::texgui ${TEXGUI_BACKEND_LIBS})
+        texgui_target_warnings(${example_name})
         # Examples are consumer-shaped code: pinning them to C++17 makes every
         # build prove the public headers require nothing newer than that.
         set_target_properties(${example_name} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
@@ -200,6 +233,7 @@ endif()
 if(TEXGUI_BUILD_BENCHMARKS AND NOT EMSCRIPTEN)
     add_executable(texgui_render_benchmark benchmarks/render_benchmark.cpp)
     target_link_libraries(texgui_render_benchmark PRIVATE texgui::texgui)
+    texgui_target_warnings(texgui_render_benchmark)
     target_compile_features(texgui_render_benchmark PRIVATE cxx_std_17)
     texgui_copy_resources(texgui_render_benchmark)
 endif()
@@ -214,13 +248,19 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     # Pure transform math — no dependencies.
     add_executable(texgui_transform2d_test tests/transform2d_test.cpp)
     target_include_directories(texgui_transform2d_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source)
+    texgui_target_warnings(texgui_transform2d_test)
     target_compile_features(texgui_transform2d_test PRIVATE cxx_std_23)
     add_test(NAME transform2d COMMAND texgui_transform2d_test)
 
     # FreeType glyph cache against the bundled TeX fonts — no window/GPU needed.
-    add_executable(texgui_glyph_cache_test tests/glyph_cache_test.cpp)
-    target_link_libraries(texgui_glyph_cache_test PRIVATE texgui::texgui)
+    add_executable(texgui_glyph_cache_test
+        tests/glyph_cache_test.cpp
+        source/render/glyph_cache.cpp
+    )
+    target_link_libraries(texgui_glyph_cache_test PRIVATE Freetype::Freetype)
     target_include_directories(texgui_glyph_cache_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/source)
+    texgui_target_warnings(texgui_glyph_cache_test)
+    target_compile_features(texgui_glyph_cache_test PRIVATE cxx_std_23)
     target_compile_definitions(texgui_glyph_cache_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     add_test(NAME glyph_cache COMMAND texgui_glyph_cache_test)
 
@@ -229,6 +269,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     # any backend with no window, GPU, or display.
     add_executable(texgui_headless_render_test tests/headless_render_test.cpp)
     target_link_libraries(texgui_headless_render_test PRIVATE texgui::texgui)
+    texgui_target_warnings(texgui_headless_render_test)
     target_compile_definitions(texgui_headless_render_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     add_test(NAME headless_render COMMAND texgui_headless_render_test)
 
@@ -236,6 +277,7 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     # CI across platforms, but stronger than "some pixels changed".
     add_executable(texgui_visual_regression_test tests/visual_regression_test.cpp)
     target_link_libraries(texgui_visual_regression_test PRIVATE texgui::texgui)
+    texgui_target_warnings(texgui_visual_regression_test)
     target_compile_features(texgui_visual_regression_test PRIVATE cxx_std_23)
     target_compile_definitions(texgui_visual_regression_test PRIVATE
         TEXGUI_RES_DIR="${MICROTEX_RES_DIR}"
@@ -245,6 +287,26 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     set_tests_properties(visual_regression PROPERTIES
         ENVIRONMENT "TEXGUI_VISUAL_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/visual-regression"
     )
+
+    add_executable(texgui_lifetime_stress_test tests/lifetime_stress_test.cpp)
+    target_link_libraries(texgui_lifetime_stress_test PRIVATE texgui::texgui)
+    texgui_target_warnings(texgui_lifetime_stress_test)
+    target_compile_definitions(texgui_lifetime_stress_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+    add_test(NAME lifetime_stress COMMAND texgui_lifetime_stress_test)
+
+    add_executable(texgui_public_headers_core_cxx17 tests/public_headers_core_cxx17.cpp)
+    target_link_libraries(texgui_public_headers_core_cxx17 PRIVATE texgui::texgui)
+    texgui_target_warnings(texgui_public_headers_core_cxx17)
+    target_compile_features(texgui_public_headers_core_cxx17 PRIVATE cxx_std_17)
+    add_test(NAME public_headers_core_cxx17 COMMAND texgui_public_headers_core_cxx17)
+
+    if(TEXGUI_BACKEND STREQUAL "raylib")
+        add_executable(texgui_public_headers_raylib_cxx17 tests/public_headers_raylib_cxx17.cpp)
+        target_link_libraries(texgui_public_headers_raylib_cxx17 PRIVATE texgui::texgui ${TEXGUI_BACKEND_LIBS})
+        texgui_target_warnings(texgui_public_headers_raylib_cxx17)
+        target_compile_features(texgui_public_headers_raylib_cxx17 PRIVATE cxx_std_17)
+        add_test(NAME public_headers_raylib_cxx17 COMMAND texgui_public_headers_raylib_cxx17)
+    endif()
 
     # Configure/build/run a tiny external CMake project that consumes texgui via
     # add_subdirectory and compiles as C++17, matching the dependency story.
@@ -274,6 +336,7 @@ if(TEXGUI_BUILD_FUZZERS AND NOT EMSCRIPTEN)
 
     add_executable(texgui_try_render_fuzzer tests/fuzz/try_render_fuzzer.cpp)
     target_link_libraries(texgui_try_render_fuzzer PRIVATE texgui::texgui)
+    texgui_target_warnings(texgui_try_render_fuzzer)
     target_compile_features(texgui_try_render_fuzzer PRIVATE cxx_std_17)
     target_compile_definitions(texgui_try_render_fuzzer PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     target_compile_options(texgui_try_render_fuzzer PRIVATE -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer)

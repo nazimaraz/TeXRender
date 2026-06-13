@@ -19,6 +19,8 @@ Different paths are ignored and can be reported with `TEXGUI_DEBUG=1`.
 
 The glyph cache is process-wide and not internally locked. Raylib rendering is
 also single-threaded. Parse, layout and draw formulas on the rendering thread.
+Repeated document creation/destruction and `RenderHandle` lifetime handoff are
+covered by tests, but concurrent rendering is not a supported contract.
 
 ## Raylib Lifetime
 
@@ -43,5 +45,5 @@ project's build-tree target would make a fragile package.
 ## Headless Rendering Fidelity
 
 `HeadlessSurface` is designed for CI, offscreen output and regression testing. It
-uses software alpha compositing and ignores glyph rotation, so it is not meant to
-be a perfect reference for every backend effect.
+uses software alpha compositing, writes PNG/PPM output, and ignores glyph
+rotation, so it is not meant to be a perfect reference for every backend effect.

@@ -93,7 +93,7 @@ cmake -S . -B build
 cmake --build build -j
 ./build/texgui_minimal      # draws a single formula in a window
 ./build/texgui_demo         # cycle samples (SPACE/arrows), resize text (UP/DOWN)
-./build/texgui_offscreen    # render to formula.ppm — no window needed
+./build/texgui_offscreen    # render to formula.png — no window needed
 ctest --test-dir build      # run the unit tests
 ```
 
@@ -102,6 +102,17 @@ parse one formula, draw it in a loop.
 
 More copyable consumer examples live in
 [`docs/integration-examples.md`](docs/integration-examples.md).
+
+Common contributor builds are also available as CMake presets:
+
+```sh
+cmake --preset headless-debug
+cmake --build --preset headless-debug
+ctest --preset headless-debug
+```
+
+See [`docs/build-options.md`](docs/build-options.md) for presets, shared-library
+builds, and the `TEXGUI_WARNINGS_AS_ERRORS` policy.
 
 ## Using texgui in your project
 
@@ -235,6 +246,22 @@ if (auto formula = document.try_render(user_input, options))
     formula->draw(40, 40);
 ```
 
+If the application needs to show a useful validation message, use
+`try_render_detailed()` instead. It preserves a `RenderErrorCode` plus a
+message while keeping the same `noexcept` boundary:
+
+```cpp
+auto result = document.try_render_detailed(user_input, options);
+if (result)
+{
+    result.value().draw(40, 40);
+}
+else
+{
+    show_error(result.error().message);
+}
+```
+
 See [`examples/live_edit.cpp`](examples/live_edit.cpp) for a live editor built on
 `try_render`.
 
@@ -263,7 +290,7 @@ canvas.resize(formula.width() + 20, formula.height() + 20);
 canvas.clear(0xffffffff);                       // opaque white
 formula.draw(10, 10);
 
-canvas.write_ppm("formula.ppm");                // or canvas.pixels() for raw RGBA8
+canvas.write_png("formula.png");                // PNG, PPM, or raw RGBA8 pixels
 ```
 
 `LatexDocument::surface()` returns the surface a document draws into (the
@@ -344,14 +371,16 @@ ctest --test-dir build --output-on-failure
 ```
 
 The suite — transform math, the FreeType glyph cache against the bundled fonts,
-input-limit checks, an end-to-end formula render into an injected headless
-canvas, structural visual regression, and a separate CMake consumer smoke test —
-needs no window or GPU and runs under either backend;
+input-limit/error-diagnostic checks, an end-to-end formula render into an
+injected headless canvas, PNG writing, handle lifetime stress, C++17 public
+header compatibility, structural visual regression, and a separate CMake
+consumer smoke test — needs no window or GPU and runs under either backend;
 `TEXGUI_BACKEND=headless` additionally drops the raylib dependency entirely. CI
 exercises this on Linux, macOS and Windows, the raylib backend + examples on
 Linux and macOS, runs the suite under ASan + UBSan, checks vcpkg/Conan
-packaging, uploads visual-regression artifacts on failure, gates formatting with
-clang-format, runs clang-tidy, and publishes coverage artifacts.
+packaging, verifies workflow linting and shared-library builds, uploads
+visual-regression artifacts on failure, gates formatting with clang-format, runs
+clang-tidy, and publishes coverage artifacts.
 
 Additional developer tools:
 

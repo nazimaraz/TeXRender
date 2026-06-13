@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "texgui/draw_surface.hpp"
+#include "texgui/export.hpp"
 
 namespace TexGui
 {
@@ -14,7 +15,7 @@ namespace TexGui
     /// intentionally ignored because this backend is primarily for reference
     /// rendering, tests, CI, and server-side/offscreen output. Draws are clipped
     /// to the canvas bounds.
-    class HeadlessSurface final : public IDrawSurface
+    class TEXGUI_EXPORT HeadlessSurface final : public IDrawSurface
     {
     public:
         HeadlessSurface() = default;
@@ -42,6 +43,8 @@ namespace TexGui
         [[nodiscard]] size_t covered_pixels() const;
         /// Write the current canvas as a binary PPM image.
         [[nodiscard]] bool write_ppm(const std::string& path) const;
+        /// Write the current canvas as an RGBA PNG image.
+        [[nodiscard]] bool write_png(const std::string& path) const;
 
     private:
         void blend(int x, int y, float coverage);

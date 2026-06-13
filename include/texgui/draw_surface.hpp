@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include "texgui/export.hpp"
 #include "texgui/glyph_bitmap.hpp"
 
 namespace TexGui
@@ -13,7 +14,7 @@ namespace TexGui
     /// HeadlessSurface. Methods are called synchronously from
     /// RenderHandle::draw(), so custom backends do not need to store draw
     /// commands unless their own rendering API requires it.
-    class IDrawSurface
+    class TEXGUI_EXPORT IDrawSurface
     {
     public:
         IDrawSurface();

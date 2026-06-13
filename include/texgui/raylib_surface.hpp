@@ -4,6 +4,7 @@
 #include <raylib.h>
 #include <unordered_map>
 #include "texgui/draw_surface.hpp"
+#include "texgui/export.hpp"
 
 namespace TexGui
 {
@@ -13,7 +14,7 @@ namespace TexGui
     /// one by default when texgui is built with `TEXGUI_BACKEND=raylib`.
     /// Destroy or unload it before `CloseWindow()` so GPU glyph textures are
     /// released while the raylib context is still alive.
-    class RaylibSurface final : public IDrawSurface
+    class TEXGUI_EXPORT RaylibSurface final : public IDrawSurface
     {
     public:
         RaylibSurface();

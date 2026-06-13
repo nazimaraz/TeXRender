@@ -50,8 +50,8 @@ int main(int argc, char** argv)
         canvas->clear(0xffffffff);
         formula->draw(margin, margin);
 
-        const auto output = "formula-" + std::to_string(index++) + ".ppm";
-        if (!canvas->write_ppm(output))
+        const auto output = "formula-" + std::to_string(index++) + ".png";
+        if (!canvas->write_png(output))
         {
             std::cerr << "Could not write " << output << '\n';
             return 1;

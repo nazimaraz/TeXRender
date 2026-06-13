@@ -19,6 +19,7 @@ INPUT                  = include \
                          docs/benchmarks.md \
                          docs/fuzzing.md \
                          docs/performance-baseline.md \
+                         docs/build-options.md \
                          docs/static-analysis.md \
                          docs/coverage.md \
                          docs/workflow-linting.md \

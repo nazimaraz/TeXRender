@@ -62,6 +62,33 @@ auto formula = document.try_render(user_input, options);
 
 Set a limit field to its `no_*_limit` constant only for trusted input.
 
+Use `try_render_detailed()` when the caller needs a failure reason without
+exceptions:
+
+```cpp
+auto result = document.try_render_detailed(user_input, options);
+if (!result)
+{
+    switch (result.error().code)
+    {
+    case TexGui::RenderErrorCode::parse_error:
+        show_parse_error(result.error().message);
+        break;
+    case TexGui::RenderErrorCode::input_too_large:
+        show_parse_error("Formula is too large");
+        break;
+    default:
+        show_parse_error(result.error().message);
+        break;
+    }
+}
+```
+
+`RenderErrorCode` distinguishes invalid options, input-size limits,
+text-size/wrap-width limits, MicroTeX parse errors and unexpected failures.
+The original `try_render()` remains the compact `std::optional<RenderHandle>`
+wrapper around the same implementation.
+
 ## `TexGui::RenderHandle`
 
 `RenderHandle` is move-only and owns one parsed/layouted formula. It exposes:
@@ -84,6 +111,16 @@ Backends implement a small immediate-mode drawing interface:
 
 Coordinates are screen pixels. `Graphics2DAdapter` handles MicroTeX transforms,
 font selection and FreeType rasterization before calls reach the surface.
+
+`HeadlessSurface` stores straight RGBA8 pixels and can write either `PPM` or
+`PNG` files:
+
+```cpp
+canvas.write_png("formula.png");
+canvas.write_ppm("formula.ppm");
+```
+
+PNG writing is built in and does not require an image library dependency.
 
 ## Resources
 

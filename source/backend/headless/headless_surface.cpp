@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <fstream>
+#include <string_view>
+#include <vector>
 
 using namespace TexGui;
 
@@ -10,6 +13,103 @@ namespace
     [[nodiscard]] unsigned char channel(const uint32_t argb, const unsigned shift)
     {
         return static_cast<unsigned char>((argb >> shift) & 0xffu);
+    }
+
+    void append_u16_le(std::vector<unsigned char>& output, const uint16_t value)
+    {
+        output.push_back(static_cast<unsigned char>(value & 0xffu));
+        output.push_back(static_cast<unsigned char>((value >> 8u) & 0xffu));
+    }
+
+    void append_u32_be(std::vector<unsigned char>& output, const uint32_t value)
+    {
+        output.push_back(static_cast<unsigned char>((value >> 24u) & 0xffu));
+        output.push_back(static_cast<unsigned char>((value >> 16u) & 0xffu));
+        output.push_back(static_cast<unsigned char>((value >> 8u) & 0xffu));
+        output.push_back(static_cast<unsigned char>(value & 0xffu));
+    }
+
+    void write_u32_be(std::ofstream& output, const uint32_t value)
+    {
+        const unsigned char bytes[4] = {
+            static_cast<unsigned char>((value >> 24u) & 0xffu),
+            static_cast<unsigned char>((value >> 16u) & 0xffu),
+            static_cast<unsigned char>((value >> 8u) & 0xffu),
+            static_cast<unsigned char>(value & 0xffu),
+        };
+        output.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
+    }
+
+    [[nodiscard]] uint32_t crc32_update(uint32_t crc, const unsigned char byte)
+    {
+        crc ^= byte;
+        for (auto bit = 0; bit < 8; ++bit)
+        {
+            const auto mask = 0u - (crc & 1u);
+            crc = (crc >> 1u) ^ (0xedb88320u & mask);
+        }
+        return crc;
+    }
+
+    [[nodiscard]] uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
+    {
+        auto crc = 0xffffffffu;
+        for (const auto byte : type)
+            crc = crc32_update(crc, static_cast<unsigned char>(byte));
+        for (const auto byte : data)
+            crc = crc32_update(crc, byte);
+        return crc ^ 0xffffffffu;
+    }
+
+    [[nodiscard]] uint32_t adler32(const std::vector<unsigned char>& data)
+    {
+        constexpr auto mod_adler = 65521u;
+        auto a = 1u;
+        auto b = 0u;
+        for (const auto byte : data)
+        {
+            a = (a + byte) % mod_adler;
+            b = (b + a) % mod_adler;
+        }
+        return (b << 16u) | a;
+    }
+
+    [[nodiscard]] std::vector<unsigned char> zlib_store(const std::vector<unsigned char>& data)
+    {
+        auto output = std::vector<unsigned char>{};
+        output.reserve(data.size() + data.size() / 65535u * 5u + 8u);
+        output.push_back(0x78u);
+        output.push_back(0x01u);
+
+        auto offset = size_t{0};
+        while (offset < data.size())
+        {
+            const auto remaining = data.size() - offset;
+            const auto block_size = static_cast<uint16_t>(std::min<size_t>(remaining, 65535u));
+            const auto final_block = offset + block_size == data.size();
+            output.push_back(final_block ? 0x01u : 0x00u);
+            append_u16_le(output, block_size);
+            append_u16_le(output, static_cast<uint16_t>(~block_size));
+            output.insert(output.end(), data.begin() + static_cast<std::ptrdiff_t>(offset),
+                data.begin() + static_cast<std::ptrdiff_t>(offset + block_size));
+            offset += block_size;
+        }
+
+        append_u32_be(output, adler32(data));
+        return output;
+    }
+
+    bool write_png_chunk(std::ofstream& file, const std::string_view type, const std::vector<unsigned char>& data)
+    {
+        if (type.size() != 4)
+            return false;
+
+        write_u32_be(file, static_cast<uint32_t>(data.size()));
+        file.write(type.data(), static_cast<std::streamsize>(type.size()));
+        if (!data.empty())
+            file.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+        write_u32_be(file, png_crc(type, data));
+        return static_cast<bool>(file);
     }
 } // namespace
 
@@ -165,4 +265,44 @@ bool HeadlessSurface::write_ppm(const std::string& path) const
     }
 
     return std::fclose(file) == 0;
+}
+
+bool HeadlessSurface::write_png(const std::string& path) const
+{
+    if (width_ <= 0 || height_ <= 0 || pixels_.empty())
+        return false;
+
+    auto file = std::ofstream{path, std::ios::binary};
+    if (!file)
+        return false;
+
+    constexpr unsigned char signature[8] = {0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
+    file.write(reinterpret_cast<const char*>(signature), sizeof(signature));
+
+    auto ihdr = std::vector<unsigned char>{};
+    ihdr.reserve(13);
+    append_u32_be(ihdr, static_cast<uint32_t>(width_));
+    append_u32_be(ihdr, static_cast<uint32_t>(height_));
+    ihdr.push_back(8u); // bit depth
+    ihdr.push_back(6u); // RGBA
+    ihdr.push_back(0u); // zlib/deflate
+    ihdr.push_back(0u); // no PNG filter
+    ihdr.push_back(0u); // no interlace
+    if (!write_png_chunk(file, "IHDR", ihdr))
+        return false;
+
+    auto scanlines = std::vector<unsigned char>{};
+    const auto stride = static_cast<size_t>(width_) * 4u;
+    scanlines.reserve((stride + 1u) * static_cast<size_t>(height_));
+    for (auto y = 0; y < height_; ++y)
+    {
+        scanlines.push_back(0u); // filter type 0
+        const auto row_begin = pixels_.begin() + static_cast<std::ptrdiff_t>(static_cast<size_t>(y) * stride);
+        scanlines.insert(scanlines.end(), row_begin, row_begin + static_cast<std::ptrdiff_t>(stride));
+    }
+
+    if (!write_png_chunk(file, "IDAT", zlib_store(scanlines)))
+        return false;
+
+    return write_png_chunk(file, "IEND", {});
 }

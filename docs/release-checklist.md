@@ -8,8 +8,12 @@ Use this before cutting a public tag.
   `cmake -S . -B build && cmake --build build -j && ctest --test-dir build --output-on-failure`
 - Configure/build/test headless:
   `cmake -S . -B build-headless -DTEXGUI_BACKEND=headless && cmake --build build-headless -j && ctest --test-dir build-headless --output-on-failure`
+- Configure/build/test shared headless:
+  `cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXGUI_BACKEND=headless && cmake --build build-shared -j && ctest --test-dir build-shared --output-on-failure`
+- Verify presets:
+  `cmake --list-presets`
 - Smoke-run offscreen:
-  `./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.ppm`
+  `./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png`
 - Verify install/export:
   `cmake --install build-headless --prefix /tmp/texgui-prefix`
 - Verify installed package consumption:
@@ -28,6 +32,8 @@ Use this before cutting a public tag.
   [`docs/coverage.md`](coverage.md).
 - Run the local release verifier:
   `scripts/verify-release.sh`
+- Run warnings as errors at least once:
+  `cmake -S . -B build-werror -DTEXGUI_BACKEND=headless -DTEXGUI_WARNINGS_AS_ERRORS=ON && cmake --build build-werror -j`
 - Lint workflows locally when actionlint is available:
   `scripts/lint-workflows.sh`
 
@@ -49,6 +55,9 @@ Use this before cutting a public tag.
 - Include the demo image/GitHub Pages link in the release body.
 - Mention dependency modes: `FetchContent`, `add_subdirectory`, and installed
   `find_package(texgui CONFIG REQUIRED)`.
+- Mention shared-library support and CMake presets.
+- Mention `try_render_detailed()` for non-throwing user-input diagnostics.
+- Mention `HeadlessSurface::write_png()` for offscreen image output.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 - Let the release workflow attach install archives and `SHA256SUMS` after pushing

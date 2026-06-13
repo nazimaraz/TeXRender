@@ -16,7 +16,7 @@ cmake --build build-fetch-example -j
 ```
 
 The example lives in [`examples/consumer-fetchcontent`](../examples/consumer-fetchcontent).
-It pins `TEXGUI_BACKEND=headless` and writes `fetchcontent-example.ppm`.
+It pins `TEXGUI_BACKEND=headless` and writes `fetchcontent-example.png`.
 
 ## Installed `find_package`
 
@@ -41,7 +41,7 @@ It uses `find_package(texgui CONFIG REQUIRED)`, links `texgui::texgui`, then cal
 ## Headless Batch Rendering
 
 [`examples/headless_batch.cpp`](../examples/headless_batch.cpp) renders one or
-more formulas to PPM files without creating a window:
+more formulas to PNG files without creating a window:
 
 ```sh
 cmake -S . -B build-headless -DTEXGUI_BACKEND=headless -DCMAKE_BUILD_TYPE=Release

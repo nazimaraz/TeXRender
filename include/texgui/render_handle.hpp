@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include "texgui/export.hpp"
 
 namespace tex
 {
@@ -23,7 +24,7 @@ namespace TexGui
     /// it stays valid to draw and destroy even if the LatexDocument object is
     /// released first. With GPU-backed surfaces, destroy handles before closing
     /// the graphics context so backend caches can release their resources.
-    class RenderHandle
+    class TEXGUI_EXPORT RenderHandle
     {
     public:
         ~RenderHandle();

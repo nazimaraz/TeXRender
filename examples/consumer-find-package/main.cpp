@@ -20,9 +20,9 @@ int main()
     canvas->clear(0xffffffff);
     formula->draw(12, 12);
 
-    if (!canvas->write_ppm("find-package-example.ppm"))
+    if (!canvas->write_png("find-package-example.png"))
         return 2;
 
-    std::cout << "wrote find-package-example.ppm\n";
+    std::cout << "wrote find-package-example.png\n";
     return 0;
 }
