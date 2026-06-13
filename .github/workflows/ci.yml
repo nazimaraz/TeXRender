@@ -49,6 +49,13 @@ jobs:
         run: cmake --build build -j
       - name: Test
         run: ctest --test-dir build --output-on-failure
+      - name: Upload visual regression artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-linux-headless
+          path: build/visual-regression
+          if-no-files-found: ignore
       - name: Smoke-run the offscreen example
         run: ./build/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.ppm
       - name: Install package
@@ -169,6 +176,13 @@ jobs:
         run: cmake --build build -j
       - name: Test
         run: ctest --test-dir build --output-on-failure
+      - name: Upload visual regression artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-linux-raylib
+          path: build/visual-regression
+          if-no-files-found: ignore
 
   # macOS / Apple Clang: build the real raylib backend (with examples) AND the
   # headless backend, running the tests for each. This is the reference platform.

@@ -18,11 +18,18 @@ Use this before cutting a public tag.
   `./build-headless/texgui_render_benchmark`
 - Run a fuzz smoke if Clang/libFuzzer is available:
   `./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256`
+- Verify package-manager entry points:
+  `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`
+  and a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`.
+- Regenerate API docs locally if Doxygen is available:
+  `doxygen Doxyfile`
 
 ## GitHub Setup
 
 - Enable GitHub Pages with source set to "GitHub Actions".
 - Enable private vulnerability reporting in the Security tab.
+- Confirm the `Package managers`, `Benchmarks`, `Web demo` and `Release`
+  workflows are enabled.
 - Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `freetype`,
   `webassembly`, `cmake`, `graphics`.
 - Add a short repository description:
@@ -37,9 +44,13 @@ Use this before cutting a public tag.
   `find_package(texgui CONFIG REQUIRED)`.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
+- Let the release workflow attach install archives and `SHA256SUMS` after pushing
+  a `vX.Y.Z` tag.
 
 ## Presentation
 
 - Keep `docs/demo.png` current.
+- Keep `docs/offscreen-example.png`, `docs/gallery.md` and
+  `docs/performance-baseline.md` current.
 - Optional: record a short GIF of the live editor for the README or release.
 - Link `docs/architecture.md` from the release body for developer reviewers.

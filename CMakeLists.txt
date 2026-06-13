@@ -148,12 +148,14 @@ if(TEXGUI_BUILD_EXAMPLES)
         # no window or GPU; the raylib examples drive a real window themselves.
         set(TEXGUI_EXAMPLES
             texgui_offscreen examples/offscreen.cpp
+            texgui_headless_batch examples/headless_batch.cpp
         )
         if(TEXGUI_BACKEND STREQUAL "raylib")
             list(APPEND TEXGUI_EXAMPLES
-                texgui_minimal examples/minimal.cpp
-                texgui_demo    examples/demo_main.cpp
-                texgui_live    examples/live_edit.cpp
+                texgui_minimal        examples/minimal.cpp
+                texgui_demo           examples/demo_main.cpp
+                texgui_live           examples/live_edit.cpp
+                texgui_raylib_overlay examples/raylib_overlay.cpp
             )
         endif()
     endif()
@@ -235,8 +237,14 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     add_executable(texgui_visual_regression_test tests/visual_regression_test.cpp)
     target_link_libraries(texgui_visual_regression_test PRIVATE texgui::texgui)
     target_compile_features(texgui_visual_regression_test PRIVATE cxx_std_23)
-    target_compile_definitions(texgui_visual_regression_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+    target_compile_definitions(texgui_visual_regression_test PRIVATE
+        TEXGUI_RES_DIR="${MICROTEX_RES_DIR}"
+        TEXGUI_VISUAL_BASELINE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/tests/visual_baselines"
+    )
     add_test(NAME visual_regression COMMAND texgui_visual_regression_test)
+    set_tests_properties(visual_regression PROPERTIES
+        ENVIRONMENT "TEXGUI_VISUAL_OUTPUT_DIR=${CMAKE_CURRENT_BINARY_DIR}/visual-regression"
+    )
 
     # Configure/build/run a tiny external CMake project that consumes texgui via
     # add_subdirectory and compiles as C++17, matching the dependency story.

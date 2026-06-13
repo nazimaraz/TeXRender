@@ -94,4 +94,6 @@ target_link_libraries(my_app PRIVATE texgui::texgui)
 texgui_copy_resources(my_app)
 ```
 
-Then construct documents with `TEXGUI_RES_DIR`.
+The helper copies MicroTeX resources to a target-specific directory beside the
+executable and defines `TEXGUI_RES_DIR` to that exact path. Then construct
+documents with `TEXGUI_RES_DIR`.

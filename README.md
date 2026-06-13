@@ -1,7 +1,10 @@
 # latex-renderer
 
 [![CI](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml)
+[![Package managers](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml)
+[![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
 
 Render LaTeX math **directly into a GUI window** from C++.
 
@@ -22,6 +25,20 @@ implementations; adding SDL2/SFML/etc. means implementing one small interface â€
 nothing in the core changes.
 
 ![demo](docs/demo.png)
+
+## Why use latex-renderer?
+
+* **No temporary images or subprocesses.** Parse a formula once, keep a
+  `RenderHandle`, and draw it inside your normal frame loop.
+* **Windowed and windowless output.** The same API supports raylib overlays,
+  server-style headless rendering, tests, and WebAssembly.
+* **Dependency-shaped CMake.** Consumers can use `FetchContent`,
+  `add_subdirectory`, installed `find_package`, vcpkg manifests, or Conan.
+* **Small backend contract.** Custom engines only implement `IDrawSurface`; the
+  parser, transforms, FreeType glyph rasterization, and caches stay shared.
+
+See the [gallery](docs/gallery.md), [integration examples](docs/integration-examples.md),
+and hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/).
 
 ## How it works
 
@@ -77,6 +94,9 @@ ctest --test-dir build      # run the unit tests
 
 The smallest possible program is [`examples/minimal.cpp`](examples/minimal.cpp):
 parse one formula, draw it in a loop.
+
+More copyable consumer examples live in
+[`docs/integration-examples.md`](docs/integration-examples.md).
 
 ## Using texgui in your project
 
@@ -135,8 +155,8 @@ until the project is submitted to public registries.
 
 MicroTeX needs its `res/` directory (fonts + metrics) **at runtime**; you pass its
 path to `LatexDocument`. The CMake helper `texgui_copy_resources(my_app)` copies
-that directory next to your executable as `res/` and defines `TEXGUI_RES_DIR` for
-that target:
+that directory to a target-specific folder next to your executable and defines
+`TEXGUI_RES_DIR` for that target:
 
 ```cmake
 target_link_libraries(my_app PRIVATE texgui::texgui)
@@ -324,8 +344,9 @@ canvas, structural visual regression, and a separate CMake consumer smoke test â
 needs no window or GPU and runs under either backend;
 `TEXGUI_BACKEND=headless` additionally drops the raylib dependency entirely. CI
 exercises this on Linux, macOS and Windows, the raylib backend + examples on
-Linux and macOS, runs the suite under ASan + UBSan, and gates formatting with
-clang-format.
+Linux and macOS, runs the suite under ASan + UBSan, checks vcpkg/Conan
+packaging, uploads visual-regression artifacts on failure, and gates formatting
+with clang-format.
 
 Additional developer tools:
 
@@ -335,7 +356,8 @@ cmake --build build --target texgui_render_benchmark -j
 ```
 
 Fuzzing instructions live in [`docs/fuzzing.md`](docs/fuzzing.md); benchmark
-notes live in [`docs/benchmarks.md`](docs/benchmarks.md).
+notes live in [`docs/benchmarks.md`](docs/benchmarks.md), with reference numbers
+in [`docs/performance-baseline.md`](docs/performance-baseline.md).
 
 ## License
 

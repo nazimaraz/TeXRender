@@ -1,0 +1,61 @@
+name: Package managers
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vcpkg:
+    name: vcpkg manifest
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install host tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 git ninja-build curl zip unzip tar pkg-config
+      - name: Bootstrap vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
+          "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.sh" -disableMetrics
+      - name: Configure through vcpkg
+        run: >
+          cmake -S . -B build-vcpkg -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_COMPILER=g++-14
+          -DCMAKE_TOOLCHAIN_FILE="$RUNNER_TEMP/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON
+          -DTEXGUI_BACKEND=headless
+          -DTEXGUI_BUILD_EXAMPLES=OFF
+          -DTEXGUI_BUILD_BENCHMARKS=OFF
+      - name: Build
+        run: cmake --build build-vcpkg -j
+      - name: Test
+        run: ctest --test-dir build-vcpkg --output-on-failure
+
+  conan:
+    name: Conan package
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Conan and compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build python3-pip
+          python3 -m pip install --upgrade pip conan
+      - name: Detect profile
+        run: CC=gcc-14 CXX=g++-14 conan profile detect --force
+      - name: Create package
+        run: >
+          CC=gcc-14 CXX=g++-14 conan create .
+          --build=missing
+          -o "&:backend=headless"
+          -o "&:with_examples=False"
+          -o "&:with_tests=False"
+          -o "&:with_benchmarks=False"

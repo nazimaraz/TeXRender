@@ -1,14 +1,23 @@
 #include <algorithm>
 #include <cstddef>
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <memory>
+#include <optional>
 #include <print>
 #include <string>
+#include <string_view>
 #include <vector>
 #include "texgui/headless_surface.hpp"
 #include "texgui/latex_document.hpp"
 
 #ifndef TEXGUI_RES_DIR
 #define TEXGUI_RES_DIR "res"
+#endif
+
+#ifndef TEXGUI_VISUAL_BASELINE_DIR
+#define TEXGUI_VISUAL_BASELINE_DIR "."
 #endif
 
 using namespace TexGui;
@@ -33,6 +42,58 @@ namespace
         int max_x = -1;
         int max_y = -1;
     };
+
+    struct Baseline
+    {
+        std::string formula;
+        float text_size = 56.f;
+        int margin = 12;
+        size_t min_covered_pixels = 150;
+        int min_ink_width = 30;
+        int min_ink_height = 25;
+        int min_rule_run = 12;
+    };
+
+    [[nodiscard]] std::optional<Baseline> load_baseline(const std::filesystem::path& path)
+    {
+        auto file = std::ifstream{path};
+        if (!file)
+            return std::nullopt;
+
+        auto baseline = Baseline{};
+        auto line = std::string{};
+        while (std::getline(file, line))
+        {
+            if (line.empty() || line.front() == '#')
+                continue;
+
+            const auto separator = line.find('=');
+            if (separator == std::string::npos)
+                continue;
+
+            const auto key = std::string_view{line}.substr(0, separator);
+            const auto value = line.substr(separator + 1);
+            if (key == "formula")
+                baseline.formula = value;
+            else if (key == "text_size")
+                baseline.text_size = std::stof(value);
+            else if (key == "margin")
+                baseline.margin = std::stoi(value);
+            else if (key == "min_covered_pixels")
+                baseline.min_covered_pixels = static_cast<size_t>(std::stoull(value));
+            else if (key == "min_ink_width")
+                baseline.min_ink_width = std::stoi(value);
+            else if (key == "min_ink_height")
+                baseline.min_ink_height = std::stoi(value);
+            else if (key == "min_rule_run")
+                baseline.min_rule_run = std::stoi(value);
+        }
+
+        if (baseline.formula.empty())
+            return std::nullopt;
+
+        return baseline;
+    }
 
     [[nodiscard]] Bounds ink_bounds(const HeadlessSurface& canvas)
     {
@@ -84,31 +145,59 @@ namespace
 
         return false;
     }
+
+    void write_artifacts(const std::string_view output_dir, const HeadlessSurface& canvas, const Bounds& bounds)
+    {
+        if (output_dir.empty())
+            return;
+
+        std::filesystem::create_directories(output_dir);
+        const auto dir = std::filesystem::path{output_dir};
+        const auto wrote_ppm = canvas.write_ppm((dir / "fraction.ppm").string());
+
+        auto metrics = std::ofstream{dir / "fraction.metrics.txt"};
+        metrics << "wrote_ppm=" << (wrote_ppm ? "true" : "false") << '\n';
+        metrics << "width=" << canvas.width() << '\n';
+        metrics << "height=" << canvas.height() << '\n';
+        metrics << "covered_pixels=" << canvas.covered_pixels() << '\n';
+        metrics << "ink_min_x=" << bounds.min_x << '\n';
+        metrics << "ink_min_y=" << bounds.min_y << '\n';
+        metrics << "ink_max_x=" << bounds.max_x << '\n';
+        metrics << "ink_max_y=" << bounds.max_y << '\n';
+    }
 } // namespace
 
 #define CHECK(cond) check((cond), #cond)
 
 int main()
 {
+    const auto baseline = load_baseline(std::filesystem::path{TEXGUI_VISUAL_BASELINE_DIR} / "fraction.baseline");
+    CHECK(baseline.has_value());
+    if (!baseline)
+        return 1;
+
     auto owned = std::make_unique<HeadlessSurface>();
     auto* const canvas = owned.get();
     const auto document = LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
-    const auto formula = document.render(R"(\frac{a+b}{c+d})", 56.f, 0xff000000);
+    const auto formula = document.render(baseline->formula, baseline->text_size, 0xff000000);
 
-    constexpr auto margin = 12;
+    const auto margin = baseline->margin;
     canvas->resize(formula.width() + 2 * margin, formula.height() + 2 * margin);
     canvas->clear(0x00000000);
     formula.draw(margin, margin);
 
     const auto bounds = ink_bounds(*canvas);
-    CHECK(canvas->covered_pixels() > 150);
+    const auto* const output_dir = std::getenv("TEXGUI_VISUAL_OUTPUT_DIR");
+    write_artifacts(output_dir != nullptr ? output_dir : "", *canvas, bounds);
+
+    CHECK(canvas->covered_pixels() > baseline->min_covered_pixels);
     CHECK(bounds.min_x >= margin - 2);
     CHECK(bounds.min_y >= margin - 2);
     CHECK(bounds.max_x < canvas->width() - margin + 2);
     CHECK(bounds.max_y < canvas->height() - margin + 2);
-    CHECK(bounds.max_x - bounds.min_x > 30);
-    CHECK(bounds.max_y - bounds.min_y > 25);
-    CHECK(has_horizontal_rule(*canvas, std::max(12, formula.width() / 3)));
+    CHECK(bounds.max_x - bounds.min_x > baseline->min_ink_width);
+    CHECK(bounds.max_y - bounds.min_y > baseline->min_ink_height);
+    CHECK(has_horizontal_rule(*canvas, std::max(baseline->min_rule_run, formula.width() / 3)));
 
     if (g_failures == 0)
         std::println("all visual_regression tests passed");

@@ -19,3 +19,8 @@ The output reports:
 
 Use this for relative comparisons while optimizing cache behavior or backend
 work. It is not a substitute for profiling a real application frame loop.
+
+Current reference numbers are tracked in
+[`docs/performance-baseline.md`](performance-baseline.md). The non-blocking
+[`Benchmarks`](../.github/workflows/benchmarks.yml) workflow uploads raw output
+for CI runs so regressions are visible during review.

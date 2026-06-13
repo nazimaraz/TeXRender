@@ -1,0 +1,43 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  render-benchmark:
+    name: Render benchmark
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_COMPILER=g++-14
+          -DTEXGUI_BACKEND=headless
+          -DTEXGUI_BUILD_EXAMPLES=OFF
+          -DTEXGUI_BUILD_TESTS=OFF
+          -DTEXGUI_BUILD_BENCHMARKS=ON
+      - name: Build benchmark
+        run: cmake --build build --target texgui_render_benchmark -j
+      - name: Run benchmark
+        run: |
+          set -o pipefail
+          ./build/texgui_render_benchmark | tee benchmark-results.txt
+      - name: Upload benchmark output
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-benchmark-${{ github.run_id }}
+          path: benchmark-results.txt

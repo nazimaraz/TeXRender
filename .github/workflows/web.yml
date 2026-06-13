@@ -10,19 +10,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Build the live editor to WebAssembly (raylib backend via Emscripten).
+  # Build the live editor to WebAssembly (raylib backend via Emscripten) and
+  # publish the generated API reference under /api/.
   build:
-    name: Build (Emscripten)
+    name: Build site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: mymindstorm/setup-emsdk@v14
         with:
           version: 4.0.17 # keep in sync with the locally verified toolchain
+      - name: Install documentation tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen
       - name: Configure
         run: emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release
       - name: Build
         run: cmake --build build-web -j
+      - name: Generate API reference
+        run: doxygen Doxyfile
+      - name: Add API reference to site
+        run: cp -R build-api-docs/api build-web/site/api
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:

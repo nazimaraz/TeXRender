@@ -25,15 +25,21 @@ follow [Semantic Versioning](https://semver.org/).
 - FreeType glyph rasterisation behind bounded LRU caches (CPU bitmaps and GPU
   textures, keyed identically).
 - Examples: minimal window, sample browser, live editor, offscreen render to
-  PPM.
+  PPM, headless batch output, raylib overlay, and copyable FetchContent /
+  installed-package consumer projects.
 - Benchmark executable for cold render, warm render and headless draw timing.
 - libFuzzer harness for `try_render()` with sanitizer-friendly input limits.
 - WebAssembly build of the live editor (Emscripten, raylib Web/WebGL, native
   wasm exceptions) with GitHub Pages deployment.
+- Generated Doxygen API reference published with the web demo.
+- Release automation for tagged GitHub releases with install archives and
+  SHA256 checksums.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, strict warning build, structural visual regression,
-  clang-format gate, ASan+UBSan pass, fuzz smoke, wasm build.
-- Documentation: architecture, API notes, known limitations, fuzzing, benchmarks
-  and release checklist.
+  visual failure artifacts, clang-format gate, ASan+UBSan pass, fuzz smoke,
+  vcpkg/Conan validation, non-blocking benchmark output, wasm build.
+- Documentation: architecture, API notes, known limitations, integration
+  examples, gallery, fuzzing, benchmarks, performance baseline and release
+  checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0
