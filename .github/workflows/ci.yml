@@ -58,6 +58,15 @@ jobs:
           if-no-files-found: ignore
       - name: Smoke-run the offscreen example
         run: ./build/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png
+      - name: Generate gallery artifacts
+        env:
+          TEXGUI_BUILD_DIR: build
+        run: scripts/generate-gallery.sh docs/gallery-formulas.txt build/gallery
+      - name: Upload gallery artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-gallery-linux-headless
+          path: build/gallery
       - name: Install package
         run: cmake --install build --prefix /tmp/texgui-prefix
       - name: Configure installed package consumer
@@ -234,7 +243,7 @@ jobs:
   # Windows / MSVC: build the headless backend (FreeType + tinyxml2 come from
   # FetchContent) and run every test, validating the MSVC support claim.
   windows:
-    name: Windows · MSVC · headless
+    name: Windows · MSVC · headless + shared install
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -244,3 +253,24 @@ jobs:
         run: cmake --build build --config Release -j
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Configure shared library
+        run: >
+          cmake -S . -B build-shared
+          -DBUILD_SHARED_LIBS=ON
+          -DTEXGUI_BACKEND=headless
+          -DTEXGUI_BUILD_EXAMPLES=OFF
+          -DTEXGUI_BUILD_BENCHMARKS=OFF
+      - name: Build shared library
+        run: cmake --build build-shared --config Release -j
+      - name: Test shared library
+        run: ctest --test-dir build-shared -C Release --output-on-failure
+      - name: Install shared package
+        run: cmake --install build-shared --config Release --prefix "$env:RUNNER_TEMP/texgui-prefix"
+      - name: Configure shared package consumer
+        run: >
+          cmake -S tests/package_consumer -B package-consumer-shared
+          -DCMAKE_PREFIX_PATH="$env:RUNNER_TEMP/texgui-prefix"
+      - name: Build shared package consumer
+        run: cmake --build package-consumer-shared --config Release -j
+      - name: Test shared package consumer
+        run: ctest --test-dir package-consumer-shared -C Release --output-on-failure

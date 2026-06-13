@@ -40,14 +40,14 @@ namespace TexGui
     {
         switch (anchor)
         {
-        case FormulaAnchor::top:
-            return y;
-        case FormulaAnchor::baseline:
-            return top_for_baseline(formula, y);
-        case FormulaAnchor::center:
-            return y - formula.height() / 2;
-        case FormulaAnchor::bottom:
-            return y - formula.height();
+            case FormulaAnchor::top:
+                return y;
+            case FormulaAnchor::baseline:
+                return top_for_baseline(formula, y);
+            case FormulaAnchor::center:
+                return y - formula.height() / 2;
+            case FormulaAnchor::bottom:
+                return y - formula.height();
         }
 
         return y;

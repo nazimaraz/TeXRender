@@ -241,8 +241,8 @@ void SvgSurface::draw_line(const float x1, const float y1, const float x2, const
 
 void SvgSurface::draw_rect(const float x, const float y, const float w, const float h, const float width)
 {
-    elements_.push_back(std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" fill="none" {} stroke-width="{}"/>)",
-        number(x), number(y), number(w), number(h), paint_attributes("stroke"), number(width)));
+    elements_.push_back(std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" fill="none" {} stroke-width="{}"/>)", number(x),
+        number(y), number(w), number(h), paint_attributes("stroke"), number(width)));
 }
 
 void SvgSurface::fill_rect(const float x, const float y, const float w, const float h)
@@ -254,15 +254,16 @@ void SvgSurface::fill_rect(const float x, const float y, const float w, const fl
 void SvgSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry,
     const float width)
 {
-    elements_.push_back(std::format(
-        R"(<rect x="{}" y="{}" width="{}" height="{}" rx="{}" ry="{}" fill="none" {} stroke-width="{}"/>)", number(x),
-        number(y), number(w), number(h), number(rx), number(ry), paint_attributes("stroke"), number(width)));
+    elements_.push_back(
+        std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" rx="{}" ry="{}" fill="none" {} stroke-width="{}"/>)", number(x),
+            number(y), number(w), number(h), number(rx), number(ry), paint_attributes("stroke"), number(width))
+    );
 }
 
 void SvgSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)
 {
-    elements_.push_back(std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" rx="{}" ry="{}" {}/>)", number(x),
-        number(y), number(w), number(h), number(rx), number(ry), paint_attributes("fill")));
+    elements_.push_back(std::format(R"(<rect x="{}" y="{}" width="{}" height="{}" rx="{}" ry="{}" {}/>)", number(x), number(y),
+        number(w), number(h), number(rx), number(ry), paint_attributes("fill")));
 }
 
 void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
@@ -278,7 +279,8 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
         {
             const auto coverage =
                 glyph.buffer[static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch) + static_cast<std::size_t>(col)];
-            const auto dst = (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
+            const auto dst =
+                (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
             rgba[dst + 0] = c.r;
             rgba[dst + 1] = c.g;
             rgba[dst + 2] = c.b;
@@ -292,9 +294,8 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
     if (std::fabs(angle) > 0.0001f)
         transform = std::format(" transform=\"rotate({} {} {})\"", number(to_degrees(angle)), number(pen_x), number(pen_y));
 
-    elements_.push_back(std::format(
-        R"(<image x="{}" y="{}" width="{}" height="{}" href="data:image/png;base64,{}"{}/>)", number(x), number(y),
-        glyph.width, glyph.height, base64(png_rgba(glyph.width, glyph.height, rgba)), transform));
+    elements_.push_back(std::format(R"(<image x="{}" y="{}" width="{}" height="{}" href="data:image/png;base64,{}"{}/>)", number(x),
+        number(y), glyph.width, glyph.height, base64(png_rgba(glyph.width, glyph.height, rgba)), transform));
 }
 
 std::string SvgSurface::svg() const

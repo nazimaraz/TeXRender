@@ -68,6 +68,8 @@ cmake_configure "$ROOT_DIR" "$HEADLESS_BUILD" \
 cmake_build "$HEADLESS_BUILD"
 run ctest --test-dir "$HEADLESS_BUILD" --output-on-failure
 run "$HEADLESS_BUILD/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
+run env TEXGUI_BUILD_DIR="$HEADLESS_BUILD" "$ROOT_DIR/scripts/generate-gallery.sh" \
+    "$ROOT_DIR/docs/gallery-formulas.txt" "${BUILD_ROOT}/gallery"
 run "$HEADLESS_BUILD/texgui_render_benchmark"
 run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texgui_headless_batch" 'e^{i\pi} + 1 = 0'
 
@@ -155,6 +157,7 @@ if [[ -n "${VCPKG_ROOT:-}" && -x "${VCPKG_ROOT}/vcpkg" ]]; then
         -DTEXGUI_BUILD_BENCHMARKS=OFF
     cmake_build "$VCPKG_BUILD"
     run ctest --test-dir "$VCPKG_BUILD" --output-on-failure
+    run "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
 else
     printf '\n==> skipping vcpkg manifest validation: set VCPKG_ROOT to a vcpkg checkout\n'
 fi

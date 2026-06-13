@@ -57,6 +57,17 @@ Static analysis and coverage are documented in
 [`docs/coverage.md`](docs/coverage.md). They run in CI, but local runs are useful
 before touching shared rendering or packaging code.
 
+Generated gallery artifacts can be refreshed with:
+
+```sh
+TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh
+```
+
+Visual regression tests are structural by default. Maintainers can opt into
+exact PNG snapshot comparisons by setting `TEXGUI_VISUAL_SNAPSHOT_DIR`; set
+`TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1` at the same time to intentionally rewrite
+the snapshot files.
+
 For a full pre-release local pass, run:
 
 ```sh

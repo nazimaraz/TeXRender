@@ -15,7 +15,9 @@ INPUT                  = include \
                          docs/architecture.md \
                          docs/known-limitations.md \
                          docs/integration-examples.md \
+                         docs/api-compatibility.md \
                          docs/gallery.md \
+                         docs/package-publishing.md \
                          docs/benchmarks.md \
                          docs/fuzzing.md \
                          docs/performance-baseline.md \

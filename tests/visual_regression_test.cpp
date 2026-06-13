@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <iterator>
 #include <memory>
 #include <optional>
 #include <print>
@@ -172,6 +173,46 @@ namespace
         metrics << "ink_max_x=" << bounds.max_x << '\n';
         metrics << "ink_max_y=" << bounds.max_y << '\n';
     }
+
+    [[nodiscard]] bool env_flag(const char* const name)
+    {
+        const auto* const value = std::getenv(name);
+        if (value == nullptr)
+            return false;
+
+        const auto text = std::string_view{value};
+        return text == "1" || text == "true" || text == "TRUE" || text == "on" || text == "ON";
+    }
+
+    [[nodiscard]] std::vector<char> read_binary_file(const std::filesystem::path& path)
+    {
+        auto file = std::ifstream{path, std::ios::binary};
+        return {std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{}};
+    }
+
+    void verify_snapshot(const std::string_view snapshot_dir, const bool update_snapshots, const std::string_view name,
+        const HeadlessSurface& canvas)
+    {
+        if (snapshot_dir.empty())
+            return;
+
+        const auto expected = std::filesystem::path{snapshot_dir} / (std::string{name} + ".png");
+        if (update_snapshots)
+        {
+            std::filesystem::create_directories(expected.parent_path());
+            check(canvas.write_png(expected.string()), "canvas.write_png(expected.string())");
+            return;
+        }
+
+        check(std::filesystem::exists(expected), "std::filesystem::exists(expected)");
+        if (!std::filesystem::exists(expected))
+            return;
+
+        const auto actual = std::filesystem::temp_directory_path() / ("texgui-" + std::string{name} + "-visual-snapshot.png");
+        check(canvas.write_png(actual.string()), "canvas.write_png(actual.string())");
+        check(read_binary_file(actual) == read_binary_file(expected), "read_binary_file(actual) == read_binary_file(expected)");
+        std::filesystem::remove(actual);
+    }
 } // namespace
 
 #define CHECK(cond) check((cond), #cond)
@@ -207,8 +248,12 @@ int main()
         formula.draw(margin, margin);
 
         const auto bounds = ink_bounds(*canvas);
+        const auto name = path.stem().string();
         const auto* const output_dir = std::getenv("TEXGUI_VISUAL_OUTPUT_DIR");
-        write_artifacts(output_dir != nullptr ? output_dir : "", path.stem().string(), *canvas, bounds);
+        write_artifacts(output_dir != nullptr ? output_dir : "", name, *canvas, bounds);
+
+        const auto* const snapshot_dir = std::getenv("TEXGUI_VISUAL_SNAPSHOT_DIR");
+        verify_snapshot(snapshot_dir != nullptr ? snapshot_dir : "", env_flag("TEXGUI_VISUAL_UPDATE_SNAPSHOTS"), name, *canvas);
 
         CHECK(canvas->covered_pixels() > baseline->min_covered_pixels);
         CHECK(bounds.min_x >= margin - 4);

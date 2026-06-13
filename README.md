@@ -166,7 +166,13 @@ backend as shown above.
 
 Starter metadata is included for package-manager workflows: [`vcpkg.json`](vcpkg.json)
 and [`conanfile.py`](conanfile.py). They are intended as project-local manifests
-until the project is submitted to public registries.
+until the project is submitted to public registries. See
+[`docs/package-publishing.md`](docs/package-publishing.md) for the Conan/vcpkg
+validation and submission checklist.
+
+The public API is pre-1.0 and source-compatibility focused; see
+[`docs/api-compatibility.md`](docs/api-compatibility.md) for the current
+compatibility promise.
 
 ### Shipping the resource directory
 

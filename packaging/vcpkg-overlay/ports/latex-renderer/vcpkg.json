@@ -1,0 +1,27 @@
+{
+  "name": "latex-renderer",
+  "version-string": "0.1.0",
+  "description": "C++ LaTeX math renderer with raylib, headless RGBA, and SVG backends",
+  "homepage": "https://github.com/nazimaraz/latex-renderer",
+  "license": "MIT",
+  "dependencies": [
+    "freetype",
+    "tinyxml2",
+    {
+      "name": "vcpkg-cmake",
+      "host": true
+    },
+    {
+      "name": "vcpkg-cmake-config",
+      "host": true
+    }
+  ],
+  "features": {
+    "raylib": {
+      "description": "Build the raylib windowed rendering backend",
+      "dependencies": [
+        "raylib"
+      ]
+    }
+  }
+}

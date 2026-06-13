@@ -1,0 +1,7 @@
+# slug|LaTeX formula
+pythagorean|x^2 + y^2 = z^2
+fraction|\frac{a+b}{c+d}
+radical|\sqrt{\frac{a^2+b^2}{c}}
+integral|\int_{0}^{1} x^2\,dx = \frac{1}{3}
+matrix|\left(\begin{array}{cc}a&b\\c&d\end{array}\right)
+colored|\color{red}{x}+\color{blue}{y}

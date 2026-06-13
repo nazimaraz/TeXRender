@@ -18,6 +18,11 @@ Use this before cutting a public tag.
   `./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png`
 - Smoke-run SVG export:
   `./build-svg/texgui_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg`
+- Generate gallery artifacts:
+  `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt /tmp/texgui-gallery`
+- Optional exact visual snapshots:
+  `TEXGUI_VISUAL_SNAPSHOT_DIR=/tmp/texgui-snapshots TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1 ctest --test-dir build-headless --output-on-failure`
+  then rerun without `TEXGUI_VISUAL_UPDATE_SNAPSHOTS`.
 - Verify install/export:
   `cmake --install build-headless --prefix /tmp/texgui-prefix`
 - Verify installed package consumption:
@@ -29,7 +34,8 @@ Use this before cutting a public tag.
 - Verify package-manager entry points:
   `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`,
   `conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"`,
-  and a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`.
+  a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`,
+  and `VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`.
 - Regenerate API docs locally if Doxygen is available:
   `doxygen Doxyfile`
 - Run static analysis and coverage locally when the tools are available; see
@@ -67,6 +73,7 @@ Use this before cutting a public tag.
   helpers.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
+- Mention API compatibility status and the current source-compatibility promise.
 - Let the release workflow attach install archives and `SHA256SUMS` after pushing
   a `vX.Y.Z` tag.
 
@@ -74,7 +81,8 @@ Use this before cutting a public tag.
 
 - Keep `docs/demo.png` current.
 - Keep `docs/offscreen-example.png`, `docs/gallery.md` and
-  `docs/performance-baseline.md` current.
+  `docs/performance-baseline.md` current. Generated gallery artifacts should
+  come from `scripts/generate-gallery.sh`.
 - Keep [`docs/case-study.md`](case-study.md) aligned with the public API and CI
   story before using the project in a resume.
 - Keep [`docs/roadmap.md`](roadmap.md) honest about near-term plans and

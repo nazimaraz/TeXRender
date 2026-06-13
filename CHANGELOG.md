@@ -37,6 +37,8 @@ follow [Semantic Versioning](https://semver.org/).
 - CMake package support: `install()`, exported `texgui::texgui`, generated
   `texguiConfig.cmake`, and `texgui_copy_resources(target)`.
 - Package-manager starter metadata for vcpkg and Conan consumers.
+- Dependabot configuration for GitHub Actions dependency updates.
+- Local vcpkg overlay port smoke test for portfile-style package validation.
 - FreeType glyph rasterisation behind bounded LRU caches (CPU bitmaps and GPU
   textures, keyed identically).
 - Examples: minimal window, sample browser, live editor, offscreen render to
@@ -51,16 +53,19 @@ follow [Semantic Versioning](https://semver.org/).
   SHA256 checksums plus grouped generated release notes.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, C++17 public-header checks, strict warning build,
-  SVG backend smoke, shared-library smoke, threaded lifetime stress test,
-  multi-formula structural visual regression,
-  visual failure artifacts, clang-format gate, ASan+UBSan pass, fuzz smoke,
-  vcpkg/Conan validation, clang-tidy static analysis, coverage reporting,
-  actionlint workflow linting, non-blocking benchmark output, wasm build.
+  SVG backend smoke, Windows shared-library install consumer, shared-library
+  smoke, threaded lifetime stress test, multi-formula structural visual
+  regression, optional exact PNG visual snapshots, visual failure artifacts,
+  clang-format gate, ASan+UBSan pass, fuzz smoke, vcpkg/Conan validation,
+  clang-tidy static analysis, coverage reporting, actionlint workflow linting,
+  non-blocking benchmark output, wasm build.
+- Generated gallery manifest/script that renders PNG and SVG sample artifacts in
+  CI and release verification.
 - Local release verifier script for format/build/test/docs/package-consumer
   checks before pushing.
 - Documentation: architecture, API notes, known limitations, integration
-  examples, gallery, build options, fuzzing, benchmarks, static analysis, coverage,
-  workflow linting, roadmap, performance baseline, resume-oriented case study
-  and release checklist.
+  examples, gallery, build options, fuzzing, benchmarks, static analysis,
+  coverage, workflow linting, API compatibility, package publishing, roadmap,
+  performance baseline, resume-oriented case study and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

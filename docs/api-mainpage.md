@@ -22,9 +22,11 @@ your embedding mode.
 See also:
 
 - [Embedding notes](api.md)
+- [API compatibility](api-compatibility.md)
 - [Architecture](architecture.md)
 - [Known limitations](known-limitations.md)
 - [Build options](build-options.md)
+- [Package publishing](package-publishing.md)
 - [Static analysis](static-analysis.md)
 - [Coverage](coverage.md)
 - [Workflow linting](workflow-linting.md)

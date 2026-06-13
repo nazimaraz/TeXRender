@@ -38,6 +38,11 @@ jobs:
         run: cmake --build build-vcpkg -j
       - name: Test
         run: ctest --test-dir build-vcpkg --output-on-failure
+      - name: Verify overlay port
+        env:
+          VCPKG_ROOT: ${{ runner.temp }}/vcpkg
+          VCPKG_DEFAULT_TRIPLET: x64-linux
+        run: scripts/verify-vcpkg-overlay.sh
 
   conan:
     name: Conan package

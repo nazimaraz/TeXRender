@@ -21,7 +21,7 @@ The library therefore separates three jobs:
 
 ## C++ Design
 
-The public API is deliberately small:
+The public API is deliberately small and intentionally ownership-oriented:
 
 - `LatexDocument` owns renderer state and one drawing surface.
 - `RenderHandle` is move-only and owns one parsed/layouted formula.
@@ -30,10 +30,11 @@ The public API is deliberately small:
 - `SvgSurface` demonstrates the same backend contract targeting serialized
   output instead of a framebuffer.
 
-Ownership is explicit. `LatexDocument` owns the surface, and `RenderHandle`
-shares the internal document state so handles remain valid even if the document
-object is released first. GPU-backed surfaces still have a real graphics-context
-lifetime, so examples scope handles before `CloseWindow()`.
+The important design decision is that `RenderHandle` shares the internal document
+state. That keeps a parsed formula valid even if the user lets the original
+`LatexDocument` object go out of scope. The API still documents the graphics
+context lifetime: GPU-backed surfaces must release textures before
+`CloseWindow()`, so examples keep handles scoped inside the raylib window block.
 
 The core uses modern C++ where it helps:
 
@@ -44,6 +45,10 @@ The core uses modern C++ where it helps:
 - small value types for cache limits and formula layout helpers
 - `std::shared_ptr` only at the document/handle lifetime boundary
 - C++17 public headers, while implementation files can use newer C++ features
+
+That split is deliberate: users get a conservative dependency surface, while
+the implementation can still use C++23 facilities like `std::format` and
+`std::print` where they improve internal clarity.
 
 ## Rendering Pipeline
 
@@ -96,8 +101,9 @@ Coverage includes:
 - installed package consumer tests
 
 CI extends that with ASan/UBSan, fuzz smoke, strict warnings, package-manager
-validation, static analysis, coverage artifacts, WebAssembly builds, and release
-artifact generation.
+validation, static analysis, coverage artifacts, WebAssembly builds, generated
+gallery artifacts, Windows shared-library install checks, and release artifact
+generation.
 
 ## Packaging Story
 
@@ -107,11 +113,17 @@ texgui supports the ways C++ developers commonly consume a library:
 - `add_subdirectory`
 - installed `find_package(texgui CONFIG REQUIRED)`
 - vcpkg manifest mode
+- local vcpkg overlay port smoke tests
 - Conan 2 recipe and `test_package`
 
 MicroTeX's `res/` directory is a runtime dependency. The CMake helper
 `texgui_copy_resources(target)` copies it to a target-specific output directory
 and defines `TEXGUI_RES_DIR` for that target.
+
+The package consumers are intentionally not empty link tests: they include public
+headers as C++17, call cache/layout helpers, render into `HeadlessSurface`, and
+write SVG through `SvgSurface`. That keeps the dependency promise tied to real
+runtime behavior.
 
 ## What This Demonstrates
 
@@ -123,6 +135,7 @@ For a resume review, this project demonstrates:
 - API design with clear ownership and lifetime rules
 - testability through dependency injection
 - configurable caches, SVG export, and baseline layout utilities
+- source-compatibility policy and package publishing notes
 - sanitizer, fuzz, coverage, and static-analysis workflows
 - WebAssembly deployment of native C++ code
 - release automation with checksums and install artifacts

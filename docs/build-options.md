@@ -59,3 +59,10 @@ ctest --test-dir build-shared --output-on-failure
 ```
 
 The release verifier includes this shared-library smoke test.
+
+## Optional Visual Snapshots
+
+`visual_regression` is structural by default so it stays portable across
+platforms and font rasterizer differences. For exact local PNG comparisons, set
+`TEXGUI_VISUAL_SNAPSHOT_DIR` when running the tests. To intentionally refresh
+snapshots, also set `TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1`.
