@@ -29,6 +29,12 @@ namespace
         if (!std::isfinite(options.text_size) || options.text_size <= 0.f)
             throw std::invalid_argument("texgui: text_size must be finite and positive");
 
+        if (options.wrap_width < 0)
+            throw std::invalid_argument("texgui: wrap_width must be non-negative");
+
+        if (options.max_wrap_width < 0)
+            throw std::invalid_argument("texgui: max_wrap_width must be non-negative");
+
         if (options.max_input_bytes != RenderOptions::no_input_limit && latex.size() > options.max_input_bytes)
             throw std::length_error("texgui: LaTeX input exceeds max_input_bytes");
 
@@ -37,6 +43,17 @@ namespace
 
         if (options.max_wrap_width != RenderOptions::no_wrap_width_limit && options.wrap_width > options.max_wrap_width)
             throw std::length_error("texgui: wrap_width exceeds max_wrap_width");
+    }
+
+    [[nodiscard]] int effective_wrap_width(const RenderOptions& options)
+    {
+        if (options.wrap_width > 0)
+            return options.wrap_width;
+
+        if (options.max_wrap_width != RenderOptions::no_wrap_width_limit)
+            return options.max_wrap_width;
+
+        return std::numeric_limits<int>::max() / 2;
     }
 } // namespace
 
@@ -63,7 +80,7 @@ RenderHandle LatexDocument::render(const std::string& latex, const float text_si
 RenderHandle LatexDocument::render(const std::string& latex, const RenderOptions& options) const
 {
     validate_options(latex, options);
-    const auto width = options.wrap_width > 0 ? options.wrap_width : std::numeric_limits<int>::max() / 2;
+    const auto width = effective_wrap_width(options);
     const auto render = tex::LaTeX::parse(tex::utf82wide(latex), width, options.text_size, 0.f, options.argb);
     return {render, state_};
 }

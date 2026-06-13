@@ -28,6 +28,8 @@ set(TEXGUI_BACKEND "raylib" CACHE STRING "GUI rendering backend to build (raylib
 set_property(CACHE TEXGUI_BACKEND PROPERTY STRINGS raylib headless)
 option(TEXGUI_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TOP_LEVEL})
 option(TEXGUI_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})
+option(TEXGUI_BUILD_BENCHMARKS "Build the benchmark executables" ${PROJECT_IS_TOP_LEVEL})
+option(TEXGUI_BUILD_FUZZERS "Build libFuzzer targets (Clang/libFuzzer)" OFF)
 
 # Default to Release, but only when texgui is the top-level project: a
 # dependency must not force a build type into the consuming project's cache.
@@ -191,6 +193,16 @@ if(TEXGUI_BUILD_EXAMPLES)
 endif()
 
 # ---------------------------------------------------------------------------
+# Benchmarks
+# ---------------------------------------------------------------------------
+if(TEXGUI_BUILD_BENCHMARKS AND NOT EMSCRIPTEN)
+    add_executable(texgui_render_benchmark benchmarks/render_benchmark.cpp)
+    target_link_libraries(texgui_render_benchmark PRIVATE texgui::texgui)
+    target_compile_features(texgui_render_benchmark PRIVATE cxx_std_17)
+    texgui_copy_resources(texgui_render_benchmark)
+endif()
+
+# ---------------------------------------------------------------------------
 # Unit tests (not for the wasm cross-build: they read the MicroTeX res/ tree
 # from the host filesystem, which the wasm sandbox cannot see)
 # ---------------------------------------------------------------------------
@@ -237,6 +249,27 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
                 -DTEXGUI_CONSUMER_GENERATOR=${CMAKE_GENERATOR}
                 -DTEXGUI_TEST_CONFIG=$<CONFIG>
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/consumer/run_consumer_test.cmake)
+endif()
+
+# ---------------------------------------------------------------------------
+# Fuzz targets
+# ---------------------------------------------------------------------------
+if(TEXGUI_BUILD_FUZZERS AND NOT EMSCRIPTEN)
+    if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        message(FATAL_ERROR "TEXGUI_BUILD_FUZZERS requires Clang/libFuzzer")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+        message(FATAL_ERROR
+            "TEXGUI_BUILD_FUZZERS requires upstream LLVM Clang with libFuzzer. "
+            "AppleClang may omit the fuzzer runtime; use Homebrew LLVM or Linux Clang.")
+    endif()
+
+    add_executable(texgui_try_render_fuzzer tests/fuzz/try_render_fuzzer.cpp)
+    target_link_libraries(texgui_try_render_fuzzer PRIVATE texgui::texgui)
+    target_compile_features(texgui_try_render_fuzzer PRIVATE cxx_std_17)
+    target_compile_definitions(texgui_try_render_fuzzer PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+    target_compile_options(texgui_try_render_fuzzer PRIVATE -fsanitize=fuzzer,address,undefined -fno-omit-frame-pointer)
+    target_link_options(texgui_try_render_fuzzer PRIVATE -fsanitize=fuzzer,address,undefined)
 endif()
 
 # ---------------------------------------------------------------------------

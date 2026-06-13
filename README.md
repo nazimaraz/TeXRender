@@ -45,6 +45,7 @@ loop; it just paints a parsed formula into the current frame through a
 `RaylibSurface`.
 
 For a deeper design walk-through, see [`docs/architecture.md`](docs/architecture.md).
+For public API and lifetime details, see [`docs/api.md`](docs/api.md).
 
 * **`tex::Graphics2D` is character-based** (`drawChar(wchar_t, x, y)`), drawing by
   Unicode codepoint through each TeX font's cmap. So the integration rasterises
@@ -125,6 +126,10 @@ installed with `TEXGUI_BACKEND=raylib`, raylib. Raylib package export is enabled
 only when raylib was found with `find_package(raylib)`; if raylib is fetched from
 source, prefer `FetchContent` / `add_subdirectory`, or install the headless
 backend as shown above.
+
+Starter metadata is included for package-manager workflows: [`vcpkg.json`](vcpkg.json)
+and [`conanfile.py`](conanfile.py). They are intended as project-local manifests
+until the project is submitted to public registries.
 
 ### Shipping the resource directory
 
@@ -256,6 +261,9 @@ builds under every backend, including `TEXGUI_BACKEND=headless`.
 Set `TEXGUI_DEBUG=1` to print diagnostics — failed font loads and resource-root
 conflicts — to stderr; output is silent otherwise.
 
+Known constraints and tradeoffs are collected in
+[`docs/known-limitations.md`](docs/known-limitations.md).
+
 ## Adding a backend
 
 Implement `IDrawSurface` from
@@ -318,6 +326,16 @@ needs no window or GPU and runs under either backend;
 exercises this on Linux, macOS and Windows, the raylib backend + examples on
 Linux and macOS, runs the suite under ASan + UBSan, and gates formatting with
 clang-format.
+
+Additional developer tools:
+
+```sh
+cmake --build build --target texgui_render_benchmark -j
+./build/texgui_render_benchmark
+```
+
+Fuzzing instructions live in [`docs/fuzzing.md`](docs/fuzzing.md); benchmark
+notes live in [`docs/benchmarks.md`](docs/benchmarks.md).
 
 ## License
 

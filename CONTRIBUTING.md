@@ -22,6 +22,19 @@ external CMake consumer to prove the dependency story stays intact. Please make
 sure both configurations build and pass before opening a PR, and add or extend a
 test under `tests/` when you change behaviour.
 
+Optional developer checks:
+
+```sh
+cmake --build build-headless --target texgui_render_benchmark -j
+./build-headless/texgui_render_benchmark
+
+cmake -S . -B build-fuzz -DTEXGUI_BACKEND=headless -DTEXGUI_BUILD_FUZZERS=ON \
+  -DTEXGUI_BUILD_EXAMPLES=OFF -DTEXGUI_BUILD_TESTS=OFF -DTEXGUI_BUILD_BENCHMARKS=OFF \
+  -DCMAKE_CXX_COMPILER=clang++
+cmake --build build-fuzz --target texgui_try_render_fuzzer -j
+./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256
+```
+
 ## Code style
 
 * Implementation files are C++23; the public headers in `include/texgui/` must

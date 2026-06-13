@@ -51,6 +51,71 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Smoke-run the offscreen example
         run: ./build/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.ppm
+      - name: Install package
+        run: cmake --install build --prefix /tmp/texgui-prefix
+      - name: Configure installed package consumer
+        run: >
+          cmake -S tests/package_consumer -B package-consumer -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH=/tmp/texgui-prefix
+      - name: Build installed package consumer
+        run: cmake --build package-consumer -j
+      - name: Test installed package consumer
+        run: ctest --test-dir package-consumer --output-on-failure
+
+  # Compile texgui itself, examples, tests and benchmarks with a strict warning
+  # profile. MicroTeX headers are included as SYSTEM headers so third-party
+  # warnings do not become consumer build failures.
+  strict-warnings:
+    name: Linux · GCC 14 · warnings-as-errors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCMAKE_CXX_COMPILER=g++-14
+          -DTEXGUI_BACKEND=headless
+          -DCMAKE_CXX_FLAGS="-Wall -Wextra -Wpedantic -Werror"
+      - name: Build
+        run: cmake --build build -j
+
+  # Short PR fuzz smoke. This does not replace longer local/nightly campaigns;
+  # it simply proves the harness builds and exercises parser error paths under
+  # sanitizers.
+  fuzz:
+    name: Linux · Clang 22 · fuzz smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Clang 22 and dependencies
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt-llvm.asc > /dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-22 libclang-rt-22-dev g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure fuzz target
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DCMAKE_CXX_COMPILER=clang++-22
+          -DTEXGUI_BACKEND=headless
+          -DTEXGUI_BUILD_EXAMPLES=OFF
+          -DTEXGUI_BUILD_TESTS=OFF
+          -DTEXGUI_BUILD_BENCHMARKS=OFF
+          -DTEXGUI_BUILD_FUZZERS=ON
+      - name: Build fuzz target
+        run: cmake --build build --target texgui_try_render_fuzzer -j
+      - name: Run fuzz smoke
+        env:
+          ASAN_OPTIONS: detect_leaks=0
+          UBSAN_OPTIONS: print_stacktrace=1
+        run: ./build/texgui_try_render_fuzzer -runs=500 -max_len=256
 
   # Address + UndefinedBehavior sanitizers over the full headless suite, with
   # findings fatal (-fno-sanitize-recover). Leak detection stays off: the

@@ -59,6 +59,22 @@ int main()
         CHECK(document.try_render("x", limited).has_value());
         CHECK(!document.try_render("x+x+x", limited).has_value());
 
+        auto invalid_wrap = RenderOptions{};
+        invalid_wrap.text_size = 40.f;
+        invalid_wrap.argb = 0xff000000;
+        invalid_wrap.wrap_width = -1;
+        CHECK(!document.try_render("x", invalid_wrap).has_value());
+
+        constexpr auto long_formula = R"(x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x)";
+        const auto unwrapped = document.render(long_formula, 32.f, 0xff000000);
+        auto constrained_width = RenderOptions{};
+        constrained_width.text_size = 32.f;
+        constrained_width.argb = 0xff000000;
+        constrained_width.max_wrap_width = 80;
+        const auto wrapped_by_limit = document.render(long_formula, constrained_width);
+        CHECK(wrapped_by_limit.width() <= unwrapped.width());
+        CHECK(wrapped_by_limit.height() >= unwrapped.height());
+
         auto threw = false;
         try
         {

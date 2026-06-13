@@ -14,6 +14,10 @@ Use this before cutting a public tag.
   `cmake --install build-headless --prefix /tmp/texgui-prefix`
 - Verify installed package consumption:
   `cmake -S tests/package_consumer -B /tmp/texgui-package-consumer -DCMAKE_PREFIX_PATH=/tmp/texgui-prefix && cmake --build /tmp/texgui-package-consumer -j && ctest --test-dir /tmp/texgui-package-consumer --output-on-failure`
+- Run the benchmark once in Release:
+  `./build-headless/texgui_render_benchmark`
+- Run a fuzz smoke if Clang/libFuzzer is available:
+  `./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256`
 
 ## GitHub Setup
 
@@ -32,6 +36,7 @@ Use this before cutting a public tag.
 - Mention dependency modes: `FetchContent`, `add_subdirectory`, and installed
   `find_package(texgui CONFIG REQUIRED)`.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
+- Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 
 ## Presentation
 

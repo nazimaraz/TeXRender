@@ -21,13 +21,19 @@ follow [Semantic Versioning](https://semver.org/).
   document — `LatexDocument(res_root, std::move(surface))`.
 - CMake package support: `install()`, exported `texgui::texgui`, generated
   `texguiConfig.cmake`, and `texgui_copy_resources(target)`.
+- Package-manager starter metadata for vcpkg and Conan consumers.
 - FreeType glyph rasterisation behind bounded LRU caches (CPU bitmaps and GPU
   textures, keyed identically).
 - Examples: minimal window, sample browser, live editor, offscreen render to
   PPM.
+- Benchmark executable for cold render, warm render and headless draw timing.
+- libFuzzer harness for `try_render()` with sanitizer-friendly input limits.
 - WebAssembly build of the live editor (Emscripten, raylib Web/WebGL, native
   wasm exceptions) with GitHub Pages deployment.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
-  structural visual regression, clang-format gate, ASan+UBSan pass, wasm build.
+  installed package consumer, strict warning build, structural visual regression,
+  clang-format gate, ASan+UBSan pass, fuzz smoke, wasm build.
+- Documentation: architecture, API notes, known limitations, fuzzing, benchmarks
+  and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

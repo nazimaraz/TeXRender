@@ -20,4 +20,5 @@ set explicit `RenderOptions` limits.
 
 Crashes, memory corruption, guardrail bypasses, or unbounded resource
 consumption triggered by crafted input are therefore in scope and treated as
-security bugs, not just rendering bugs.
+security bugs, not just rendering bugs. See [`docs/fuzzing.md`](docs/fuzzing.md)
+for the sanitizer-backed fuzz harness used to exercise this boundary.

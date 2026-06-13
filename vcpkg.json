@@ -1,0 +1,22 @@
+{
+  "name": "latex-renderer",
+  "version-string": "0.1.0",
+  "description": "C++ LaTeX math renderer with raylib and headless RGBA backends",
+  "homepage": "https://github.com/nazimaraz/latex-renderer",
+  "license": "MIT",
+  "dependencies": [
+    "freetype",
+    "tinyxml2"
+  ],
+  "default-features": [
+    "raylib"
+  ],
+  "features": {
+    "raylib": {
+      "description": "Build the raylib windowed rendering backend",
+      "dependencies": [
+        "raylib"
+      ]
+    }
+  }
+}
