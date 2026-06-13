@@ -64,8 +64,9 @@ run git diff --check
 
 if has python3; then
     run python3 "$ROOT_DIR/scripts/check-doc-links.py"
+    run python3 "$ROOT_DIR/scripts/check-registry-readiness.py"
 else
-    printf '\n==> skipping Markdown link check: python3 is not installed\n'
+    printf '\n==> skipping Python-based docs/registry checks: python3 is not installed\n'
 fi
 
 cmake_configure "$ROOT_DIR" "$HEADLESS_BUILD" \

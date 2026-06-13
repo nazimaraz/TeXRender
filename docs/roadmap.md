@@ -7,6 +7,8 @@ library with a clear embedding story, not grow into a full TeX distribution.
 
 - Validate all GitHub Actions on the public repository after the first push.
 - Cut `v0.1.0` and verify release artifacts/checksums.
+- Watch the first scheduled `Nightly fuzz` run and triage any corpus growth or
+  sanitizer findings.
 - Prepare actual public registry submissions:
   - vcpkg port
   - Conan Center recipe
@@ -28,11 +30,13 @@ library with a clear embedding story, not grow into a full TeX distribution.
   examples working in CI.
 - Keep release archive, CPack, external-consumer, and path-with-spaces smoke
   tests current for published artifacts.
+- Keep registry-readiness metadata checks aligned with Conan Center and vcpkg
+  review requirements.
 - Keep `docs/package-publishing.md` aligned with registry requirements.
 
 ## Testing And Quality
 
-- Add longer fuzzing campaigns outside normal PR CI.
+- Keep the nightly seeded fuzz campaign healthy outside normal PR CI.
 - Keep sanitizer, clang-tidy, coverage, and visual-regression artifacts green.
 - Promote optional visual snapshots to committed goldens if a platform-stable
   image baseline becomes useful.

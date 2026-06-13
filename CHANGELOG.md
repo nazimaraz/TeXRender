@@ -53,13 +53,15 @@ follow [Semantic Versioning](https://semver.org/).
   projects.
 - Benchmark executable for cold render, warm render and headless draw timing.
 - libFuzzer harness for `try_render()` with sanitizer-friendly input limits.
+- Seeded fuzz corpus and scheduled nightly fuzz workflow for longer malformed
+  input coverage outside normal PR CI.
 - WebAssembly build of the live editor (Emscripten, raylib Web/WebGL, native
   wasm exceptions) with GitHub Pages deployment.
 - Live-editor screenshot capture controls and a reproducible README GIF
   recording script.
 - Generated Doxygen API reference published with the web demo.
 - Release automation for tagged GitHub releases with install archives and
-  SHA256 checksums plus grouped generated release notes.
+  SHA256 checksums, CPack archives, plus grouped generated release notes.
 - Public launch helper script that checks clean-tree/remote state, runs archive
   smoke, and optionally creates the local release tag.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
@@ -73,8 +75,9 @@ follow [Semantic Versioning](https://semver.org/).
 - Generated gallery manifest/script that renders PNG and SVG sample artifacts in
   CI and release verification.
 - Local release verifier, CPack smoke, source archive smoke, external consumer
-  smoke, path-with-spaces smoke, and Markdown link checker for
-  format/build/test/docs/package-consumer checks before pushing.
+  smoke, path-with-spaces smoke, Markdown link checker, and registry-readiness
+  checker for format/build/test/docs/package-consumer/package-metadata checks
+  before pushing.
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
   coverage, workflow linting, API compatibility, migration guide, GitHub launch, package

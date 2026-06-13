@@ -12,6 +12,10 @@ on:
       - "include/**"
       - "source/**"
       - "tests/package_consumer/**"
+      - "tests/consumer/**"
+      - "scripts/verify-cpack.sh"
+      - "scripts/verify-external-consumers.sh"
+      - "scripts/verify-path-with-spaces.sh"
       - "scripts/verify-release-archive.sh"
   workflow_dispatch:
 
@@ -41,3 +45,53 @@ jobs:
         with:
           name: release-archive-${{ github.run_id }}
           path: /tmp/texgui-release-archive/artifacts
+
+  cpack:
+    name: CPack archive smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Verify CPack archives
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: scripts/verify-cpack.sh
+      - name: Upload CPack artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpack-smoke-${{ github.run_id }}
+          path: /tmp/texgui-cpack/artifacts
+
+  external-consumers:
+    name: External consumer smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Verify external consumers
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: scripts/verify-external-consumers.sh
+
+  path-with-spaces:
+    name: Path-with-spaces smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Verify paths with spaces
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: scripts/verify-path-with-spaces.sh

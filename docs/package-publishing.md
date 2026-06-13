@@ -3,6 +3,14 @@
 The repository includes starter metadata for Conan and vcpkg. Keep these paths
 green before submitting to public registries.
 
+Run the metadata gate whenever package fields change:
+
+```sh
+scripts/check-registry-readiness.py
+```
+
+The `Registry readiness` workflow runs the same check on package metadata PRs.
+
 ## Conan
 
 Local package validation:
@@ -98,7 +106,9 @@ scripts/verify-cpack.sh
 The smoke test builds headless install archives, extracts the binary package,
 builds an installed `find_package()` consumer, extracts the source package, and
 configures the source package again. Attach these archives to GitHub releases
-only after this check is green.
+only after this check is green. The `Release` workflow publishes CPack packages
+beside the hand-named install archives, and `Release smoke` verifies CPack on
+pull requests and tags.
 
 ## External Consumers
 
@@ -112,7 +122,7 @@ scripts/verify-path-with-spaces.sh
 `verify-external-consumers.sh` validates both `FetchContent` and installed
 `find_package()` from an archived source tree. `verify-path-with-spaces.sh`
 keeps install, resource copying, and output paths honest for users who build in
-directories with spaces.
+directories with spaces. Both run in the `Release smoke` workflow.
 
 ## Release Routine
 
@@ -120,4 +130,5 @@ Run `scripts/verify-release.sh` before tagging. It validates CMake builds,
 install/export consumers, generated gallery artifacts, package-manager entry
 points when local tools are available, CPack archives, external consumers,
 path-with-spaces handling, release archive smoke, Markdown links, and API
-documentation when Doxygen is installed.
+documentation when Doxygen is installed. It also runs the registry-readiness
+metadata check when Python is available.

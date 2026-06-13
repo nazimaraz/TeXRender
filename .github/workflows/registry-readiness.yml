@@ -1,0 +1,29 @@
+name: Registry readiness
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    paths:
+      - ".github/workflows/registry-readiness.yml"
+      - "CMakeLists.txt"
+      - "conanfile.py"
+      - "vcpkg.json"
+      - "packaging/vcpkg-overlay/ports/latex-renderer/**"
+      - "scripts/check-registry-readiness.py"
+      - "docs/package-publishing.md"
+      - "docs/registry-submissions.md"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  metadata:
+    name: Package metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check registry readiness
+        run: python3 scripts/check-registry-readiness.py

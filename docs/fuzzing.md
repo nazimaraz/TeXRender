@@ -35,6 +35,7 @@ Longer local campaign:
 
 ```sh
 mkdir -p fuzz-corpus
+cp tests/fuzz/corpus/* fuzz-corpus/
 ./build-fuzz/texgui_try_render_fuzzer fuzz-corpus -max_len=4096 -jobs=4 -workers=4
 ```
 
@@ -47,6 +48,13 @@ ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=print_stacktrace=1 \
 
 Leak detection is usually disabled because texgui and MicroTeX keep
 process-lifetime singletons.
+
+## GitHub Nightly Run
+
+The [`Nightly fuzz`](../.github/workflows/nightly-fuzz.yml) workflow runs the
+same harness on a seeded corpus every night and can be launched manually with a
+custom time budget. It uploads the evolved corpus and any crash artifacts so a
+failure can be reproduced locally.
 
 ## Scope
 

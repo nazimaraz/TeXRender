@@ -43,6 +43,12 @@ jobs:
           VCPKG_ROOT: ${{ runner.temp }}/vcpkg
           VCPKG_DEFAULT_TRIPLET: x64-linux
         run: scripts/verify-vcpkg-overlay.sh
+      - name: Verify overlay port with SDL2 feature
+        env:
+          TEXGUI_VCPKG_PACKAGE_SPEC: latex-renderer[sdl2]
+          VCPKG_ROOT: ${{ runner.temp }}/vcpkg
+          VCPKG_DEFAULT_TRIPLET: x64-linux
+        run: scripts/verify-vcpkg-overlay.sh
 
   conan:
     name: Conan package
@@ -61,6 +67,15 @@ jobs:
           CC=gcc-14 CXX=g++-14 conan create .
           --build=missing
           -o "&:backend=headless"
+          -o "&:with_examples=False"
+          -o "&:with_tests=False"
+          -o "&:with_benchmarks=False"
+      - name: Create shared headless package
+        run: >
+          CC=gcc-14 CXX=g++-14 conan create .
+          --build=missing
+          -o "&:backend=headless"
+          -o "&:shared=True"
           -o "&:with_examples=False"
           -o "&:with_tests=False"
           -o "&:with_benchmarks=False"

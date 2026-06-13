@@ -16,9 +16,10 @@ for embedding LaTeX math rendering into applications.
   C++23.
 - Non-throwing `try_render()` and `try_render_detailed()` paths for
   caller-supplied formulas.
-- CI coverage for Linux, macOS, Windows, sanitizers, fuzz smoke, static analysis,
-  package consumers, release archive smoke, CPack archive smoke, and the
-  WebAssembly live editor.
+- CI coverage for Linux, macOS, Windows, sanitizers, fuzz smoke, nightly seeded
+  fuzzing, static analysis, package consumers, registry metadata, release
+  archive smoke, CPack archive smoke, external consumer smoke, path-with-spaces
+  smoke, and the WebAssembly live editor.
 
 ## Stability
 

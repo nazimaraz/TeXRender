@@ -12,6 +12,7 @@ Before opening registry PRs:
 - `v0.1.0` exists and the GitHub release workflow attached archives/checksums.
 - `scripts/verify-release.sh` passes locally.
 - `scripts/verify-release-archive.sh` passes from the tagged commit.
+- `scripts/check-registry-readiness.py` passes from the tagged commit.
 - `docs/package-publishing.md` matches the actual package options.
 - The support matrix is current.
 
@@ -38,6 +39,8 @@ The local smoke command remains:
 
 ```sh
 VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
+TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' \
+  VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 ```
 
 ## Conan Center
@@ -53,6 +56,7 @@ Before submitting:
 
    ```sh
    conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"
+   conan create . --build=missing -o "&:backend=headless" -o "&:shared=True" -o "&:with_tests=False"
    conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"
    conan create . --build=missing -o "&:backend=sdl2" -o "&:with_tests=False"
    ```

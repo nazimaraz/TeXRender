@@ -28,6 +28,14 @@ jobs:
       - name: Check formatting
         run: git ls-files '*.cpp' '*.hpp' | xargs clang-format-22 --dry-run -Werror
 
+  docs:
+    name: Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check local Markdown links
+        run: python3 scripts/check-doc-links.py
+
   # Linux / GCC 14: build the dependency-free headless backend and run every test.
   # No GPU, X11 or display required.
   linux:

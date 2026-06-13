@@ -33,6 +33,7 @@ Use this when the local repository is ready to become the public project.
 
    - CI
    - Package managers
+   - Registry readiness
    - Static analysis
    - CodeQL
    - Coverage
@@ -40,6 +41,7 @@ Use this when the local repository is ready to become the public project.
    - Benchmarks
    - Web demo
    - Release smoke
+   - Nightly fuzz, after its first scheduled/manual run
 
 5. Fix first-run CI failures before tagging. Public CI is the real portability
    check for package managers, SDL2, Windows shared-library behavior, and Pages.
@@ -65,10 +67,11 @@ scripts/prepare-public-release.sh v0.1.0
 git push origin v0.1.0
 ```
 
-The `Release` workflow builds install archives and checksum files. The
-`Release smoke` workflow validates the source archive path. Locally,
-`scripts/verify-cpack.sh` validates CPack binary/source archives before those
-artifacts are attached to a public release.
+The `Release` workflow builds install archives, CPack archives and checksum
+files. The `Release smoke` workflow validates source archives, CPack archives,
+external consumers and paths with spaces. Locally, `scripts/verify-cpack.sh`
+validates CPack binary/source archives before those artifacts are attached to a
+public release.
 
 ## First Failure Triage
 

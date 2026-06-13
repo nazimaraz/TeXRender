@@ -25,6 +25,7 @@ jobs:
           - os: ubuntu-24.04
             asset: texgui-headless-linux-x64
             archive: tar.gz
+            cpack_generator: TGZ
             configure: >-
               -G Ninja
               -DCMAKE_BUILD_TYPE=Release
@@ -34,6 +35,7 @@ jobs:
           - os: macos-15
             asset: texgui-headless-macos-arm64
             archive: tar.gz
+            cpack_generator: TGZ
             configure: >-
               -G Ninja
               -DCMAKE_BUILD_TYPE=Release
@@ -42,6 +44,7 @@ jobs:
           - os: windows-latest
             asset: texgui-headless-windows-x64
             archive: zip
+            cpack_generator: ZIP
             configure: >-
               -DCMAKE_BUILD_TYPE=Release
               -DTEXGUI_BACKEND=headless
@@ -72,12 +75,21 @@ jobs:
             asset_path="dist/${{ matrix.asset }}.tar.gz"
           fi
           cmake -DINPUT_FILE="${asset_path}" -DOUTPUT_FILE="${asset_path}.sha256" -P cmake/WriteSha256.cmake
+      - name: Build CPack package
+        shell: bash
+        run: |
+          mkdir -p dist/cpack
+          cpack --config build/CPackConfig.cmake -G "${{ matrix.cpack_generator }}" -C Release -B dist/cpack
+          find dist/cpack -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.zip' \) -print0 | while IFS= read -r -d '' asset_path; do
+            cmake -DINPUT_FILE="${asset_path}" -DOUTPUT_FILE="${asset_path}.sha256" -P cmake/WriteSha256.cmake
+          done
       - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset }}
           path: |
             dist/${{ matrix.asset }}.*
+            dist/cpack/*
 
   publish:
     name: Publish GitHub release

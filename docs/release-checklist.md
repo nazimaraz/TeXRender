@@ -59,6 +59,8 @@ Use this before cutting a public tag.
   `scripts/verify-path-with-spaces.sh`
 - Check local Markdown links:
   `scripts/check-doc-links.py`
+- Check package-registry metadata:
+  `scripts/check-registry-readiness.py`
 - Run the public release preparation gate once a remote is configured:
   `scripts/prepare-public-release.sh`
 - Run warnings as errors at least once:
@@ -70,9 +72,9 @@ Use this before cutting a public tag.
 
 - Enable GitHub Pages with source set to "GitHub Actions".
 - Enable private vulnerability reporting in the Security tab.
-- Confirm the `Package managers`, `Static analysis`, `Coverage`, `Workflow lint`,
-  `CodeQL`, `Benchmarks`, `Web demo`, `Release smoke` and `Release` workflows
-  are enabled.
+- Confirm the `Package managers`, `Registry readiness`, `Static analysis`,
+  `Coverage`, `Workflow lint`, `CodeQL`, `Benchmarks`, `Web demo`, `Release
+  smoke`, `Nightly fuzz` and `Release` workflows are enabled.
 - Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `svg`,
   `sdl2`, `freetype`, `webassembly`, `cmake`, `graphics`.
 - Add a short repository description:
@@ -98,8 +100,8 @@ Use this before cutting a public tag.
 - Mention CPack binary/source archives if you attach them to a release.
 - Include [`docs/support-matrix.md`](support-matrix.md) and
   [`docs/release-notes-v0.1.0.md`](release-notes-v0.1.0.md) in the release body.
-- Let the release workflow attach install archives and `SHA256SUMS` after pushing
-  a `vX.Y.Z` tag.
+- Let the release workflow attach install archives, CPack archives and
+  `SHA256SUMS` after pushing a `vX.Y.Z` tag.
 - Follow [`docs/github-launch.md`](github-launch.md) for first push and
   branch-protection setup.
 - Follow [`docs/registry-submissions.md`](registry-submissions.md) for vcpkg and
