@@ -1,0 +1,47 @@
+name: Thread sanitizer
+
+on:
+  schedule:
+    - cron: "43 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  headless-tsan:
+    name: Headless TSan smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Clang 22 and dependencies
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt-llvm.asc > /dev/null
+          echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-22 libclang-rt-22-dev g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Configure TSan build
+        run: >
+          cmake -S . -B build-tsan -G Ninja
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DCMAKE_CXX_COMPILER=clang++-22
+          -DTEXGUI_BACKEND=headless
+          -DTEXGUI_BUILD_EXAMPLES=OFF
+          -DTEXGUI_BUILD_BENCHMARKS=OFF
+          -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer"
+          -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread"
+      - name: Build focused TSan targets
+        run: cmake --build build-tsan --target texgui_lifetime_stress_test texgui_headless_render_test -j
+      - name: Run lifetime stress under TSan
+        env:
+          TSAN_OPTIONS: halt_on_error=1
+        run: ./build-tsan/texgui_lifetime_stress_test
+      - name: Run headless render under TSan
+        env:
+          TSAN_OPTIONS: halt_on_error=1
+        run: ./build-tsan/texgui_headless_render_test

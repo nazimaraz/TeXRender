@@ -39,6 +39,8 @@ follow [Semantic Versioning](https://semver.org/).
   `texguiConfig.cmake`, and `texgui_copy_resources(target)`.
 - Package-manager starter metadata for vcpkg and Conan consumers.
 - Dependabot configuration for GitHub Actions dependency updates.
+- Open-source project hygiene: CODEOWNERS, support policy, code of conduct,
+  citation metadata and repository attributes.
 - Conan `shared`/`fPIC` package options and generated CMake build-module
   metadata for resource-copy helpers.
 - Local vcpkg overlay port smoke test for portfile-style package validation,
@@ -55,6 +57,8 @@ follow [Semantic Versioning](https://semver.org/).
 - libFuzzer harness for `try_render()` with sanitizer-friendly input limits.
 - Seeded fuzz corpus and scheduled nightly fuzz workflow for longer malformed
   input coverage outside normal PR CI.
+- Scheduled/manual ThreadSanitizer workflow for focused headless concurrency
+  smoke tests.
 - WebAssembly build of the live editor (Emscripten, raylib Web/WebGL, native
   wasm exceptions) with GitHub Pages deployment.
 - Live-editor screenshot capture controls and a reproducible README GIF
@@ -80,9 +84,9 @@ follow [Semantic Versioning](https://semver.org/).
   before pushing.
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
-  coverage, workflow linting, API compatibility, migration guide, GitHub launch, package
-  publishing, registry submissions, support matrix, v0.1.0 release notes,
-  roadmap, performance baseline, resume notes, resume-oriented case study and
-  release checklist.
+  coverage, workflow linting, API compatibility, migration guide, release asset
+  guide, why-not-just-TeX FAQ, GitHub launch, package publishing, registry
+  submissions, support matrix, v0.1.0 release notes, roadmap, performance
+  baseline, resume notes, resume-oriented case study and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

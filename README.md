@@ -2,8 +2,11 @@
 
 [![CI](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml)
 [![Package managers](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml)
+[![Registry readiness](https://github.com/nazimaraz/latex-renderer/actions/workflows/registry-readiness.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/registry-readiness.yml)
 [![Static analysis](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml)
 [![CodeQL](https://github.com/nazimaraz/latex-renderer/actions/workflows/codeql.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/codeql.yml)
+[![Thread sanitizer](https://github.com/nazimaraz/latex-renderer/actions/workflows/thread-sanitizer.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/thread-sanitizer.yml)
+[![Nightly fuzz](https://github.com/nazimaraz/latex-renderer/actions/workflows/nightly-fuzz.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/nightly-fuzz.yml)
 [![Coverage](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml)
 [![Workflow lint](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml)
 [![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
@@ -25,8 +28,8 @@ pluggable rendering layer so a formula can be drawn live into a window.
 The default GUI backend is [raylib](https://www.raylib.com/), and an optional
 SDL2 backend proves the same API can sit inside another windowing stack.
 Dependency-free **headless** and **SVG** surfaces ship in every build for
-offscreen rendering, server output, and tests. The `IDrawSurface` seam is proven
-by raylib, SDL2, software RGBA, and SVG implementations; adding another GUI or
+offscreen rendering, server output, and tests. The `IDrawSurface` boundary is
+proven by raylib, SDL2, software RGBA, and SVG implementations; adding another GUI or
 engine backend means implementing one small interface — nothing in the core
 changes.
 
@@ -47,13 +50,15 @@ changes.
   parser, transforms, FreeType glyph rasterization, and caches stay shared.
 
 See the [gallery](docs/gallery.md), [integration examples](docs/integration-examples.md),
-hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/), and
-[case study](docs/case-study.md).
+hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
+[why-not-just-TeX FAQ](docs/why-not-just-tex.md), and [case study](docs/case-study.md).
 The [support matrix](docs/support-matrix.md), [API compatibility notes](docs/api-compatibility.md),
 and [migration guide](docs/migration.md) describe the public contract. The
-[GitHub launch checklist](docs/github-launch.md), [registry submission guide](docs/registry-submissions.md),
-and [roadmap](docs/roadmap.md) cover the public release path. Resume-focused
-bullets live in [`docs/resume.md`](docs/resume.md).
+[GitHub launch checklist](docs/github-launch.md), [release asset guide](docs/release-assets.md),
+[registry submission guide](docs/registry-submissions.md), and [roadmap](docs/roadmap.md)
+cover the public release path. Support and community expectations live in
+[SUPPORT.md](SUPPORT.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Resume-focused bullets live in [`docs/resume.md`](docs/resume.md).
 
 ## How it works
 
@@ -419,9 +424,11 @@ regression, and a separate CMake consumer smoke test — needs no window or GPU
 and runs under the non-GUI backends; `TEXGUI_BACKEND=headless` additionally drops
 GUI dependencies entirely. CI exercises this on Linux, macOS and Windows, the
 raylib backend + examples on Linux and macOS, the SDL2 backend on Linux, runs the
-suite under ASan + UBSan, checks vcpkg/Conan packaging, verifies workflow linting
-and shared-library builds, uploads visual-regression artifacts on failure, gates
-formatting with clang-format, runs clang-tidy, and publishes coverage artifacts.
+suite under ASan + UBSan, runs scheduled TSan and fuzzing smoke, checks
+vcpkg/Conan packaging, verifies release archives and external consumers, verifies
+workflow linting and shared-library builds, uploads visual-regression artifacts
+on failure, gates formatting with clang-format, runs clang-tidy, and publishes
+coverage artifacts.
 
 Additional developer tools:
 
@@ -438,7 +445,8 @@ analysis and coverage workflows are documented in
 [`docs/coverage.md`](docs/coverage.md). Workflow linting is documented in
 [`docs/workflow-linting.md`](docs/workflow-linting.md).
 The current platform/backend promise is summarized in
-[`docs/support-matrix.md`](docs/support-matrix.md).
+[`docs/support-matrix.md`](docs/support-matrix.md). Release download choices are
+explained in [`docs/release-assets.md`](docs/release-assets.md).
 
 ## License
 

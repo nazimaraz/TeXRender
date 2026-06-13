@@ -9,6 +9,8 @@ library with a clear embedding story, not grow into a full TeX distribution.
 - Cut `v0.1.0` and verify release artifacts/checksums.
 - Watch the first scheduled `Nightly fuzz` run and triage any corpus growth or
   sanitizer findings.
+- Watch the first scheduled `Thread sanitizer` run and decide whether to broaden
+  its target set.
 - Prepare actual public registry submissions:
   - vcpkg port
   - Conan Center recipe
@@ -38,6 +40,8 @@ library with a clear embedding story, not grow into a full TeX distribution.
 
 - Keep the nightly seeded fuzz campaign healthy outside normal PR CI.
 - Keep sanitizer, clang-tidy, coverage, and visual-regression artifacts green.
+- Keep the support, code-of-conduct, citation and release-asset docs current as
+  the public project evolves.
 - Promote optional visual snapshots to committed goldens if a platform-stable
   image baseline becomes useful.
 - Add small regression cases for any malformed input or rendering issue reported

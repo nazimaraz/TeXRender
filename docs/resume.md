@@ -22,8 +22,11 @@ backends through a small `IDrawSurface` interface.
 - Added package-manager starter metadata for Conan and vcpkg, including overlay
   smoke tests and release archive validation for dependency-style consumption.
 - Built a cross-platform quality pipeline covering Linux/macOS/Windows, ASan,
-  UBSan, fuzz smoke, clang-tidy, CodeQL, coverage, workflow linting, WebAssembly,
-  and visual regression artifacts.
+  UBSan, ThreadSanitizer, fuzz smoke, clang-tidy, CodeQL, coverage, workflow
+  linting, WebAssembly, and visual regression artifacts.
+- Prepared the project for public open-source release with support policy,
+  code-of-conduct, citation metadata, release-asset documentation, and registry
+  readiness checks.
 - Implemented offscreen PNG/PPM output, self-contained SVG export, generated
   gallery assets, and a GitHub Pages WebAssembly live editor.
 
@@ -39,6 +42,8 @@ backends through a small `IDrawSurface` interface.
   not a sandbox.
 - How release archive smoke prevents “works in checkout, broken in tarball”
   failures.
+- How public-project hygiene changes the dependency trust story without changing
+  the core library API.
 
 ## One-Line Pitch
 

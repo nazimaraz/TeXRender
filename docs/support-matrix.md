@@ -8,8 +8,8 @@ compatibility matters more than ABI stability; see
 
 | Platform | Compiler | CI coverage | Notes |
 | --- | --- | --- | --- |
-| Linux | GCC 14 | yes | Headless, SVG, raylib, SDL2, sanitizers, fuzz smoke, package consumers |
-| Linux | Clang 22 | yes | Fuzz target and clang-format/clang-tidy tooling |
+| Linux | GCC 14 | yes | Headless, SVG, raylib, SDL2, sanitizers, package consumers |
+| Linux | Clang 22 | yes | Fuzz target, scheduled TSan smoke, clang-format/clang-tidy tooling |
 | GitHub CodeQL | C/C++ analysis | yes | Manual headless CMake build for semantic analysis |
 | macOS | Apple Clang | yes | raylib and headless builds |
 | Windows | MSVC | yes | headless static/shared builds and installed consumer smoke |
@@ -39,7 +39,7 @@ selects the default surface created by `LatexDocument`.
 | shared library | supported for headless in CI |
 | Conan recipe | starter package metadata, headless/SVG/SDL2 validated in CI |
 | vcpkg manifest/overlay | starter metadata with overlay smoke test |
-| CPack TGZ/ZIP archives | supported locally for source and binary release smoke |
+| CPack TGZ/ZIP archives | supported in release smoke for source and binary packages |
 | public package registries | planned after first public tag |
 
 ## Runtime Notes

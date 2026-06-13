@@ -30,8 +30,8 @@ For rendering bugs, a screenshot (or the PNG/PPM from `texgui_offscreen`) helps 
 
 - OS and compiler (with versions):
 - texgui version or commit:
-- Backend: raylib / headless / WebAssembly
-- How texgui was consumed: FetchContent / add_subdirectory / building this repo
+- Backend: raylib / SDL2 / headless / SVG / WebAssembly / custom
+- How texgui was consumed: FetchContent / add_subdirectory / installed CMake / vcpkg / Conan / building this repo
 - Build type: Debug / Release / RelWithDebInfo
 
 **Regression?**

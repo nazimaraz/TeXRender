@@ -47,6 +47,8 @@ Use this before cutting a public tag.
 - Run static analysis and coverage locally when the tools are available; see
   [`docs/static-analysis.md`](static-analysis.md) and
   [`docs/coverage.md`](coverage.md).
+- Run the focused ThreadSanitizer smoke if your Clang runtime supports it; see
+  [`docs/static-analysis.md`](static-analysis.md).
 - Run the local release verifier:
   `scripts/verify-release.sh`
 - Run the source archive verifier:
@@ -73,8 +75,10 @@ Use this before cutting a public tag.
 - Enable GitHub Pages with source set to "GitHub Actions".
 - Enable private vulnerability reporting in the Security tab.
 - Confirm the `Package managers`, `Registry readiness`, `Static analysis`,
-  `Coverage`, `Workflow lint`, `CodeQL`, `Benchmarks`, `Web demo`, `Release
-  smoke`, `Nightly fuzz` and `Release` workflows are enabled.
+  `Thread sanitizer`, `Coverage`, `Workflow lint`, `CodeQL`, `Benchmarks`, `Web
+  demo`, `Release smoke`, `Nightly fuzz` and `Release` workflows are enabled.
+- Confirm `.github/CODEOWNERS`, `CODE_OF_CONDUCT.md`, `SUPPORT.md`,
+  `CITATION.cff` and `.gitattributes` are present.
 - Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `svg`,
   `sdl2`, `freetype`, `webassembly`, `cmake`, `graphics`.
 - Add a short repository description:
@@ -98,6 +102,8 @@ Use this before cutting a public tag.
 - Mention API compatibility status and the current source-compatibility promise.
 - Mention migration expectations from [`docs/migration.md`](migration.md).
 - Mention CPack binary/source archives if you attach them to a release.
+- Link [`docs/release-assets.md`](release-assets.md) from the release body when
+  attaching multiple archive types.
 - Include [`docs/support-matrix.md`](support-matrix.md) and
   [`docs/release-notes-v0.1.0.md`](release-notes-v0.1.0.md) in the release body.
 - Let the release workflow attach install archives, CPack archives and

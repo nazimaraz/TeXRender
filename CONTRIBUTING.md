@@ -2,6 +2,9 @@
 
 Thanks for your interest in improving latex-renderer!
 
+Please follow the expectations in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+Usage questions and support boundaries are described in [SUPPORT.md](SUPPORT.md).
+
 ## Building and testing
 
 ```sh
@@ -57,6 +60,27 @@ Static analysis and coverage are documented in
 [`docs/coverage.md`](docs/coverage.md). They run in CI, but local runs are useful
 before touching shared rendering or packaging code.
 
+Package and release-facing checks:
+
+```sh
+scripts/check-doc-links.py
+scripts/check-registry-readiness.py
+scripts/verify-cpack.sh
+scripts/verify-external-consumers.sh
+scripts/verify-path-with-spaces.sh
+scripts/verify-release-archive.sh
+```
+
+Run the package-manager checks when touching `conanfile.py`, `vcpkg.json`, or
+the vcpkg overlay:
+
+```sh
+conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"
+VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
+TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' \
+  VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
+```
+
 Generated gallery artifacts can be refreshed with:
 
 ```sh
@@ -76,6 +100,8 @@ scripts/verify-release.sh
 
 Workflow linting is documented in
 [`docs/workflow-linting.md`](docs/workflow-linting.md).
+ThreadSanitizer is intentionally scheduled/manual rather than required on every
+PR; see [`.github/workflows/thread-sanitizer.yml`](.github/workflows/thread-sanitizer.yml).
 
 ## Code style
 

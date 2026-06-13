@@ -35,6 +35,7 @@ Use this when the local repository is ready to become the public project.
    - Package managers
    - Registry readiness
    - Static analysis
+   - Thread sanitizer, after its first scheduled/manual run
    - CodeQL
    - Coverage
    - Workflow lint
@@ -45,6 +46,8 @@ Use this when the local repository is ready to become the public project.
 
 5. Fix first-run CI failures before tagging. Public CI is the real portability
    check for package managers, SDL2, Windows shared-library behavior, and Pages.
+   Confirm CODEOWNERS, support, code-of-conduct, citation and release-asset docs
+   render correctly in the GitHub UI.
 
 ## Branch Protection
 
@@ -71,7 +74,8 @@ The `Release` workflow builds install archives, CPack archives and checksum
 files. The `Release smoke` workflow validates source archives, CPack archives,
 external consumers and paths with spaces. Locally, `scripts/verify-cpack.sh`
 validates CPack binary/source archives before those artifacts are attached to a
-public release.
+public release. Use [`docs/release-assets.md`](release-assets.md) to explain the
+download choices in the release body.
 
 ## First Failure Triage
 

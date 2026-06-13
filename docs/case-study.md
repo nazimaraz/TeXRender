@@ -102,10 +102,11 @@ Coverage includes:
 - CMake consumer smoke tests
 - installed package consumer tests
 
-CI extends that with ASan/UBSan, fuzz smoke, strict warnings, package-manager
-validation, static analysis, coverage artifacts, WebAssembly builds, generated
-gallery artifacts, SDL2 backend checks, Windows shared-library install checks,
-and release archive smoke.
+CI extends that with ASan/UBSan, ThreadSanitizer smoke, fuzz smoke, strict
+warnings, package-manager validation, static analysis, coverage artifacts,
+WebAssembly builds, generated gallery artifacts, SDL2 backend checks, Windows
+shared-library install checks, registry-readiness checks, release archive smoke,
+CPack smoke, external consumer smoke, and path-with-spaces smoke.
 
 ## Packaging Story
 
@@ -141,5 +142,6 @@ For a resume review, this project demonstrates:
 - configurable caches, SVG export, and baseline layout utilities
 - source-compatibility policy and package publishing notes
 - sanitizer, fuzz, coverage, and static-analysis workflows
+- public support, citation, code-of-conduct, and release-asset documentation
 - WebAssembly deployment of native C++ code
 - release automation with checksums and install artifacts

@@ -30,6 +30,7 @@ body:
         - SDL2
         - headless
         - SVG
+        - WebAssembly
         - custom IDrawSurface
         - not sure
     validations:

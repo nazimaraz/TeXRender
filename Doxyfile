@@ -15,10 +15,12 @@ INPUT                  = include \
                          docs/architecture.md \
                          docs/known-limitations.md \
                          docs/integration-examples.md \
+                         docs/why-not-just-tex.md \
                          docs/api-compatibility.md \
                          docs/migration.md \
                          docs/gallery.md \
                          docs/github-launch.md \
+                         docs/release-assets.md \
                          docs/package-publishing.md \
                          docs/registry-submissions.md \
                          docs/release-notes-v0.1.0.md \

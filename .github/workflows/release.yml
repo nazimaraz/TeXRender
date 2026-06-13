@@ -80,6 +80,9 @@ jobs:
         run: |
           mkdir -p dist/cpack
           cpack --config build/CPackConfig.cmake -G "${{ matrix.cpack_generator }}" -C Release -B dist/cpack
+          if [[ "${{ matrix.os }}" == "ubuntu-24.04" ]]; then
+            cpack --config build/CPackSourceConfig.cmake -G TGZ -B dist/cpack
+          fi
           find dist/cpack -maxdepth 1 -type f \( -name '*.tar.gz' -o -name '*.zip' \) -print0 | while IFS= read -r -d '' asset_path; do
             cmake -DINPUT_FILE="${asset_path}" -DOUTPUT_FILE="${asset_path}.sha256" -P cmake/WriteSha256.cmake
           done
