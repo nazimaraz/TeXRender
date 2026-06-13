@@ -53,22 +53,25 @@ follow [Semantic Versioning](https://semver.org/).
 - Generated Doxygen API reference published with the web demo.
 - Release automation for tagged GitHub releases with install archives and
   SHA256 checksums plus grouped generated release notes.
+- Public launch helper script that checks clean-tree/remote state, runs archive
+  smoke, and optionally creates the local release tag.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, C++17 public-header checks, strict warning build,
   SVG and SDL2 backend smoke, Windows shared-library install consumer, shared-library
   smoke, threaded lifetime stress test, multi-formula structural visual
   regression, optional exact PNG visual snapshots, visual failure artifacts,
   clang-format gate, ASan+UBSan pass, fuzz smoke, vcpkg/Conan validation,
-  clang-tidy static analysis, coverage reporting, actionlint workflow linting,
-  non-blocking benchmark output, wasm build.
+  clang-tidy and CodeQL static analysis, coverage reporting, actionlint workflow
+  linting, non-blocking benchmark output, wasm build.
 - Generated gallery manifest/script that renders PNG and SVG sample artifacts in
   CI and release verification.
 - Local release verifier and source archive smoke scripts for
   format/build/test/docs/package-consumer checks before pushing.
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
-  coverage, workflow linting, API compatibility, package publishing, support
-  matrix, v0.1.0 release notes, roadmap, performance baseline, resume-oriented
-  case study and release checklist.
+  coverage, workflow linting, API compatibility, GitHub launch, package
+  publishing, registry submissions, support matrix, v0.1.0 release notes,
+  roadmap, performance baseline, resume notes, resume-oriented case study and
+  release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

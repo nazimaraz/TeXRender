@@ -10,6 +10,7 @@ compatibility matters more than ABI stability; see
 | --- | --- | --- | --- |
 | Linux | GCC 14 | yes | Headless, SVG, raylib, SDL2, sanitizers, fuzz smoke, package consumers |
 | Linux | Clang 22 | yes | Fuzz target and clang-format/clang-tidy tooling |
+| GitHub CodeQL | C/C++ analysis | yes | Manual headless CMake build for semantic analysis |
 | macOS | Apple Clang | yes | raylib and headless builds |
 | Windows | MSVC | yes | headless static/shared builds and installed consumer smoke |
 
@@ -36,7 +37,7 @@ selects the default surface created by `LatexDocument`.
 | `FetchContent` / `add_subdirectory` | supported and tested |
 | installed `find_package(texgui CONFIG REQUIRED)` | supported and tested |
 | shared library | supported for headless in CI |
-| Conan recipe | starter package metadata, headless/SVG validated in CI |
+| Conan recipe | starter package metadata, headless/SVG/SDL2 validated in CI |
 | vcpkg manifest/overlay | starter metadata with overlay smoke test |
 | public package registries | planned after first public tag |
 

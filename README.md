@@ -3,6 +3,7 @@
 [![CI](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml)
 [![Package managers](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml)
 [![Static analysis](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml)
+[![CodeQL](https://github.com/nazimaraz/latex-renderer/actions/workflows/codeql.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/codeql.yml)
 [![Coverage](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml)
 [![Workflow lint](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml)
 [![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
@@ -49,7 +50,9 @@ See the [gallery](docs/gallery.md), [integration examples](docs/integration-exam
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/), and
 [case study](docs/case-study.md).
 The [support matrix](docs/support-matrix.md) describes tested platforms, and the
-[roadmap](docs/roadmap.md) lists planned work and non-goals.
+[GitHub launch checklist](docs/github-launch.md), [registry submission guide](docs/registry-submissions.md),
+and [roadmap](docs/roadmap.md) cover the public release path. Resume-focused
+bullets live in [`docs/resume.md`](docs/resume.md).
 
 ## How it works
 

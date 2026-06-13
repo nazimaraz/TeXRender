@@ -16,6 +16,11 @@ The [`Static analysis`](../.github/workflows/static-analysis.yml) workflow:
 
 MicroTeX and other fetched dependencies are intentionally excluded.
 
+The [`CodeQL`](../.github/workflows/codeql.yml) workflow adds GitHub's semantic
+C/C++ analysis on pushes, pull requests, weekly schedule, and manual dispatch.
+It uses a manual headless CMake build so CodeQL observes the same project sources
+that normal CI compiles.
+
 ## Local Run
 
 ```sh

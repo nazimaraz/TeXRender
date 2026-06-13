@@ -17,8 +17,11 @@ INPUT                  = include \
                          docs/integration-examples.md \
                          docs/api-compatibility.md \
                          docs/gallery.md \
+                         docs/github-launch.md \
                          docs/package-publishing.md \
+                         docs/registry-submissions.md \
                          docs/release-notes-v0.1.0.md \
+                         docs/resume.md \
                          docs/support-matrix.md \
                          docs/benchmarks.md \
                          docs/fuzzing.md \
