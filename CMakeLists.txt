@@ -7,6 +7,9 @@ project(
     LANGUAGES CXX
 )
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 # The public version header is hand-written (so it is browsable in the repo);
 # fail the configure if it drifts from project(VERSION) above.
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/include/texgui/version.hpp" _texgui_version_header)
@@ -49,6 +52,9 @@ endif()
 # Dependencies: MicroTeX core, FreeType, tinyxml2, and the selected backend.
 # ---------------------------------------------------------------------------
 include(cmake/Dependencies.cmake)
+
+set(TEXGUI_RESOURCE_DIR "${MICROTEX_RES_DIR}" CACHE INTERNAL "texgui MicroTeX resource directory")
+include(cmake/texguiHelpers.cmake)
 
 # ---------------------------------------------------------------------------
 # Backend selection (Open/Closed: add a new backend => add a branch + sources)
@@ -99,13 +105,23 @@ target_include_directories(texgui PUBLIC
 target_include_directories(texgui PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/source
 )
+target_include_directories(texgui SYSTEM PRIVATE
+    ${MICROTEX_SRC}
+)
 
 target_link_libraries(texgui
-    # The selected backend's headers are part of our public surface (e.g. the
-    # user constructs a RaylibSurface), so the backend lib propagates.
-    PUBLIC ${TEXGUI_BACKEND_LIBS}
-    PRIVATE microtex::core Freetype::Freetype
+    PRIVATE microtex_core Freetype::Freetype
 )
+if(TEXGUI_BACKEND_LIBS)
+    # The selected backend's headers are part of our public surface (e.g. the
+    # user constructs a RaylibSurface), so the backend lib propagates. When
+    # raylib came from FetchContent, it is only a build-tree target; installed
+    # packages instead rely on find_dependency(raylib) creating that target.
+    target_link_libraries(texgui PUBLIC
+        "$<BUILD_INTERFACE:${TEXGUI_BACKEND_LIBS}>"
+        "$<INSTALL_INTERFACE:${TEXGUI_BACKEND_LIBS}>"
+    )
+endif()
 
 # texgui's own sources use C++23 (std::format/std::print), but the public
 # headers compile as C++17 — that is all we impose on consumers.
@@ -152,7 +168,7 @@ if(TEXGUI_BUILD_EXAMPLES)
         if(EMSCRIPTEN)
             target_compile_definitions(${example_name} PRIVATE TEXGUI_RES_DIR="/res")
         else()
-            target_compile_definitions(${example_name} PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+            texgui_copy_resources(${example_name})
         endif()
     endwhile()
 
@@ -201,4 +217,78 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
     target_link_libraries(texgui_headless_render_test PRIVATE texgui::texgui)
     target_compile_definitions(texgui_headless_render_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
     add_test(NAME headless_render COMMAND texgui_headless_render_test)
+
+    # Structural visual regression over the software surface: stable enough for
+    # CI across platforms, but stronger than "some pixels changed".
+    add_executable(texgui_visual_regression_test tests/visual_regression_test.cpp)
+    target_link_libraries(texgui_visual_regression_test PRIVATE texgui::texgui)
+    target_compile_features(texgui_visual_regression_test PRIVATE cxx_std_23)
+    target_compile_definitions(texgui_visual_regression_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+    add_test(NAME visual_regression COMMAND texgui_visual_regression_test)
+
+    # Configure/build/run a tiny external CMake project that consumes texgui via
+    # add_subdirectory and compiles as C++17, matching the dependency story.
+    add_test(NAME consumer_smoke
+        COMMAND ${CMAKE_COMMAND}
+                -DTEXGUI_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+                -DTEXGUI_CONSUMER_BUILD_DIR=${CMAKE_CURRENT_BINARY_DIR}/consumer-smoke
+                -DTEXGUI_CONSUMER_CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DTEXGUI_CONSUMER_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+                -DTEXGUI_CONSUMER_GENERATOR=${CMAKE_GENERATOR}
+                -DTEXGUI_TEST_CONFIG=$<CONFIG>
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/consumer/run_consumer_test.cmake)
+endif()
+
+# ---------------------------------------------------------------------------
+# Install / find_package support
+# ---------------------------------------------------------------------------
+set(_texgui_install_default ${PROJECT_IS_TOP_LEVEL})
+if(TEXGUI_RAYLIB_FETCHED)
+    set(_texgui_install_default OFF)
+endif()
+option(TEXGUI_INSTALL "Generate install and find_package(texgui) support" ${_texgui_install_default})
+
+if(TEXGUI_INSTALL AND TEXGUI_RAYLIB_FETCHED)
+    message(FATAL_ERROR
+        "TEXGUI_INSTALL=ON with a FetchContent-built raylib cannot be exported cleanly. "
+        "Install raylib so find_package(raylib) succeeds, or install with -DTEXGUI_BACKEND=headless.")
+endif()
+
+if(TEXGUI_INSTALL)
+    set(TEXGUI_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/texgui" CACHE STRING "Install directory for texgui CMake package files")
+    set(TEXGUI_INSTALL_RESDIR "${CMAKE_INSTALL_DATADIR}/texgui/res")
+
+    set_target_properties(texgui PROPERTIES EXPORT_NAME texgui)
+
+    install(TARGETS texgui microtex_core
+        EXPORT texguiTargets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
+    install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    install(DIRECTORY "${MICROTEX_RES_DIR}/" DESTINATION "${TEXGUI_INSTALL_RESDIR}")
+    install(FILES cmake/texguiHelpers.cmake DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}")
+
+    configure_package_config_file(
+        cmake/texguiConfig.cmake.in
+        "${CMAKE_CURRENT_BINARY_DIR}/texguiConfig.cmake"
+        INSTALL_DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}"
+        PATH_VARS TEXGUI_INSTALL_RESDIR
+    )
+    write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/texguiConfigVersion.cmake"
+        VERSION "${PROJECT_VERSION}"
+        COMPATIBILITY SameMajorVersion
+    )
+
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/texguiConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/texguiConfigVersion.cmake"
+        DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}"
+    )
+    install(EXPORT texguiTargets
+        NAMESPACE texgui::
+        DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}"
+    )
 endif()

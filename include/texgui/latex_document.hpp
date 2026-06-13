@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
 #include <memory>
 #include <optional>
 #include <string>
@@ -13,6 +14,23 @@ namespace TexGui
     {
         class DocumentState;
     }
+
+    struct RenderOptions
+    {
+        static constexpr std::size_t no_input_limit = 0;
+        static constexpr std::size_t default_untrusted_input_limit = 64u * 1024u;
+        static constexpr float no_text_size_limit = 0.f;
+        static constexpr float default_untrusted_max_text_size = 512.f;
+        static constexpr int no_wrap_width_limit = 0;
+        static constexpr int default_untrusted_max_wrap_width = 32768;
+
+        float text_size = 48.f;
+        uint32_t argb = 0xff000000;
+        int wrap_width = 0;
+        std::size_t max_input_bytes = no_input_limit;
+        float max_text_size = no_text_size_limit;
+        int max_wrap_width = no_wrap_width_limit;
+    };
 
     class LatexDocument
     {
@@ -42,11 +60,14 @@ namespace TexGui
         // Pass trusted input, or use try_render() for caller input that may not
         // parse.
         [[nodiscard]] RenderHandle render(const std::string& latex, float text_size, uint32_t argb, int wrap_width = 0) const;
+        [[nodiscard]] RenderHandle render(const std::string& latex, const RenderOptions& options) const;
 
         // Non-throwing variant of render(): returns std::nullopt instead of
-        // throwing when the LaTeX fails to parse.
+        // throwing when the LaTeX fails to parse or violates the default
+        // untrusted-input limits.
         [[nodiscard]] std::optional<RenderHandle> try_render(const std::string& latex, float text_size, uint32_t argb,
             int wrap_width = 0) const noexcept;
+        [[nodiscard]] std::optional<RenderHandle> try_render(const std::string& latex, const RenderOptions& options) const noexcept;
 
     private:
         std::shared_ptr<detail::DocumentState> state_;

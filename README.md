@@ -44,6 +44,8 @@ You drive raylib yourself — `InitWindow`, `BeginDrawing`/`EndDrawing`,
 loop; it just paints a parsed formula into the current frame through a
 `RaylibSurface`.
 
+For a deeper design walk-through, see [`docs/architecture.md`](docs/architecture.md).
+
 * **`tex::Graphics2D` is character-based** (`drawChar(wchar_t, x, y)`), drawing by
   Unicode codepoint through each TeX font's cmap. So the integration rasterises
   glyphs from the bundled TeX TrueType fonts with **FreeType** (in `GlyphCache`),
@@ -77,9 +79,11 @@ parse one formula, draw it in a loop.
 
 ## Using texgui in your project
 
-texgui builds its own dependencies (MicroTeX, FreeType, tinyxml2, raylib) via
-CMake `FetchContent`, so the simplest way to consume it is to fetch it the same
-way — no system packages required:
+### FetchContent / add_subdirectory
+
+texgui can build its dependencies (MicroTeX, FreeType, tinyxml2, raylib) via
+CMake `FetchContent`, so the simplest way to consume it is to fetch the project
+the same way — no system packages required:
 
 ```cmake
 include(FetchContent)
@@ -91,6 +95,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(texgui)
 
 target_link_libraries(my_app PRIVATE texgui::texgui)
+texgui_copy_resources(my_app)
 ```
 
 Or, if you vendor the source, `add_subdirectory(path/to/latex-renderer)` and link
@@ -98,26 +103,47 @@ Or, if you vendor the source, `add_subdirectory(path/to/latex-renderer)` and lin
 automatically when it is built as a subproject. You still drive raylib yourself
 (`InitWindow`, the render loop, `CloseWindow`) — see [Usage](#usage).
 
+### find_package install
+
+You can also install and consume the exported CMake package:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEXGUI_BACKEND=headless
+cmake --build build -j
+cmake --install build --prefix /path/to/prefix
+```
+
+```cmake
+find_package(texgui CONFIG REQUIRED)
+
+target_link_libraries(my_app PRIVATE texgui::texgui)
+texgui_copy_resources(my_app)
+```
+
+The installed package uses `find_dependency` for FreeType, tinyxml2 and, when
+installed with `TEXGUI_BACKEND=raylib`, raylib. Raylib package export is enabled
+only when raylib was found with `find_package(raylib)`; if raylib is fetched from
+source, prefer `FetchContent` / `add_subdirectory`, or install the headless
+backend as shown above.
+
 ### Shipping the resource directory
 
 MicroTeX needs its `res/` directory (fonts + metrics) **at runtime**; you pass its
-path to `LatexDocument`. After configuring, CMake exposes that location as the
-`MICROTEX_RES_DIR` cache variable, available to your project once texgui has been
-made available. Bake it in, and/or copy `res/` next to your binary for shipping:
+path to `LatexDocument`. The CMake helper `texgui_copy_resources(my_app)` copies
+that directory next to your executable as `res/` and defines `TEXGUI_RES_DIR` for
+that target:
 
 ```cmake
-# Hand the path to your code at compile time...
-target_compile_definitions(my_app PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
-
-# ...and/or copy res/ next to the executable so it ships with your app:
-add_custom_command(TARGET my_app POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${MICROTEX_RES_DIR}" "$<TARGET_FILE_DIR:my_app>/res")
+target_link_libraries(my_app PRIVATE texgui::texgui)
+texgui_copy_resources(my_app)
 ```
 
-(A formal `install()` / `find_package(texgui)` flow isn't provided: texgui vendors
-its dependencies through `FetchContent`, so consuming it the same way is both
-simpler and more reliable than installing it system-wide.)
+```cpp
+TexGui::LatexDocument document(TEXGUI_RES_DIR);
+```
+
+If you need custom packaging, copy `TEXGUI_RESOURCE_DIR` yourself and define your
+own resource path macro or configuration value.
 
 ## Usage
 
@@ -163,6 +189,20 @@ literal formulas above, but for caller-supplied input use the non-throwing
 ```cpp
 if (auto formula = document.try_render(user_input, 50.f, 0xff000000))
     formula->draw(40, 40);   // std::nullopt instead of an exception on a parse error
+```
+
+The simple `try_render()` overload applies untrusted-input guardrails before
+calling MicroTeX: 64 KiB maximum input, text size up to 512 px, and wrap width up
+to 32768 px. Tune those limits with `RenderOptions`:
+
+```cpp
+TexGui::RenderOptions options;
+options.text_size = 50.f;
+options.argb = 0xff000000;
+options.max_input_bytes = 256u * 1024u;
+
+if (auto formula = document.try_render(user_input, options))
+    formula->draw(40, 40);
 ```
 
 See [`examples/live_edit.cpp`](examples/live_edit.cpp) for a live editor built on
@@ -271,8 +311,9 @@ ctest --test-dir build --output-on-failure
 ```
 
 The suite — transform math, the FreeType glyph cache against the bundled fonts,
-and an end-to-end formula render into an injected headless canvas, checked
-pixel-by-pixel — needs no window or GPU and runs under either backend;
+input-limit checks, an end-to-end formula render into an injected headless
+canvas, structural visual regression, and a separate CMake consumer smoke test —
+needs no window or GPU and runs under either backend;
 `TEXGUI_BACKEND=headless` additionally drops the raylib dependency entirely. CI
 exercises this on Linux, macOS and Windows, the raylib backend + examples on
 Linux and macOS, runs the suite under ASan + UBSan, and gates formatting with

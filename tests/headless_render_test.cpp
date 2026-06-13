@@ -2,6 +2,7 @@
 // into an injected HeadlessSurface, and inspects the resulting pixels. The
 // canvas is pure software, so this runs under any backend — no GPU, window, or
 // display needed.
+#include <exception>
 #include <memory>
 #include <print>
 #include <string>
@@ -49,6 +50,24 @@ int main()
 
         CHECK(document.try_render(R"(\sqrt{a})", 40.f, 0xff000000).has_value());
         CHECK(!document.try_render(R"(})", 40.f, 0xff000000).has_value()); // unbalanced '}' -> parse error
+        CHECK(!document.try_render("x", 600.f, 0xff000000).has_value());
+
+        auto limited = RenderOptions{};
+        limited.text_size = 40.f;
+        limited.argb = 0xff000000;
+        limited.max_input_bytes = 3;
+        CHECK(document.try_render("x", limited).has_value());
+        CHECK(!document.try_render("x+x+x", limited).has_value());
+
+        auto threw = false;
+        try
+        {
+            (void) document.render("x+x+x", limited);
+        } catch (const std::exception&)
+        {
+            threw = true;
+        }
+        CHECK(threw);
     }
 
     // 2) Full pipeline into an injected headless canvas: drawing a non-empty

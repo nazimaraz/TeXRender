@@ -46,6 +46,7 @@ if(NOT Freetype_FOUND)
 endif()
 
 # --- raylib (only when its backend is selected) ----------------------------
+set(TEXGUI_RAYLIB_FETCHED FALSE CACHE INTERNAL "Whether texgui fetched raylib instead of using find_package" FORCE)
 if(TEXGUI_BACKEND STREQUAL "raylib")
     find_package(raylib QUIET)
     if(NOT raylib_FOUND)
@@ -61,6 +62,7 @@ if(TEXGUI_BACKEND STREQUAL "raylib")
         )
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(raylib)
+        set(TEXGUI_RAYLIB_FETCHED TRUE CACHE INTERNAL "Whether texgui fetched raylib instead of using find_package" FORCE)
     endif()
 endif()
 
@@ -113,7 +115,7 @@ list(TRANSFORM MICROTEX_CORE_SOURCES PREPEND "${MICROTEX_SRC}/")
 add_library(microtex_core STATIC ${MICROTEX_CORE_SOURCES})
 add_library(microtex::core ALIAS microtex_core)
 
-target_include_directories(microtex_core SYSTEM PUBLIC "${MICROTEX_SRC}")
+target_include_directories(microtex_core SYSTEM PRIVATE "${MICROTEX_SRC}")
 # Pin MicroTeX's own sources to C++17 (its legacy code predates C++23 removals);
 # the PUBLIC feature still raises consumers to at least 17.
 target_compile_features(microtex_core PUBLIC cxx_std_17)
@@ -121,9 +123,9 @@ set_target_properties(microtex_core PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQU
 
 # tinyxml2 exports either an imported target or a bare `tinyxml2` target.
 if(TARGET tinyxml2::tinyxml2)
-    target_link_libraries(microtex_core PUBLIC tinyxml2::tinyxml2)
+    target_link_libraries(microtex_core PRIVATE tinyxml2::tinyxml2)
 else()
-    target_link_libraries(microtex_core PUBLIC tinyxml2)
+    target_link_libraries(microtex_core PRIVATE tinyxml2)
 endif()
 
 # No BUILD_GTK/BUILD_QT/... so no platform graphic_*.cpp compiles.

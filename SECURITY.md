@@ -14,6 +14,10 @@ vulnerability"). You can expect an initial response within a week.
 
 texgui is explicitly designed to accept **untrusted LaTeX input** through
 `LatexDocument::try_render` (for example, the live editor feeds it raw user
-keystrokes). Crashes, memory corruption, or unbounded resource consumption
-triggered by crafted input are therefore in scope and treated as security
-bugs, not just rendering bugs.
+keystrokes). The simple `try_render()` overload applies default guardrails for
+input size, text size and wrap width; callers with different requirements can
+set explicit `RenderOptions` limits.
+
+Crashes, memory corruption, guardrail bypasses, or unbounded resource
+consumption triggered by crafted input are therefore in scope and treated as
+security bugs, not just rendering bugs.

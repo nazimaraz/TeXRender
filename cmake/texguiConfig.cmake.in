@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(Freetype)
+find_dependency(tinyxml2 CONFIG)
+if("@TEXGUI_BACKEND@" STREQUAL "raylib")
+    find_dependency(raylib)
+endif()
+
+set_and_check(TEXGUI_RESOURCE_DIR "@PACKAGE_TEXGUI_INSTALL_RESDIR@")
+
+include("${CMAKE_CURRENT_LIST_DIR}/texguiHelpers.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/texguiTargets.cmake")
+
+check_required_components(texgui)

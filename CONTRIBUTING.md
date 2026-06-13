@@ -16,10 +16,11 @@ cmake --build build-headless -j
 ctest --test-dir build-headless --output-on-failure
 ```
 
-The full test suite runs windowless under either backend (the end-to-end test
-injects a `HeadlessSurface`). Please make sure both configurations build and
-pass before opening a PR, and add or extend a test under `tests/` when you
-change behaviour.
+The full test suite runs windowless under either backend (the end-to-end and
+visual regression tests inject a `HeadlessSurface`). It also configures a tiny
+external CMake consumer to prove the dependency story stays intact. Please make
+sure both configurations build and pass before opening a PR, and add or extend a
+test under `tests/` when you change behaviour.
 
 ## Code style
 
