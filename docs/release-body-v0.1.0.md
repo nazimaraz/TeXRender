@@ -10,6 +10,8 @@ embedding LaTeX-style math rendering into caller-owned render loops.
   self-contained SVG output.
 - Use a small public API built around `TexGui::LatexDocument`,
   `TexGui::RenderHandle`, `TexGui::IDrawSurface`, and `TexGui::RenderOptions`.
+- Include the backend-neutral API through `texgui/texgui.hpp`; GUI backend
+  headers are packaged only with installs that export their matching dependency.
 - Consume the library with `FetchContent`, `add_subdirectory`, installed
   `find_package(texgui CONFIG REQUIRED)`, pkg-config metadata, Conan metadata,
   or vcpkg metadata.
@@ -121,6 +123,8 @@ TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
 scripts/verify-release-archive.sh
 scripts/verify-cpack.sh
 scripts/verify-external-consumers.sh
+scripts/verify-installed-headers.sh
+scripts/verify-backend-packages.sh
 scripts/verify-path-with-spaces.sh
 scripts/verify-pkg-config.sh
 scripts/check-registry-readiness.py

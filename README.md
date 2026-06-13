@@ -52,13 +52,16 @@ changes.
 See the [gallery](docs/gallery.md), [examples index](docs/examples-index.md),
 [integration examples](docs/integration-examples.md),
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
-[why-not-just-TeX FAQ](docs/why-not-just-tex.md), and [case study](docs/case-study.md).
+[why-not-just-TeX FAQ](docs/why-not-just-tex.md),
+[backend authoring guide](docs/backend-authoring.md), and
+[case study](docs/case-study.md).
 The [support matrix](docs/support-matrix.md), [API compatibility notes](docs/api-compatibility.md),
 and [migration guide](docs/migration.md) describe the public contract.
 The [security threat model](docs/security-threat-model.md) and
 [dependency/license audit](docs/dependency-license-audit.md) cover risk and
 redistribution notes. The [GitHub launch checklist](docs/github-launch.md),
-[first public push dry run](docs/first-public-push-dry-run.md), [local release rehearsal](docs/local-release-rehearsal.md),
+[first public push dry run](docs/first-public-push-dry-run.md),
+[local release rehearsal](docs/local-release-rehearsal.md),
 [release asset guide](docs/release-assets.md), [registry submission guide](docs/registry-submissions.md),
 and [roadmap](docs/roadmap.md) cover the public release path. Support and
 community expectations live in [SUPPORT.md](SUPPORT.md) and
@@ -125,6 +128,9 @@ parse one formula, draw it in a loop.
 More copyable consumer examples live in
 [`docs/examples-index.md`](docs/examples-index.md) and
 [`docs/integration-examples.md`](docs/integration-examples.md).
+For the stable backend-neutral API surface, include `texgui/texgui.hpp`.
+Backend-specific headers are opt-in and installed only with packages that export
+their matching GUI dependency.
 
 Common contributor builds are also available as CMake presets:
 

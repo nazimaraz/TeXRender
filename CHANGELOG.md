@@ -31,6 +31,9 @@ follow [Semantic Versioning](https://semver.org/).
   backend texture cache sizing.
 - Shared-library symbol visibility via `TEXGUI_EXPORT`, including Windows DLL
   import/export definitions.
+- Backend-neutral umbrella header `texgui/texgui.hpp`.
+- Selective installed public headers: raylib and SDL2 surface headers are
+  packaged only when the selected installed backend exports that dependency.
 - `CMakePresets.json` for headless, raylib, SDL2, shared, sanitizer, coverage
   and fuzzing builds.
 - `TEXGUI_WARNINGS_AS_ERRORS` for first-party warning gates without applying
@@ -83,7 +86,8 @@ follow [Semantic Versioning](https://semver.org/).
 - Generated gallery manifest/script that renders PNG and SVG sample artifacts in
   CI and release verification.
 - Local release verifier, CPack smoke, source archive smoke, external consumer
-  smoke, path-with-spaces smoke, pkg-config smoke, Markdown link checker,
+  smoke, path-with-spaces smoke, pkg-config smoke, installed-header smoke,
+  optional installed-backend package smoke, Markdown link checker,
   public API snapshot checker, and registry-readiness checker for
   format/build/test/docs/package-consumer/package-metadata checks before
   pushing.
@@ -91,9 +95,9 @@ follow [Semantic Versioning](https://semver.org/).
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
   coverage, workflow linting, API compatibility, migration guide, release asset
   guide, v0.1.0 release body, local release rehearsal, why-not-just-TeX FAQ,
-  GitHub launch, package publishing, registry submissions, support matrix,
-  v0.1.0 release notes, roadmap, performance baseline, resume notes,
-  dependency/license audit, security threat model, first public push dry run,
-  resume-oriented case study and release checklist.
+  backend authoring guide, GitHub launch, package publishing, registry
+  submissions, support matrix, v0.1.0 release notes, roadmap, performance
+  baseline, resume notes, dependency/license audit, security threat model, first
+  public push dry run, resume-oriented case study and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

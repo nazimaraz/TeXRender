@@ -113,6 +113,12 @@ cmake_configure "$ROOT_DIR/tests/package_consumer" "$PACKAGE_CONSUMER_BUILD" \
     -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
 cmake_build "$PACKAGE_CONSUMER_BUILD"
 run ctest --test-dir "$PACKAGE_CONSUMER_BUILD" --output-on-failure
+run env \
+    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXGUI_HEADER_BACKEND=headless \
+    TEXGUI_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
+    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
+    "$ROOT_DIR/scripts/verify-installed-headers.sh"
 
 cmake_configure "$ROOT_DIR/examples/consumer-find-package" "$FIND_EXAMPLE_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -138,6 +144,10 @@ cmake_configure "$ROOT_DIR" "$SDL2_BUILD" \
     -DTEXGUI_BACKEND=sdl2
 cmake_build "$SDL2_BUILD"
 run ctest --test-dir "$SDL2_BUILD" --output-on-failure
+
+if [[ "${TEXGUI_SKIP_BACKEND_PACKAGE_SMOKE:-0}" != "1" ]]; then
+    run env BUILD_ROOT="${BUILD_ROOT}/backend-packages" "$ROOT_DIR/scripts/verify-backend-packages.sh"
+fi
 
 if has doxygen; then
     run rm -rf "$ROOT_DIR/build-api-docs"

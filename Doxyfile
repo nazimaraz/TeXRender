@@ -15,6 +15,7 @@ INPUT                  = include \
                          docs/api-mainpage.md \
                          docs/api.md \
                          docs/architecture.md \
+                         docs/backend-authoring.md \
                          docs/known-limitations.md \
                          docs/examples-index.md \
                          docs/integration-examples.md \

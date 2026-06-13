@@ -15,6 +15,8 @@ for embedding LaTeX math rendering into applications.
   package-manager starter metadata.
 - Public headers validated as C++17 while the implementation can use modern
   C++23.
+- Backend-neutral umbrella header `texgui/texgui.hpp`, with installed packages
+  exposing only the backend headers their dependencies support.
 - Non-throwing `try_render()` and `try_render_detailed()` paths for
   caller-supplied formulas.
 - CI coverage for Linux, macOS, Windows, sanitizers, ThreadSanitizer, fuzz
@@ -27,6 +29,8 @@ for embedding LaTeX math rendering into applications.
   validation.
 - Public API snapshot and pkg-config consumer smoke checks for dependency-facing
   changes.
+- Installed-header and optional installed-backend package smoke checks for
+  dependency-facing package exports.
 - Security threat model, dependency/license audit, and first public push dry-run
   checklist for public launch review.
 

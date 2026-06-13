@@ -74,6 +74,12 @@ run cmake -S "$CLONE_DIR/tests/package_consumer" -B "$PACKAGE_CONSUMER_BUILD" -G
     -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
 run cmake --build "$PACKAGE_CONSUMER_BUILD" -j
 run ctest --test-dir "$PACKAGE_CONSUMER_BUILD" --output-on-failure
+run env \
+    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXGUI_HEADER_BACKEND=headless \
+    TEXGUI_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
+    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
+    "$CLONE_DIR/scripts/verify-installed-headers.sh"
 
 run cmake -S "$CLONE_DIR/examples/consumer-fetchcontent" -B "$FETCH_CONSUMER_BUILD" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -84,6 +90,7 @@ run cmake -E chdir "$FETCH_CONSUMER_BUILD" "$FETCH_CONSUMER_BUILD/texgui_fetchco
 if [[ "$FULL_SMOKE" == "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/cpack" "$CLONE_DIR/scripts/verify-cpack.sh"
     run env BUILD_ROOT="${BUILD_ROOT}/release-archive" "$CLONE_DIR/scripts/verify-release-archive.sh"
+    run env BUILD_ROOT="${BUILD_ROOT}/backend-packages" "$CLONE_DIR/scripts/verify-backend-packages.sh"
 fi
 
 printf '\nfresh-clone verification completed successfully\n'

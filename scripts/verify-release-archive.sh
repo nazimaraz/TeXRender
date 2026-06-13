@@ -65,6 +65,12 @@ run cmake -S "$SOURCE_DIR/tests/package_consumer" -B "$CONSUMER_BUILD" -G "$GENE
     -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
 run cmake --build "$CONSUMER_BUILD" -j
 run ctest --test-dir "$CONSUMER_BUILD" --output-on-failure
+run env \
+    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXGUI_HEADER_BACKEND=headless \
+    TEXGUI_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
+    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
+    "$SOURCE_DIR/scripts/verify-installed-headers.sh"
 
 printf '\nrelease archive smoke completed successfully\n'
 printf 'archive: %s\n' "$ARCHIVE"

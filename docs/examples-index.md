@@ -26,7 +26,8 @@ embed texgui.
   `headless_batch.cpp`.
 - Exporting documents or reports: start with `svg_export.cpp`.
 - Integrating a custom renderer, engine command buffer, or test double: start
-  with `custom_surface.cpp`.
+  with `custom_surface.cpp`, then read
+  [`docs/backend-authoring.md`](backend-authoring.md).
 - Adding texgui to another project: start with the FetchContent, installed
   package, or pkg-config consumer directories.
 

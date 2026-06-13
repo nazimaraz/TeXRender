@@ -80,7 +80,9 @@ TexGui::LatexDocument document(res_root, std::make_unique<MySurface>());
 ```
 
 No core changes are required for out-of-tree backends. In-tree default backends
-add a factory file selected by `TEXGUI_BACKEND`.
+add a factory file selected by `TEXGUI_BACKEND`. See
+[`docs/backend-authoring.md`](backend-authoring.md) for the draw contract,
+glyph lifetime, color format and packaging checklist.
 
 ## Global State
 

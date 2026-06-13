@@ -10,6 +10,7 @@
 #include <texgui/latex_document.hpp>
 #include <texgui/render_handle.hpp>
 #include <texgui/svg_surface.hpp>
+#include <texgui/texgui.hpp>
 #include <texgui/version.hpp>
 
 static_assert(TexGui::version_major == TEXGUI_VERSION_MAJOR);

@@ -46,6 +46,12 @@ run cmake -S "$ROOT_DIR/tests/package_consumer" -B "$CONSUMER_BUILD" -G "$GENERA
     -DCMAKE_PREFIX_PATH="$BINARY_PREFIX"
 run cmake --build "$CONSUMER_BUILD" -j
 run ctest --test-dir "$CONSUMER_BUILD" --output-on-failure
+run env \
+    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXGUI_HEADER_BACKEND=headless \
+    TEXGUI_HEADER_INSTALL_PREFIX="$BINARY_PREFIX" \
+    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/binary-installed-headers" \
+    "$ROOT_DIR/scripts/verify-installed-headers.sh"
 
 run tar -xzf "$SOURCE_PACKAGE" -C "$SOURCE_EXTRACT"
 SOURCE_DIR="$(find "$SOURCE_EXTRACT" -mindepth 1 -maxdepth 1 -type d | head -n 1)"

@@ -290,6 +290,11 @@ jobs:
         run: cmake --build package-consumer -j
       - name: Test installed package consumer (headless)
         run: ctest --test-dir package-consumer --output-on-failure
+      - name: Verify installed raylib package
+        env:
+          TEXGUI_BACKEND_PACKAGE_BACKENDS: raylib
+          TEXGUI_BACKEND_PACKAGE_REQUIRE: "1"
+        run: scripts/verify-backend-packages.sh
 
   # Windows / MSVC: build the headless backend (FreeType + tinyxml2 come from
   # FetchContent) and run every test, validating the MSVC support claim.

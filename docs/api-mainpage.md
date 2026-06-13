@@ -28,6 +28,7 @@ See also:
 - [Dependency and license audit](dependency-license-audit.md)
 - [Migration guide](migration.md)
 - [Architecture](architecture.md)
+- [Backend authoring guide](backend-authoring.md)
 - [Why not just TeX?](why-not-just-tex.md)
 - [Known limitations](known-limitations.md)
 - [Examples index](examples-index.md)

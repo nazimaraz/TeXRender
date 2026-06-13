@@ -33,6 +33,10 @@ Use this before cutting a public tag.
   `cmake --install build-headless --prefix /tmp/texgui-prefix`
 - Verify installed package consumption:
   `cmake -S tests/package_consumer -B /tmp/texgui-package-consumer -DCMAKE_PREFIX_PATH=/tmp/texgui-prefix && cmake --build /tmp/texgui-package-consumer -j && ctest --test-dir /tmp/texgui-package-consumer --output-on-failure`
+- Verify installed headers:
+  `scripts/verify-installed-headers.sh`
+- Verify installed GUI backend packages when dependencies are available:
+  `scripts/verify-backend-packages.sh`
 - Verify pkg-config consumption:
   `scripts/verify-pkg-config.sh`
 - Run the benchmark once in Release:
@@ -109,6 +113,7 @@ Use this before cutting a public tag.
 - Mention `SvgSurface`, `TEXGUI_BACKEND=svg`, cache limits, and baseline layout
   helpers.
 - Mention `Sdl2Surface` and `TEXGUI_BACKEND=sdl2`.
+- Mention `texgui/texgui.hpp` as the backend-neutral umbrella header.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 - Mention API compatibility status and the current source-compatibility promise.

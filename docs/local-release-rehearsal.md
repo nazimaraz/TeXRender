@@ -15,7 +15,8 @@ scripts/verify-fresh-clone.sh
 The script clones the current repository into `/tmp/texgui-fresh-clone`, checks
 out the current commit, verifies docs/package/API metadata, builds the headless
 backend, runs tests, smoke-renders a PNG, installs the package, builds an
-installed package consumer, and builds the FetchContent consumer example.
+installed package consumer, compiles the installed public headers, and builds
+the FetchContent consumer example.
 
 For a longer rehearsal that also validates CPack and source release archives:
 
@@ -66,6 +67,8 @@ scripts/check-registry-readiness.py
 scripts/check-public-api.py
 scripts/verify-fresh-clone.sh
 TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
+scripts/verify-installed-headers.sh
+scripts/verify-backend-packages.sh
 scripts/verify-pkg-config.sh
 scripts/verify-release-archive.sh
 scripts/verify-cpack.sh

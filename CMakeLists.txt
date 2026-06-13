@@ -413,6 +413,24 @@ if(TEXGUI_INSTALL)
     set(TEXGUI_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/texgui" CACHE STRING "Install directory for texgui CMake package files")
     set(TEXGUI_INSTALL_PKGCONFIGDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig" CACHE STRING "Install directory for texgui pkg-config metadata")
     set(TEXGUI_INSTALL_RESDIR "${CMAKE_INSTALL_DATADIR}/texgui/res")
+    set(TEXGUI_PUBLIC_HEADERS
+        include/texgui/cache_options.hpp
+        include/texgui/draw_surface.hpp
+        include/texgui/export.hpp
+        include/texgui/formula_layout.hpp
+        include/texgui/glyph_bitmap.hpp
+        include/texgui/headless_surface.hpp
+        include/texgui/latex_document.hpp
+        include/texgui/render_handle.hpp
+        include/texgui/svg_surface.hpp
+        include/texgui/texgui.hpp
+        include/texgui/version.hpp
+    )
+    if(TEXGUI_BACKEND STREQUAL "raylib")
+        list(APPEND TEXGUI_PUBLIC_HEADERS include/texgui/raylib_surface.hpp)
+    elseif(TEXGUI_BACKEND STREQUAL "sdl2")
+        list(APPEND TEXGUI_PUBLIC_HEADERS include/texgui/sdl2_surface.hpp)
+    endif()
 
     set_target_properties(texgui PROPERTIES EXPORT_NAME texgui)
 
@@ -422,7 +440,7 @@ if(TEXGUI_INSTALL)
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
     )
-    install(DIRECTORY include/ DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    install(FILES ${TEXGUI_PUBLIC_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/texgui")
     install(DIRECTORY "${MICROTEX_RES_DIR}/" DESTINATION "${TEXGUI_INSTALL_RESDIR}")
     install(FILES cmake/texguiHelpers.cmake DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}")
 

@@ -47,6 +47,17 @@ Runtime cache limits are controlled from C++ with `TexGui::set_cache_limits()`.
 The CPU glyph limit is process-wide; the GPU texture limit is used by newly
 created `RaylibSurface` instances and can also be set per surface.
 
+## Public Headers
+
+Use `#include <texgui/texgui.hpp>` for the backend-neutral public API. It includes
+document/render types, cache options, layout helpers, `HeadlessSurface`,
+`SvgSurface`, and version constants.
+
+Backend-specific headers are deliberately opt-in. Installed packages include
+`raylib_surface.hpp` only for `TEXGUI_BACKEND=raylib` packages and
+`sdl2_surface.hpp` only for `TEXGUI_BACKEND=sdl2` packages. This keeps a
+headless or SVG install usable without GUI development headers.
+
 ## SDL2 Backend
 
 `TEXGUI_BACKEND=sdl2` builds `TexGui::Sdl2Surface` and the

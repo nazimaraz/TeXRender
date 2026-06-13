@@ -27,6 +27,29 @@ pkg-config for `--cflags --libs --static texgui`, compiles a standalone C++17
 consumer, and runs it. Keep this green when install paths, dependencies, or
 resource-copy behavior change.
 
+## Installed Headers And Backend Packages
+
+The installed-header smoke test compiles exactly the headers present in an
+installed prefix as C++17:
+
+```sh
+scripts/verify-installed-headers.sh
+```
+
+Headless and SVG installs should not expose raylib or SDL2 headers. GUI backend
+installs expose only their selected backend header after that dependency is
+available through `find_package`.
+
+To validate installed GUI backend packages when local dependencies are
+discoverable:
+
+```sh
+scripts/verify-backend-packages.sh
+```
+
+The script skips a backend when `find_package(raylib)` or `find_package(SDL2)`
+is not available, and verifies the package when it is.
+
 ## Conan
 
 Local package validation:
@@ -143,9 +166,10 @@ directories with spaces. Both run in the `Release smoke` workflow.
 ## Release Routine
 
 Run `scripts/verify-release.sh` before tagging. It validates CMake builds,
-install/export consumers, generated gallery artifacts, package-manager entry
-points when local tools are available, pkg-config consumers when pkg-config is
-available, CPack archives, external consumers, path-with-spaces handling,
-release archive smoke, Markdown links, public API snapshot drift, and API
-documentation when Doxygen is installed. It also runs the registry-readiness
-metadata check when Python is available.
+install/export consumers, installed public headers, generated gallery artifacts,
+package-manager entry points when local tools are available, optional installed
+backend package exports, pkg-config consumers when pkg-config is available,
+CPack archives, external consumers, path-with-spaces handling, release archive
+smoke, Markdown links, public API snapshot drift, and API documentation when
+Doxygen is installed. It also runs the registry-readiness metadata check when
+Python is available.
