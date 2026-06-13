@@ -16,6 +16,7 @@ on:
       - "scripts/verify-cpack.sh"
       - "scripts/verify-external-consumers.sh"
       - "scripts/verify-path-with-spaces.sh"
+      - "scripts/verify-pkg-config.sh"
       - "scripts/verify-release-archive.sh"
   workflow_dispatch:
 
@@ -95,3 +96,18 @@ jobs:
           CC: gcc-14
           CXX: g++-14
         run: scripts/verify-path-with-spaces.sh
+
+  pkg-config:
+    name: pkg-config consumer smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev pkg-config
+      - name: Verify pkg-config consumer
+        env:
+          CC: gcc-14
+          CXX: g++-14
+        run: scripts/verify-pkg-config.sh

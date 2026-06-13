@@ -99,9 +99,11 @@ def main() -> int:
         require(token in portfile, f"vcpkg overlay portfile is missing {token}", failures)
 
     for path in (
+        "cmake/texgui.pc.in",
         "scripts/verify-cpack.sh",
         "scripts/verify-external-consumers.sh",
         "scripts/verify-path-with-spaces.sh",
+        "scripts/verify-pkg-config.sh",
         "scripts/verify-vcpkg-overlay.sh",
         "docs/package-publishing.md",
         "docs/registry-submissions.md",
@@ -109,6 +111,7 @@ def main() -> int:
         require((ROOT / path).exists(), f"missing release/registry support file: {path}", failures)
 
     require("CPACK_GENERATOR" in cmake and "CPACK_SOURCE_GENERATOR" in cmake, "CMakeLists.txt is missing CPack generator setup", failures)
+    require("TEXGUI_INSTALL_PKGCONFIGDIR" in cmake and "texgui.pc" in cmake, "CMakeLists.txt is missing pkg-config install setup", failures)
 
     if failures:
         for failure in failures:

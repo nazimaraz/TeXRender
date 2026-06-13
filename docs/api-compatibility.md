@@ -10,6 +10,7 @@ These files are the public API:
 - `include/texgui/*.hpp`
 - the exported CMake target `texgui::texgui`
 - CMake helper functions installed from `cmake/texguiHelpers.cmake`
+- installed `pkg-config` metadata from `texgui.pc`
 - documented executable examples in `examples/`
 
 Implementation files under `source/`, bundled MicroTeX integration details, test
@@ -42,7 +43,11 @@ or shared-library builds. Source compatibility is the priority until a stable
 The repository keeps several compatibility checks in CI:
 
 - public headers compile as C++17
+- the public API snapshot in `docs/public-api-snapshot.txt` matches the current
+  headers and install metadata
 - installed `find_package(texgui CONFIG REQUIRED)` consumers build and run
+- installed `pkg-config --static texgui` consumers build and run on Unix-like
+  hosts with pkg-config metadata for dependencies
 - shared-library install/consumer checks run on Windows
 - Conan and vcpkg entry points build package-shaped consumers
 

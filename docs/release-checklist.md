@@ -33,6 +33,8 @@ Use this before cutting a public tag.
   `cmake --install build-headless --prefix /tmp/texgui-prefix`
 - Verify installed package consumption:
   `cmake -S tests/package_consumer -B /tmp/texgui-package-consumer -DCMAKE_PREFIX_PATH=/tmp/texgui-prefix && cmake --build /tmp/texgui-package-consumer -j && ctest --test-dir /tmp/texgui-package-consumer --output-on-failure`
+- Verify pkg-config consumption:
+  `scripts/verify-pkg-config.sh`
 - Run the benchmark once in Release:
   `./build-headless/texgui_render_benchmark`
 - Run a fuzz smoke if Clang/libFuzzer is available:
@@ -65,6 +67,8 @@ Use this before cutting a public tag.
   `scripts/check-doc-links.py`
 - Check package-registry metadata:
   `scripts/check-registry-readiness.py`
+- Check public API snapshot drift:
+  `scripts/check-public-api.py`
 - Run the public release preparation gate once a remote is configured:
   `scripts/prepare-public-release.sh`
 - Run warnings as errors at least once:

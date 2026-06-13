@@ -18,6 +18,22 @@ flowchart LR
     Surface --> Custom["User backend"]
 ```
 
+For contributors, the most common change paths look like this:
+
+```mermaid
+flowchart TD
+    Feature["Desired change"] --> API["Public API?"]
+    API -->|yes| Headers["include/texgui/*.hpp"]
+    Headers --> Compat["docs/api-compatibility.md and API snapshot"]
+    API -->|no| Core["source/core or source/render"]
+    Feature --> Backend["New backend?"]
+    Backend --> Surface["Implement IDrawSurface"]
+    Surface --> Factory["Add backend factory and CMake branch"]
+    Feature --> Package["Install or dependency behavior?"]
+    Package --> CMake["CMake export, pkg-config, Conan, vcpkg"]
+    Feature --> Tests["Focused tests and examples"]
+```
+
 ## Public Boundary
 
 Applications include headers from `include/texgui/` and link `texgui::texgui`.

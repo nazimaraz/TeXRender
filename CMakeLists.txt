@@ -411,6 +411,7 @@ endif()
 
 if(TEXGUI_INSTALL)
     set(TEXGUI_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/texgui" CACHE STRING "Install directory for texgui CMake package files")
+    set(TEXGUI_INSTALL_PKGCONFIGDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig" CACHE STRING "Install directory for texgui pkg-config metadata")
     set(TEXGUI_INSTALL_RESDIR "${CMAKE_INSTALL_DATADIR}/texgui/res")
 
     set_target_properties(texgui PROPERTIES EXPORT_NAME texgui)
@@ -431,6 +432,17 @@ if(TEXGUI_INSTALL)
         INSTALL_DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}"
         PATH_VARS TEXGUI_INSTALL_RESDIR
     )
+    set(TEXGUI_PKG_CONFIG_REQUIRES_PRIVATE "freetype2 tinyxml2")
+    if(TEXGUI_BACKEND STREQUAL "raylib")
+        string(APPEND TEXGUI_PKG_CONFIG_REQUIRES_PRIVATE " raylib")
+    elseif(TEXGUI_BACKEND STREQUAL "sdl2")
+        string(APPEND TEXGUI_PKG_CONFIG_REQUIRES_PRIVATE " sdl2")
+    endif()
+    configure_file(
+        cmake/texgui.pc.in
+        "${CMAKE_CURRENT_BINARY_DIR}/texgui.pc"
+        @ONLY
+    )
     write_basic_package_version_file(
         "${CMAKE_CURRENT_BINARY_DIR}/texguiConfigVersion.cmake"
         VERSION "${PROJECT_VERSION}"
@@ -445,6 +457,10 @@ if(TEXGUI_INSTALL)
     install(EXPORT texguiTargets
         NAMESPACE texgui::
         DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}"
+    )
+    install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/texgui.pc"
+        DESTINATION "${TEXGUI_INSTALL_PKGCONFIGDIR}"
     )
 endif()
 

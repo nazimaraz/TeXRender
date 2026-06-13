@@ -1,0 +1,33 @@
+# Examples Index
+
+Use this index to pick the smallest example that matches the way you want to
+embed texgui.
+
+| Example | Build mode | What it shows |
+| --- | --- | --- |
+| [`examples/minimal.cpp`](../examples/minimal.cpp) | default raylib | The shortest windowed formula render loop. |
+| [`examples/demo_main.cpp`](../examples/demo_main.cpp) | default raylib | Interactive sample browser with text-size and formula changes. |
+| [`examples/live_edit.cpp`](../examples/live_edit.cpp) | raylib or WebAssembly | Live formula editing, including the browser demo build. |
+| [`examples/raylib_overlay.cpp`](../examples/raylib_overlay.cpp) | default raylib | Drawing formulas as one layer inside an existing raylib scene. |
+| [`examples/sdl2_minimal.cpp`](../examples/sdl2_minimal.cpp) | `TEXGUI_BACKEND=sdl2` | Injecting texgui into a caller-owned `SDL_Renderer`. |
+| [`examples/offscreen.cpp`](../examples/offscreen.cpp) | any backend | Rendering one formula to PNG/PPM with `HeadlessSurface`. |
+| [`examples/headless_batch.cpp`](../examples/headless_batch.cpp) | any backend | Command-line batch PNG rendering without a window. |
+| [`examples/svg_export.cpp`](../examples/svg_export.cpp) | any backend | Writing a self-contained SVG file. |
+| [`examples/custom_surface.cpp`](../examples/custom_surface.cpp) | any backend | Implementing a custom `IDrawSurface`. |
+| [`examples/consumer-fetchcontent`](../examples/consumer-fetchcontent) | external CMake | Consuming texgui with `FetchContent`. |
+| [`examples/consumer-find-package`](../examples/consumer-find-package) | external CMake | Consuming an installed `find_package(texgui CONFIG REQUIRED)` package. |
+
+## Picking A Starting Point
+
+- Building a game or GUI overlay: start with `minimal.cpp`, then compare
+  `raylib_overlay.cpp` or `sdl2_minimal.cpp`.
+- Generating images on a server or in CI: start with `offscreen.cpp` or
+  `headless_batch.cpp`.
+- Exporting documents or reports: start with `svg_export.cpp`.
+- Integrating a custom renderer, engine command buffer, or test double: start
+  with `custom_surface.cpp`.
+- Adding texgui to another project: start with the FetchContent or installed
+  package consumer directories.
+
+The longer command walk-throughs live in
+[`docs/integration-examples.md`](integration-examples.md).

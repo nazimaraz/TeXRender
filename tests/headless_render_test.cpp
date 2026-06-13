@@ -34,9 +34,19 @@ namespace
             ++g_failures;
         }
     }
+
+    void check_render_error(const RenderResult& result, const RenderErrorCode code, const char* const expr)
+    {
+        if (result.has_value() || result.error().code != code || result.error().message.empty())
+        {
+            std::println("FAIL: {}", expr);
+            ++g_failures;
+        }
+    }
 } // namespace
 
 #define CHECK(cond) check((cond), #cond)
+#define CHECK_RENDER_ERROR(result, code) check_render_error((result), (code), #result " -> " #code)
 
 int main()
 {
@@ -61,14 +71,15 @@ int main()
         CHECK(!document.try_render(R"(})", 40.f, 0xff000000).has_value()); // unbalanced '}' -> parse error
         CHECK(!document.try_render("x", 600.f, 0xff000000).has_value());
 
+        const auto ok = document.try_render_detailed(R"(\sqrt{a})", 40.f, 0xff000000);
+        CHECK(ok.has_value());
+        CHECK(ok.error().code == RenderErrorCode::none);
+
         const auto parse_error = document.try_render_detailed(R"(})", 40.f, 0xff000000);
-        CHECK(!parse_error.has_value());
-        CHECK(parse_error.error().code == RenderErrorCode::parse_error);
-        CHECK(!parse_error.error().message.empty());
+        CHECK_RENDER_ERROR(parse_error, RenderErrorCode::parse_error);
 
         const auto text_size_error = document.try_render_detailed("x", 600.f, 0xff000000);
-        CHECK(!text_size_error.has_value());
-        CHECK(text_size_error.error().code == RenderErrorCode::text_size_too_large);
+        CHECK_RENDER_ERROR(text_size_error, RenderErrorCode::text_size_too_large);
 
         auto limited = RenderOptions{};
         limited.text_size = 40.f;
@@ -76,12 +87,32 @@ int main()
         limited.max_input_bytes = 3;
         CHECK(document.try_render("x", limited).has_value());
         CHECK(!document.try_render("x+x+x", limited).has_value());
+        CHECK_RENDER_ERROR(document.try_render_detailed("x+x+x", limited), RenderErrorCode::input_too_large);
+
+        auto invalid_text_size = RenderOptions{};
+        invalid_text_size.text_size = 0.f;
+        invalid_text_size.argb = 0xff000000;
+        CHECK_RENDER_ERROR(document.try_render_detailed("x", invalid_text_size), RenderErrorCode::invalid_options);
 
         auto invalid_wrap = RenderOptions{};
         invalid_wrap.text_size = 40.f;
         invalid_wrap.argb = 0xff000000;
         invalid_wrap.wrap_width = -1;
         CHECK(!document.try_render("x", invalid_wrap).has_value());
+        CHECK_RENDER_ERROR(document.try_render_detailed("x", invalid_wrap), RenderErrorCode::invalid_options);
+
+        auto invalid_wrap_limit = RenderOptions{};
+        invalid_wrap_limit.text_size = 40.f;
+        invalid_wrap_limit.argb = 0xff000000;
+        invalid_wrap_limit.max_wrap_width = -1;
+        CHECK_RENDER_ERROR(document.try_render_detailed("x", invalid_wrap_limit), RenderErrorCode::invalid_options);
+
+        auto excessive_wrap = RenderOptions{};
+        excessive_wrap.text_size = 40.f;
+        excessive_wrap.argb = 0xff000000;
+        excessive_wrap.wrap_width = 120;
+        excessive_wrap.max_wrap_width = 80;
+        CHECK_RENDER_ERROR(document.try_render_detailed("x", excessive_wrap), RenderErrorCode::wrap_width_too_large);
 
         constexpr auto long_formula = R"(x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x+x)";
         const auto unwrapped = document.render(long_formula, 32.f, 0xff000000);

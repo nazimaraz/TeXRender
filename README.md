@@ -49,7 +49,8 @@ changes.
 * **Small backend contract.** Custom engines only implement `IDrawSurface`; the
   parser, transforms, FreeType glyph rasterization, and caches stay shared.
 
-See the [gallery](docs/gallery.md), [integration examples](docs/integration-examples.md),
+See the [gallery](docs/gallery.md), [examples index](docs/examples-index.md),
+[integration examples](docs/integration-examples.md),
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
 [why-not-just-TeX FAQ](docs/why-not-just-tex.md), and [case study](docs/case-study.md).
 The [support matrix](docs/support-matrix.md), [API compatibility notes](docs/api-compatibility.md),
@@ -119,6 +120,7 @@ The smallest possible program is [`examples/minimal.cpp`](examples/minimal.cpp):
 parse one formula, draw it in a loop.
 
 More copyable consumer examples live in
+[`docs/examples-index.md`](docs/examples-index.md) and
 [`docs/integration-examples.md`](docs/integration-examples.md).
 
 Common contributor builds are also available as CMake presets:
@@ -187,6 +189,11 @@ and [`conanfile.py`](conanfile.py). They are intended as project-local manifests
 until the project is submitted to public registries. See
 [`docs/package-publishing.md`](docs/package-publishing.md) for the Conan/vcpkg
 validation and submission checklist.
+
+Installed builds also generate `texgui.pc` for pkg-config consumers. For static
+linking, use `pkg-config --cflags --libs --static texgui`; the generated
+`resdir` variable points at the installed MicroTeX resources for simple
+non-CMake tools.
 
 The public API is pre-1.0 and source-compatibility focused; see
 [`docs/api-compatibility.md`](docs/api-compatibility.md) for the current

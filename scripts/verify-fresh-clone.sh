@@ -58,6 +58,7 @@ run git -C "$CLONE_DIR" checkout --detach "$SOURCE_REF"
 run git -C "$CLONE_DIR" status --short
 run python3 "$CLONE_DIR/scripts/check-doc-links.py"
 run python3 "$CLONE_DIR/scripts/check-registry-readiness.py"
+run python3 "$CLONE_DIR/scripts/check-public-api.py"
 
 run cmake -S "$CLONE_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \

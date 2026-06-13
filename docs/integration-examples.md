@@ -38,6 +38,30 @@ The example lives in [`examples/consumer-find-package`](../examples/consumer-fin
 It uses `find_package(texgui CONFIG REQUIRED)`, links `texgui::texgui`, then calls
 `texgui_copy_resources()`.
 
+## Installed `pkg-config`
+
+When texgui is installed, it also writes `texgui.pc` for non-CMake consumers.
+Use `--static` when linking the default static package so FreeType and tinyxml2
+are included in the link flags:
+
+```sh
+cmake -S . -B build-headless \
+  -DTEXGUI_BACKEND=headless \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=/tmp/texgui-prefix
+cmake --build build-headless -j
+cmake --install build-headless
+
+export PKG_CONFIG_PATH=/tmp/texgui-prefix/lib/pkgconfig:$PKG_CONFIG_PATH
+c++ -std=c++17 my_formula_tool.cpp \
+  -DTEXGUI_RES_DIR=\"$(pkg-config --variable=resdir texgui)\" \
+  $(pkg-config --cflags --libs --static texgui) \
+  -o my_formula_tool
+```
+
+The `resdir` variable points at the installed MicroTeX resource directory for
+simple command-line consumers.
+
 ## Headless Batch Rendering
 
 [`examples/headless_batch.cpp`](../examples/headless_batch.cpp) renders one or

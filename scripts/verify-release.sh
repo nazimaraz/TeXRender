@@ -65,6 +65,7 @@ run git diff --check
 if has python3; then
     run python3 "$ROOT_DIR/scripts/check-doc-links.py"
     run python3 "$ROOT_DIR/scripts/check-registry-readiness.py"
+    run python3 "$ROOT_DIR/scripts/check-public-api.py"
 else
     printf '\n==> skipping Python-based docs/registry checks: python3 is not installed\n'
 fi
@@ -205,6 +206,14 @@ fi
 
 if [[ "${TEXGUI_SKIP_PATH_SMOKE:-0}" != "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/path smoke" "$ROOT_DIR/scripts/verify-path-with-spaces.sh"
+fi
+
+if [[ "${TEXGUI_SKIP_PKG_CONFIG_SMOKE:-0}" != "1" ]]; then
+    if has pkg-config; then
+        run env BUILD_ROOT="${BUILD_ROOT}/pkg-config" "$ROOT_DIR/scripts/verify-pkg-config.sh"
+    else
+        printf '\n==> skipping pkg-config smoke: pkg-config is not installed\n'
+    fi
 fi
 
 if [[ "${TEXGUI_SKIP_ARCHIVE_SMOKE:-0}" != "1" ]]; then

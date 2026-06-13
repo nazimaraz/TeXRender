@@ -29,12 +29,14 @@ jobs:
         run: git ls-files '*.cpp' '*.hpp' | xargs clang-format-22 --dry-run -Werror
 
   docs:
-    name: Markdown links
+    name: Docs and public API
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Check local Markdown links
         run: python3 scripts/check-doc-links.py
+      - name: Check public API snapshot
+        run: python3 scripts/check-public-api.py
 
   # Linux / GCC 14: build the dependency-free headless backend and run every test.
   # No GPU, X11 or display required.
@@ -46,7 +48,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev pkg-config
       - name: Configure
         run: >
           cmake -S . -B build -G Ninja
@@ -88,6 +90,10 @@ jobs:
         run: cmake --build package-consumer -j
       - name: Test installed package consumer
         run: ctest --test-dir package-consumer --output-on-failure
+      - name: Verify pkg-config consumer
+        env:
+          CXX: g++-14
+        run: scripts/verify-pkg-config.sh
 
   # Compile texgui itself, examples, tests and benchmarks with a strict warning
   # profile. MicroTeX headers are included as SYSTEM headers so third-party
@@ -269,6 +275,21 @@ jobs:
         run: cmake --build build-headless -j
       - name: Test (headless)
         run: ctest --test-dir build-headless --output-on-failure
+      - name: Smoke-run offscreen example (headless)
+        run: ./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' "$RUNNER_TEMP/formula.png"
+      - name: Smoke-run custom surface example (headless)
+        run: ./build-headless/texgui_custom_surface
+      - name: Install headless package
+        run: cmake --install build-headless --prefix "$RUNNER_TEMP/texgui-prefix"
+      - name: Configure installed package consumer (headless)
+        run: >
+          cmake -S tests/package_consumer -B package-consumer -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/texgui-prefix"
+      - name: Build installed package consumer (headless)
+        run: cmake --build package-consumer -j
+      - name: Test installed package consumer (headless)
+        run: ctest --test-dir package-consumer --output-on-failure
 
   # Windows / MSVC: build the headless backend (FreeType + tinyxml2 come from
   # FetchContent) and run every test, validating the MSVC support claim.
@@ -283,6 +304,10 @@ jobs:
         run: cmake --build build --config Release -j
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
+      - name: Smoke-run offscreen example
+        run: .\build\Release\texgui_offscreen.exe 'e^{i\pi} + 1 = 0' "$env:RUNNER_TEMP\formula.png"
+      - name: Smoke-run custom surface example
+        run: .\build\Release\texgui_custom_surface.exe
       - name: Configure shared library
         run: >
           cmake -S . -B build-shared

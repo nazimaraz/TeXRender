@@ -28,6 +28,7 @@ See also:
 - [Architecture](architecture.md)
 - [Why not just TeX?](why-not-just-tex.md)
 - [Known limitations](known-limitations.md)
+- [Examples index](examples-index.md)
 - [Build options](build-options.md)
 - [GitHub launch checklist](github-launch.md)
 - [Local release rehearsal](local-release-rehearsal.md)

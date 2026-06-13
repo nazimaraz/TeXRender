@@ -13,7 +13,7 @@ scripts/verify-fresh-clone.sh
 ```
 
 The script clones the current repository into `/tmp/texgui-fresh-clone`, checks
-out the current commit, verifies docs/package metadata, builds the headless
+out the current commit, verifies docs/package/API metadata, builds the headless
 backend, runs tests, smoke-renders a PNG, installs the package, builds an
 installed package consumer, and builds the FetchContent consumer example.
 
@@ -63,7 +63,9 @@ text for the GitHub release after public CI is green and the tag exists.
 ```sh
 scripts/check-doc-links.py
 scripts/check-registry-readiness.py
+scripts/check-public-api.py
 scripts/verify-fresh-clone.sh
+scripts/verify-pkg-config.sh
 scripts/verify-release-archive.sh
 scripts/verify-cpack.sh
 ```

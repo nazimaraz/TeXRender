@@ -11,7 +11,8 @@ for embedding LaTeX math rendering into applications.
 - Dependency-free headless RGBA surface with PNG/PPM output.
 - Self-contained SVG export surface.
 - CMake consumption through `FetchContent`, `add_subdirectory`, installed
-  `find_package(texgui CONFIG REQUIRED)`, and package-manager starter metadata.
+  `find_package(texgui CONFIG REQUIRED)`, installed pkg-config metadata, and
+  package-manager starter metadata.
 - Public headers validated as C++17 while the implementation can use modern
   C++23.
 - Non-throwing `try_render()` and `try_render_detailed()` paths for
@@ -24,6 +25,8 @@ for embedding LaTeX math rendering into applications.
   CODEOWNERS, release asset guide, and a why-not-just-TeX FAQ.
 - Fresh-clone release rehearsal and local cleanup helpers for final pre-push
   validation.
+- Public API snapshot and pkg-config consumer smoke checks for dependency-facing
+  changes.
 
 ## Stability
 

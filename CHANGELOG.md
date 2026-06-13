@@ -37,6 +37,7 @@ follow [Semantic Versioning](https://semver.org/).
   warning policy to bundled third-party sources.
 - CMake package support: `install()`, exported `texgui::texgui`, generated
   `texguiConfig.cmake`, and `texgui_copy_resources(target)`.
+- Installed `texgui.pc` metadata for pkg-config consumers.
 - Package-manager starter metadata for vcpkg and Conan consumers.
 - Dependabot configuration for GitHub Actions dependency updates.
 - Open-source project hygiene: CODEOWNERS, support policy, code of conduct,
@@ -71,9 +72,10 @@ follow [Semantic Versioning](https://semver.org/).
 - Public launch helper script that checks clean-tree/remote state, runs archive
   smoke, and optionally creates the local release tag.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
-  installed package consumer, C++17 public-header checks, strict warning build,
-  SVG and SDL2 backend smoke, Windows shared-library install consumer, shared-library
-  smoke, threaded lifetime stress test, multi-formula structural visual
+  installed package consumer, pkg-config consumer smoke, C++17 public-header
+  checks, strict warning build, SVG and SDL2 backend smoke, Windows
+  shared-library install consumer, shared-library smoke, threaded lifetime
+  stress test, multi-formula structural visual
   regression, optional exact PNG visual snapshots, visual failure artifacts,
   clang-format gate, ASan+UBSan pass, fuzz smoke, vcpkg/Conan validation,
   clang-tidy and CodeQL static analysis, coverage reporting, actionlint workflow
@@ -81,9 +83,10 @@ follow [Semantic Versioning](https://semver.org/).
 - Generated gallery manifest/script that renders PNG and SVG sample artifacts in
   CI and release verification.
 - Local release verifier, CPack smoke, source archive smoke, external consumer
-  smoke, path-with-spaces smoke, Markdown link checker, and registry-readiness
-  checker for format/build/test/docs/package-consumer/package-metadata checks
-  before pushing.
+  smoke, path-with-spaces smoke, pkg-config smoke, Markdown link checker,
+  public API snapshot checker, and registry-readiness checker for
+  format/build/test/docs/package-consumer/package-metadata checks before
+  pushing.
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
   coverage, workflow linting, API compatibility, migration guide, release asset

@@ -11,6 +11,21 @@ scripts/check-registry-readiness.py
 
 The `Registry readiness` workflow runs the same check on package metadata PRs.
 
+## pkg-config
+
+Installed builds write `texgui.pc` next to the CMake package metadata. This is
+intended for small non-CMake tools and build systems that already use
+pkg-config:
+
+```sh
+scripts/verify-pkg-config.sh
+```
+
+The smoke test installs the headless backend into a temporary prefix, asks
+pkg-config for `--cflags --libs --static texgui`, compiles a standalone C++17
+consumer, and runs it. Keep this green when install paths, dependencies, or
+resource-copy behavior change.
+
 ## Conan
 
 Local package validation:
@@ -128,7 +143,8 @@ directories with spaces. Both run in the `Release smoke` workflow.
 
 Run `scripts/verify-release.sh` before tagging. It validates CMake builds,
 install/export consumers, generated gallery artifacts, package-manager entry
-points when local tools are available, CPack archives, external consumers,
-path-with-spaces handling, release archive smoke, Markdown links, and API
+points when local tools are available, pkg-config consumers when pkg-config is
+available, CPack archives, external consumers, path-with-spaces handling,
+release archive smoke, Markdown links, public API snapshot drift, and API
 documentation when Doxygen is installed. It also runs the registry-readiness
 metadata check when Python is available.
