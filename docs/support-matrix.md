@@ -39,6 +39,7 @@ selects the default surface created by `LatexDocument`.
 | shared library | supported for headless in CI |
 | Conan recipe | starter package metadata, headless/SVG/SDL2 validated in CI |
 | vcpkg manifest/overlay | starter metadata with overlay smoke test |
+| CPack TGZ/ZIP archives | supported locally for source and binary release smoke |
 | public package registries | planned after first public tag |
 
 ## Runtime Notes

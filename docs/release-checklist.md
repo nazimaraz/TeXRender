@@ -25,7 +25,7 @@ Use this before cutting a public tag.
 - Generate gallery artifacts:
   `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt /tmp/texgui-gallery`
 - Refresh committed gallery and README preview:
-  `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery && scripts/generate-preview-gif.sh`
+  `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery && TEXGUI_BUILD_DIR=build scripts/record-live-editor-demo.sh`
 - Optional exact visual snapshots:
   `TEXGUI_VISUAL_SNAPSHOT_DIR=/tmp/texgui-snapshots TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1 ctest --test-dir build-headless --output-on-failure`
   then rerun without `TEXGUI_VISUAL_UPDATE_SNAPSHOTS`.
@@ -51,6 +51,14 @@ Use this before cutting a public tag.
   `scripts/verify-release.sh`
 - Run the source archive verifier:
   `scripts/verify-release-archive.sh`
+- Run CPack archive validation:
+  `scripts/verify-cpack.sh`
+- Run external consumer validation:
+  `scripts/verify-external-consumers.sh`
+- Run path-with-spaces validation:
+  `scripts/verify-path-with-spaces.sh`
+- Check local Markdown links:
+  `scripts/check-doc-links.py`
 - Run the public release preparation gate once a remote is configured:
   `scripts/prepare-public-release.sh`
 - Run warnings as errors at least once:
@@ -86,6 +94,8 @@ Use this before cutting a public tag.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 - Mention API compatibility status and the current source-compatibility promise.
+- Mention migration expectations from [`docs/migration.md`](migration.md).
+- Mention CPack binary/source archives if you attach them to a release.
 - Include [`docs/support-matrix.md`](support-matrix.md) and
   [`docs/release-notes-v0.1.0.md`](release-notes-v0.1.0.md) in the release body.
 - Let the release workflow attach install archives and `SHA256SUMS` after pushing
@@ -100,11 +110,13 @@ Use this before cutting a public tag.
 - Keep `docs/demo.png` current.
 - Keep `docs/offscreen-example.png`, `docs/gallery.md`, `docs/live-preview.gif`
   and `docs/performance-baseline.md` current. Generated gallery artifacts should
-  come from `scripts/generate-gallery.sh`; the README GIF should come from
-  `scripts/generate-preview-gif.sh`.
+  come from `scripts/generate-gallery.sh`; the README GIF should come from the
+  real live-editor capture script, `scripts/record-live-editor-demo.sh`. Use
+  `scripts/generate-preview-gif.sh` only when a display-free fallback is needed.
 - Keep [`docs/case-study.md`](case-study.md) aligned with the public API and CI
   story before using the project in a resume.
 - Keep [`docs/roadmap.md`](roadmap.md) honest about near-term plans and
   non-goals.
-- Optional: record a short GIF of the live editor for the README or release.
+- Include the live editor GIF in the README or release body when it has been
+  refreshed from the release commit.
 - Link `docs/architecture.md` from the release body for developer reviewers.

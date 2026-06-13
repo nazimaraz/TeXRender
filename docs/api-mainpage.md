@@ -24,6 +24,7 @@ See also:
 
 - [Embedding notes](api.md)
 - [API compatibility](api-compatibility.md)
+- [Migration guide](migration.md)
 - [Architecture](architecture.md)
 - [Known limitations](known-limitations.md)
 - [Build options](build-options.md)

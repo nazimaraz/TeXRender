@@ -49,7 +49,8 @@ changes.
 See the [gallery](docs/gallery.md), [integration examples](docs/integration-examples.md),
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/), and
 [case study](docs/case-study.md).
-The [support matrix](docs/support-matrix.md) describes tested platforms, and the
+The [support matrix](docs/support-matrix.md), [API compatibility notes](docs/api-compatibility.md),
+and [migration guide](docs/migration.md) describe the public contract. The
 [GitHub launch checklist](docs/github-launch.md), [registry submission guide](docs/registry-submissions.md),
 and [roadmap](docs/roadmap.md) cover the public release path. Resume-focused
 bullets live in [`docs/resume.md`](docs/resume.md).

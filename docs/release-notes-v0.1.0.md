@@ -17,7 +17,8 @@ for embedding LaTeX math rendering into applications.
 - Non-throwing `try_render()` and `try_render_detailed()` paths for
   caller-supplied formulas.
 - CI coverage for Linux, macOS, Windows, sanitizers, fuzz smoke, static analysis,
-  package consumers, release archive smoke, and the WebAssembly live editor.
+  package consumers, release archive smoke, CPack archive smoke, and the
+  WebAssembly live editor.
 
 ## Stability
 
@@ -37,6 +38,8 @@ before `1.0`.
 ## Suggested Release Assets
 
 - Source archive and SHA256 checksum from `scripts/verify-release-archive.sh`.
+- Source/binary CPack archives after `scripts/verify-cpack.sh` is green.
 - GitHub Pages live editor URL.
+- README live-editor GIF refreshed with `scripts/record-live-editor-demo.sh`.
 - Generated API reference.
 - README/gallery images generated from the release commit.

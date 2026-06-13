@@ -24,11 +24,21 @@ conan create . --build=missing \
   -o "&:with_examples=False" \
   -o "&:with_tests=False" \
   -o "&:with_benchmarks=False"
+conan create . --build=missing \
+  -o "&:backend=headless" \
+  -o "&:shared=True" \
+  -o "&:with_examples=False" \
+  -o "&:with_tests=False" \
+  -o "&:with_benchmarks=False"
 ```
 
 The `test_package/` consumer exercises public headers, cache/layout helpers,
 headless rendering, SVG export, and runtime resource copying. Add coverage there
 when package-facing API changes.
+
+The recipe exposes standard `shared` and `fPIC` options. Conan's generated
+`CMakeDeps` config also loads `texgui_copy_resources(target)` and sets
+`TEXGUI_RESOURCE_DIR`, matching the installed CMake package behavior.
 
 Before a Conan Center submission:
 
@@ -59,12 +69,16 @@ Overlay port smoke test:
 
 ```sh
 VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
+TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' \
+  VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 ```
 
 The overlay port under `packaging/vcpkg-overlay/ports/latex-renderer/` builds
-from the current checkout through vcpkg's portfile flow. It is intentionally
-local-development shaped: set `TEXGUI_VCPKG_SOURCE_DIR` or run the script, which
-sets it for you.
+from the current checkout through vcpkg's portfile flow. It also fetches the
+pinned MicroTeX source archive in the portfile and passes it into CMake, so
+vcpkg can keep `FETCHCONTENT_FULLY_DISCONNECTED=ON` during configure. The port
+is intentionally local-development shaped: set `TEXGUI_VCPKG_SOURCE_DIR` or run
+the script, which sets it for you.
 
 Before a vcpkg registry submission:
 
@@ -73,9 +87,37 @@ Before a vcpkg registry submission:
 - verify the installed layout follows vcpkg conventions
 - test default, `raylib`, and `sdl2` feature builds
 
+## CPack Archives
+
+CPack is configured for local binary and source archives:
+
+```sh
+scripts/verify-cpack.sh
+```
+
+The smoke test builds headless install archives, extracts the binary package,
+builds an installed `find_package()` consumer, extracts the source package, and
+configures the source package again. Attach these archives to GitHub releases
+only after this check is green.
+
+## External Consumers
+
+Run outside-repository consumer checks before publishing:
+
+```sh
+scripts/verify-external-consumers.sh
+scripts/verify-path-with-spaces.sh
+```
+
+`verify-external-consumers.sh` validates both `FetchContent` and installed
+`find_package()` from an archived source tree. `verify-path-with-spaces.sh`
+keeps install, resource copying, and output paths honest for users who build in
+directories with spaces.
+
 ## Release Routine
 
 Run `scripts/verify-release.sh` before tagging. It validates CMake builds,
 install/export consumers, generated gallery artifacts, package-manager entry
-points when local tools are available, release archive smoke, and API
+points when local tools are available, CPack archives, external consumers,
+path-with-spaces handling, release archive smoke, Markdown links, and API
 documentation when Doxygen is installed.

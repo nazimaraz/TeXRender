@@ -16,6 +16,7 @@ INPUT                  = include \
                          docs/known-limitations.md \
                          docs/integration-examples.md \
                          docs/api-compatibility.md \
+                         docs/migration.md \
                          docs/gallery.md \
                          docs/github-launch.md \
                          docs/package-publishing.md \

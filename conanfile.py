@@ -1,7 +1,9 @@
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeDeps, CMakeToolchain, cmake_layout
-from conan.tools.files import copy
+from conan.tools.files import copy, save
 import os
+
+required_conan_version = ">=2.28"
 
 
 class LatexRendererConan(ConanFile):
@@ -16,12 +18,16 @@ class LatexRendererConan(ConanFile):
 
     settings = "os", "compiler", "build_type", "arch"
     options = {
+        "shared": [True, False],
+        "fPIC": [True, False],
         "backend": ["headless", "raylib", "svg", "sdl2"],
         "with_examples": [True, False],
         "with_tests": [True, False],
         "with_benchmarks": [True, False],
     }
     default_options = {
+        "shared": False,
+        "fPIC": True,
         "backend": "raylib",
         "with_examples": False,
         "with_tests": False,
@@ -47,6 +53,14 @@ class LatexRendererConan(ConanFile):
         elif self.options.backend == "sdl2":
             self.requires("sdl/[~2.32]")
 
+    def config_options(self):
+        if self.settings.os == "Windows":
+            del self.options.fPIC
+
+    def configure(self):
+        if self.options.shared:
+            self.options.rm_safe("fPIC")
+
     def layout(self):
         cmake_layout(self)
 
@@ -55,6 +69,7 @@ class LatexRendererConan(ConanFile):
         deps.generate()
 
         tc = CMakeToolchain(self)
+        tc.variables["BUILD_SHARED_LIBS"] = bool(self.options.shared)
         tc.variables["TEXGUI_BACKEND"] = str(self.options.backend)
         tc.variables["TEXGUI_BUILD_EXAMPLES"] = bool(self.options.with_examples)
         tc.variables["TEXGUI_BUILD_TESTS"] = bool(self.options.with_tests)
@@ -72,8 +87,19 @@ class LatexRendererConan(ConanFile):
         cmake = CMake(self)
         cmake.install()
         copy(self, "LICENSE", self.source_folder, os.path.join(self.package_folder, "licenses"))
+        helper_path = os.path.join(self.package_folder, "lib", "cmake", "texgui", "texguiConanHelpers.cmake")
+        save(
+            self,
+            helper_path,
+            'set(TEXGUI_RESOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../share/texgui/res")\n'
+            'include("${CMAKE_CURRENT_LIST_DIR}/texguiHelpers.cmake")\n',
+        )
 
     def package_info(self):
         self.cpp_info.set_property("cmake_file_name", "texgui")
         self.cpp_info.set_property("cmake_target_name", "texgui::texgui")
+        self.cpp_info.set_property(
+            "cmake_build_modules",
+            [os.path.join("lib", "cmake", "texgui", "texguiConanHelpers.cmake")],
+        )
         self.cpp_info.libs = ["texgui", "microtex_core"]

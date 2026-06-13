@@ -14,6 +14,7 @@ Use this when the local repository is ready to become the public project.
 2. Push `main` and tags only after local verification is green:
 
    ```sh
+   scripts/verify-release.sh
    scripts/prepare-public-release.sh
    git push -u origin main
    ```
@@ -65,7 +66,9 @@ git push origin v0.1.0
 ```
 
 The `Release` workflow builds install archives and checksum files. The
-`Release smoke` workflow validates the source archive path.
+`Release smoke` workflow validates the source archive path. Locally,
+`scripts/verify-cpack.sh` validates CPack binary/source archives before those
+artifacts are attached to a public release.
 
 ## First Failure Triage
 

@@ -5,7 +5,12 @@
 ![texgui live editor](demo.png)
 
 The live editor uses the raylib backend and runs as either a native executable or
-WebAssembly.
+WebAssembly. After building `texgui_live`, refresh the README demo GIF from real
+live-editor screenshots with:
+
+```sh
+TEXGUI_BUILD_DIR=build scripts/record-live-editor-demo.sh
+```
 
 ## Headless Output
 
@@ -45,4 +50,7 @@ scripts/generate-preview-gif.sh
 ```
 
 CI also uploads generated gallery artifacts from the Linux headless job, and
-`scripts/verify-release.sh` renders them during local release verification.
+`scripts/verify-release.sh` renders them during local release verification. The
+headless `generate-preview-gif.sh` path is a display-free fallback; use
+`record-live-editor-demo.sh` for the public README/release GIF when a raylib
+build can open a window.

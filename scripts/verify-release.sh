@@ -62,6 +62,12 @@ fi
 
 run git diff --check
 
+if has python3; then
+    run python3 "$ROOT_DIR/scripts/check-doc-links.py"
+else
+    printf '\n==> skipping Markdown link check: python3 is not installed\n'
+fi
+
 cmake_configure "$ROOT_DIR" "$HEADLESS_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
     -DTEXGUI_BACKEND=headless \
@@ -155,6 +161,17 @@ if has conan; then
         -o '&:with_examples=False' \
         -o '&:with_tests=False' \
         -o '&:with_benchmarks=False'
+    run conan create "$ROOT_DIR" --build=missing \
+        -o '&:backend=sdl2' \
+        -o '&:with_examples=False' \
+        -o '&:with_tests=False' \
+        -o '&:with_benchmarks=False'
+    run conan create "$ROOT_DIR" --build=missing \
+        -o '&:backend=headless' \
+        -o '&:shared=True' \
+        -o '&:with_examples=False' \
+        -o '&:with_tests=False' \
+        -o '&:with_benchmarks=False'
 else
     printf '\n==> skipping Conan package validation: conan is not installed\n'
 fi
@@ -172,8 +189,21 @@ if [[ -n "${VCPKG_ROOT:-}" && -x "${VCPKG_ROOT}/vcpkg" ]]; then
     cmake_build "$VCPKG_BUILD"
     run ctest --test-dir "$VCPKG_BUILD" --output-on-failure
     run "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
+    run env TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
 else
     printf '\n==> skipping vcpkg manifest validation: set VCPKG_ROOT to a vcpkg checkout\n'
+fi
+
+if [[ "${TEXGUI_SKIP_CPACK_SMOKE:-0}" != "1" ]]; then
+    run env BUILD_ROOT="${BUILD_ROOT}/cpack-smoke" "$ROOT_DIR/scripts/verify-cpack.sh"
+fi
+
+if [[ "${TEXGUI_SKIP_EXTERNAL_CONSUMER_SMOKE:-0}" != "1" ]]; then
+    run env BUILD_ROOT="${BUILD_ROOT}/external-consumers" "$ROOT_DIR/scripts/verify-external-consumers.sh"
+fi
+
+if [[ "${TEXGUI_SKIP_PATH_SMOKE:-0}" != "1" ]]; then
+    run env BUILD_ROOT="${BUILD_ROOT}/path smoke" "$ROOT_DIR/scripts/verify-path-with-spaces.sh"
 fi
 
 if [[ "${TEXGUI_SKIP_ARCHIVE_SMOKE:-0}" != "1" ]]; then

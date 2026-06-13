@@ -447,3 +447,33 @@ if(TEXGUI_INSTALL)
         DESTINATION "${TEXGUI_INSTALL_CMAKEDIR}"
     )
 endif()
+
+# ---------------------------------------------------------------------------
+# CPack packages
+# ---------------------------------------------------------------------------
+if(PROJECT_IS_TOP_LEVEL AND NOT EMSCRIPTEN)
+    set(CPACK_PACKAGE_NAME "latex-renderer")
+    set(CPACK_PACKAGE_VENDOR "Nazim Can")
+    set(CPACK_PACKAGE_CONTACT "https://github.com/nazimaraz/latex-renderer")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION}")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_FILE_NAME "latex-renderer-${PROJECT_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+    set(CPACK_GENERATOR "TGZ;ZIP")
+
+    set(CPACK_SOURCE_GENERATOR "TGZ;ZIP")
+    set(CPACK_SOURCE_PACKAGE_FILE_NAME "latex-renderer-${PROJECT_VERSION}-source")
+    set(CPACK_SOURCE_IGNORE_FILES
+        "/\\\\.git/"
+        "/\\\\.github/workflows/.*~$"
+        "/build[^/]*/"
+        "/out/"
+        "/build-api-docs/"
+        "/\\\\.cache/"
+        "/\\\\.DS_Store$"
+        "/__pycache__/"
+        "\\\\.pyc$"
+    )
+
+    include(CPack)
+endif()

@@ -1,6 +1,7 @@
 #include <array>
 #include <cstdlib>
 #include <optional>
+#include <string_view>
 #include <raylib.h>
 #include "texgui/latex_document.hpp"
 
@@ -92,6 +93,24 @@ namespace
         bool valid{true};
     };
     std::optional<EditorState> g_editor;
+
+    void apply_environment_overrides(EditorState& ed)
+    {
+        if (const auto* const source = std::getenv("TEXGUI_LIVE_SOURCE"); source != nullptr)
+        {
+            ed.source = source;
+            ed.caret = ed.source.size();
+            ed.preset = 0;
+            ed.caret_scroll = 0;
+        }
+
+        if (const auto* const text_size = std::getenv("TEXGUI_LIVE_TEXT_SIZE"); text_size != nullptr)
+        {
+            const auto parsed = std::strtof(text_size, nullptr);
+            if (parsed >= 12.f && parsed <= 200.f)
+                ed.text_size = parsed;
+        }
+    }
 
     void rebuild()
     {
@@ -231,6 +250,7 @@ int main()
 {
     InitWindow(1000, 560, "latex-renderer — live editor");
     g_editor.emplace();
+    apply_environment_overrides(*g_editor);
     rebuild();
 
     if (const auto* const shot = std::getenv("TEXGUI_SCREENSHOT"))

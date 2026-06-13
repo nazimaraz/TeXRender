@@ -26,7 +26,8 @@ library with a clear embedding story, not grow into a full TeX distribution.
 
 - Keep `FetchContent`, `add_subdirectory`, installed CMake, vcpkg, and Conan
   examples working in CI.
-- Keep release archive smoke tests current for published artifacts.
+- Keep release archive, CPack, external-consumer, and path-with-spaces smoke
+  tests current for published artifacts.
 - Keep `docs/package-publishing.md` aligned with registry requirements.
 
 ## Testing And Quality

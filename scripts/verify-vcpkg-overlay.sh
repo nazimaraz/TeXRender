@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VCPKG_ROOT="${VCPKG_ROOT:-}"
 TRIPLET="${VCPKG_DEFAULT_TRIPLET:-}"
+PACKAGE_SPEC="${TEXGUI_VCPKG_PACKAGE_SPEC:-${1:-latex-renderer}}"
+
+if [[ -n "$VCPKG_ROOT" && -d "$VCPKG_ROOT" ]]; then
+    VCPKG_ROOT="$(cd "$VCPKG_ROOT" && pwd -P)"
+fi
 
 if [[ -z "$VCPKG_ROOT" || ! -x "$VCPKG_ROOT/vcpkg" ]]; then
     printf 'VCPKG_ROOT must point at a bootstrapped vcpkg checkout\n' >&2
@@ -26,6 +31,8 @@ fi
 
 export TEXGUI_VCPKG_SOURCE_DIR="$ROOT_DIR"
 
-"$VCPKG_ROOT/vcpkg" install latex-renderer \
+"$VCPKG_ROOT/vcpkg" install "$PACKAGE_SPEC" \
+    --classic \
+    --recurse \
     --overlay-ports="$ROOT_DIR/packaging/vcpkg-overlay/ports" \
     --triplet="$TRIPLET"
