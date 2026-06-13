@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest a backend, API improvement, packaging mode, or rendering feature.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case
+      description: What are you trying to build with texgui?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the API, backend, workflow, or behavior you would like.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - rendering backend
+        - public API
+        - packaging
+        - documentation
+        - testing/CI
+        - WebAssembly
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Existing workarounds, other libraries, or tradeoffs.

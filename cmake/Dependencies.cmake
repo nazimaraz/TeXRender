@@ -5,7 +5,8 @@
 #                 core into `microtex::core` and supply our own Graphics2D.
 #  * tinyxml2  -> required by the MicroTeX core resource parsers.
 #  * FreeType  -> used by our backend-neutral glyph rasteriser.
-#  * raylib    -> the (currently only) GUI backend.
+#  * raylib    -> the default GUI backend.
+#  * SDL2      -> optional GUI backend proving the surface seam beyond raylib.
 #
 # Everything is resolved with find_package first, falling back to FetchContent
 # so a fresh clone builds with zero manual setup.
@@ -63,6 +64,45 @@ if(TEXGUI_BACKEND STREQUAL "raylib")
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(raylib)
         set(TEXGUI_RAYLIB_FETCHED TRUE CACHE INTERNAL "Whether texgui fetched raylib instead of using find_package" FORCE)
+    endif()
+endif()
+
+# --- SDL2 (only when its backend is selected) ------------------------------
+set(TEXGUI_SDL2_FETCHED FALSE CACHE INTERNAL "Whether texgui fetched SDL2 instead of using find_package" FORCE)
+set(TEXGUI_SDL2_TARGET "" CACHE INTERNAL "SDL2 target used by texgui" FORCE)
+set(TEXGUI_SDL2MAIN_TARGET "" CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
+if(TEXGUI_BACKEND STREQUAL "sdl2")
+    find_package(SDL2 CONFIG QUIET)
+    if(NOT TARGET SDL2::SDL2)
+        find_package(SDL2 QUIET)
+    endif()
+
+    if(NOT TARGET SDL2::SDL2 AND NOT TARGET SDL2::SDL2-static AND NOT TARGET SDL2)
+        FetchContent_Declare(
+            SDL2
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+            GIT_TAG release-2.32.10
+            GIT_SHALLOW TRUE
+        )
+        set(SDL_TEST OFF CACHE BOOL "" FORCE)
+        set(SDL_TESTS OFF CACHE BOOL "" FORCE)
+        set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
+        FetchContent_MakeAvailable(SDL2)
+        set(TEXGUI_SDL2_FETCHED TRUE CACHE INTERNAL "Whether texgui fetched SDL2 instead of using find_package" FORCE)
+    endif()
+
+    if(TARGET SDL2::SDL2)
+        set(TEXGUI_SDL2_TARGET SDL2::SDL2 CACHE INTERNAL "SDL2 target used by texgui" FORCE)
+    elseif(TARGET SDL2::SDL2-static)
+        set(TEXGUI_SDL2_TARGET SDL2::SDL2-static CACHE INTERNAL "SDL2 target used by texgui" FORCE)
+    elseif(TARGET SDL2)
+        set(TEXGUI_SDL2_TARGET SDL2 CACHE INTERNAL "SDL2 target used by texgui" FORCE)
+    else()
+        message(FATAL_ERROR "TEXGUI_BACKEND=sdl2 requires an SDL2 CMake target")
+    endif()
+
+    if(TARGET SDL2::SDL2main)
+        set(TEXGUI_SDL2MAIN_TARGET SDL2::SDL2main CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
     endif()
 endif()
 

@@ -12,6 +12,7 @@ primary public types are small:
 - `TexGui::HeadlessSurface` is the software RGBA backend for tests, servers, and
   PNG/PPM offscreen output.
 - `TexGui::RaylibSurface` is the raylib-backed GPU surface.
+- `TexGui::Sdl2Surface` is the SDL2-backed GPU surface.
 - `TexGui::SvgSurface` is the self-contained SVG output surface.
 - `TexGui::CacheLimits` controls CPU glyph and backend texture cache sizes.
 - `texgui/formula_layout.hpp` provides baseline and anchor helpers.
@@ -27,6 +28,8 @@ See also:
 - [Known limitations](known-limitations.md)
 - [Build options](build-options.md)
 - [Package publishing](package-publishing.md)
+- [Support matrix](support-matrix.md)
+- [v0.1.0 release notes](release-notes-v0.1.0.md)
 - [Static analysis](static-analysis.md)
 - [Coverage](coverage.md)
 - [Workflow linting](workflow-linting.md)

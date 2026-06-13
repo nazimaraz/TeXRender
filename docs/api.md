@@ -163,6 +163,26 @@ TexGui::set_cache_limits(limits);
 `RaylibSurface::set_max_textures()` can override the GPU texture limit for one
 surface.
 
+## SDL2 Backend
+
+`Sdl2Surface` renders into a borrowed `SDL_Renderer`. Register the renderer once
+for the default backend path:
+
+```cpp
+TexGui::set_default_sdl_renderer(renderer);
+TexGui::LatexDocument document(TEXGUI_RES_DIR);
+```
+
+or inject a surface explicitly:
+
+```cpp
+auto owned = std::make_unique<TexGui::Sdl2Surface>(renderer);
+TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
+```
+
+Like the raylib backend, SDL textures are cached per surface. Destroy formulas
+and documents before destroying the SDL renderer.
+
 ## Resources
 
 MicroTeX needs the `res/` tree at runtime. In CMake consumers, use:

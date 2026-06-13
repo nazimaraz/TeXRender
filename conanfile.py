@@ -10,13 +10,13 @@ class LatexRendererConan(ConanFile):
     license = "MIT"
     author = "Nazim Can"
     url = "https://github.com/nazimaraz/latex-renderer"
-    description = "C++ LaTeX math renderer with raylib, headless RGBA, and SVG backends"
-    topics = ("latex", "renderer", "raylib", "svg", "freetype", "cmake", "webassembly")
+    description = "C++ LaTeX math renderer with raylib, SDL2, headless RGBA, and SVG backends"
+    topics = ("latex", "renderer", "raylib", "sdl2", "svg", "freetype", "cmake", "webassembly")
     package_type = "library"
 
     settings = "os", "compiler", "build_type", "arch"
     options = {
-        "backend": ["headless", "raylib", "svg"],
+        "backend": ["headless", "raylib", "svg", "sdl2"],
         "with_examples": [True, False],
         "with_tests": [True, False],
         "with_benchmarks": [True, False],
@@ -44,6 +44,8 @@ class LatexRendererConan(ConanFile):
         self.requires("tinyxml2/10.0.0")
         if self.options.backend == "raylib":
             self.requires("raylib/5.5")
+        elif self.options.backend == "sdl2":
+            self.requires("sdl/[~2.32]")
 
     def layout(self):
         cmake_layout(self)

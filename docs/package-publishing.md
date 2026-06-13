@@ -19,6 +19,11 @@ conan create . --build=missing \
   -o "&:with_examples=False" \
   -o "&:with_tests=False" \
   -o "&:with_benchmarks=False"
+conan create . --build=missing \
+  -o "&:backend=sdl2" \
+  -o "&:with_examples=False" \
+  -o "&:with_tests=False" \
+  -o "&:with_benchmarks=False"
 ```
 
 The `test_package/` consumer exercises public headers, cache/layout helpers,
@@ -32,8 +37,8 @@ Before a Conan Center submission:
 - make sure the recipe exports only source files needed to build/install
 - check whether dependency versions should be relaxed or updated
 - run both dependency-free backend options (`headless`, `svg`)
-- document raylib backend expectations separately because it carries an
-  additional GUI dependency
+- document raylib and SDL2 backend expectations separately because they carry
+  additional GUI dependencies
 
 ## vcpkg
 
@@ -66,11 +71,11 @@ Before a vcpkg registry submission:
 - replace the local source path with a release archive or GitHub release ref
 - fill in the registry-required source hash
 - verify the installed layout follows vcpkg conventions
-- test both default dependency-free and `raylib` feature builds
+- test default, `raylib`, and `sdl2` feature builds
 
 ## Release Routine
 
 Run `scripts/verify-release.sh` before tagging. It validates CMake builds,
 install/export consumers, generated gallery artifacts, package-manager entry
-points when local tools are available, and API documentation when Doxygen is
-installed.
+points when local tools are available, release archive smoke, and API
+documentation when Doxygen is installed.

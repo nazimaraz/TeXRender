@@ -10,16 +10,22 @@ Use this before cutting a public tag.
   `cmake -S . -B build-headless -DTEXGUI_BACKEND=headless && cmake --build build-headless -j && ctest --test-dir build-headless --output-on-failure`
 - Configure/build/test SVG:
   `cmake -S . -B build-svg -DTEXGUI_BACKEND=svg && cmake --build build-svg -j && ctest --test-dir build-svg --output-on-failure`
+- Configure/build/test SDL2:
+  `cmake -S . -B build-sdl2 -DTEXGUI_BACKEND=sdl2 && cmake --build build-sdl2 -j && ctest --test-dir build-sdl2 --output-on-failure`
 - Configure/build/test shared headless:
   `cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXGUI_BACKEND=headless && cmake --build build-shared -j && ctest --test-dir build-shared --output-on-failure`
 - Verify presets:
   `cmake --list-presets`
 - Smoke-run offscreen:
   `./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png`
+- Smoke-run custom surface:
+  `./build-headless/texgui_custom_surface`
 - Smoke-run SVG export:
   `./build-svg/texgui_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg`
 - Generate gallery artifacts:
   `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt /tmp/texgui-gallery`
+- Refresh committed gallery and README preview:
+  `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery && scripts/generate-preview-gif.sh`
 - Optional exact visual snapshots:
   `TEXGUI_VISUAL_SNAPSHOT_DIR=/tmp/texgui-snapshots TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1 ctest --test-dir build-headless --output-on-failure`
   then rerun without `TEXGUI_VISUAL_UPDATE_SNAPSHOTS`.
@@ -43,6 +49,8 @@ Use this before cutting a public tag.
   [`docs/coverage.md`](coverage.md).
 - Run the local release verifier:
   `scripts/verify-release.sh`
+- Run the source archive verifier:
+  `scripts/verify-release-archive.sh`
 - Run warnings as errors at least once:
   `cmake -S . -B build-werror -DTEXGUI_BACKEND=headless -DTEXGUI_WARNINGS_AS_ERRORS=ON && cmake --build build-werror -j`
 - Lint workflows locally when actionlint is available:
@@ -53,11 +61,11 @@ Use this before cutting a public tag.
 - Enable GitHub Pages with source set to "GitHub Actions".
 - Enable private vulnerability reporting in the Security tab.
 - Confirm the `Package managers`, `Static analysis`, `Coverage`, `Workflow lint`,
-  `Benchmarks`, `Web demo` and `Release` workflows are enabled.
+  `Benchmarks`, `Web demo`, `Release smoke` and `Release` workflows are enabled.
 - Add repository topics: `cpp`, `latex`, `renderer`, `raylib`, `svg`,
-  `freetype`, `webassembly`, `cmake`, `graphics`.
+  `sdl2`, `freetype`, `webassembly`, `cmake`, `graphics`.
 - Add a short repository description:
-  "C++ LaTeX math renderer for raylib, headless RGBA output, SVG, and WebAssembly."
+  "C++ LaTeX math renderer for raylib, SDL2, headless RGBA output, SVG, and WebAssembly."
 
 ## Release Notes
 
@@ -71,18 +79,22 @@ Use this before cutting a public tag.
 - Mention `HeadlessSurface::write_png()` for offscreen image output.
 - Mention `SvgSurface`, `TEXGUI_BACKEND=svg`, cache limits, and baseline layout
   helpers.
+- Mention `Sdl2Surface` and `TEXGUI_BACKEND=sdl2`.
 - Mention runtime resource shipping via `texgui_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 - Mention API compatibility status and the current source-compatibility promise.
+- Include [`docs/support-matrix.md`](support-matrix.md) and
+  [`docs/release-notes-v0.1.0.md`](release-notes-v0.1.0.md) in the release body.
 - Let the release workflow attach install archives and `SHA256SUMS` after pushing
   a `vX.Y.Z` tag.
 
 ## Presentation
 
 - Keep `docs/demo.png` current.
-- Keep `docs/offscreen-example.png`, `docs/gallery.md` and
-  `docs/performance-baseline.md` current. Generated gallery artifacts should
-  come from `scripts/generate-gallery.sh`.
+- Keep `docs/offscreen-example.png`, `docs/gallery.md`, `docs/live-preview.gif`
+  and `docs/performance-baseline.md` current. Generated gallery artifacts should
+  come from `scripts/generate-gallery.sh`; the README GIF should come from
+  `scripts/generate-preview-gif.sh`.
 - Keep [`docs/case-study.md`](case-study.md) aligned with the public API and CI
   story before using the project in a resume.
 - Keep [`docs/roadmap.md`](roadmap.md) honest about near-term plans and

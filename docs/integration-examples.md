@@ -66,6 +66,22 @@ the offscreen examples inject `HeadlessSurface`.
 This is the shape to use for server-side preview generation, CI image snapshots,
 or command-line tools.
 
+## Custom Surface
+
+[`examples/custom_surface.cpp`](../examples/custom_surface.cpp) implements a
+tiny `IDrawSurface` that counts draw calls. It is the shortest example of
+integrating texgui with a renderer or command buffer that is not built into this
+repository:
+
+```sh
+cmake -S . -B build-headless -DTEXGUI_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
+cmake --build build-headless --target texgui_custom_surface -j
+./build-headless/texgui_custom_surface
+```
+
+Real backends translate the same methods to their graphics API while texgui keeps
+ownership of parsing, layout, transforms, and glyph rasterization.
+
 ## Raylib Overlay
 
 [`examples/raylib_overlay.cpp`](../examples/raylib_overlay.cpp) shows texgui as
@@ -79,3 +95,18 @@ cmake --build build --target texgui_raylib_overlay -j
 
 The example still owns the raylib window and frame loop. texgui only draws the
 formula into the current frame.
+
+## SDL2 Minimal
+
+[`examples/sdl2_minimal.cpp`](../examples/sdl2_minimal.cpp) shows the same model
+inside an `SDL_Renderer`:
+
+```sh
+cmake -S . -B build-sdl2 -DTEXGUI_BACKEND=sdl2 -DCMAKE_BUILD_TYPE=Release
+cmake --build build-sdl2 --target texgui_sdl2_minimal -j
+./build-sdl2/texgui_sdl2_minimal
+```
+
+Register the renderer with `TexGui::set_default_sdl_renderer(renderer)` before
+constructing a default `LatexDocument`, or inject `TexGui::Sdl2Surface`
+explicitly.

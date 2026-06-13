@@ -1,0 +1,56 @@
+name: Bug report
+description: Report a crash, build failure, rendering issue, or packaging problem.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Minimal code, formula, command, or project setup that reproduces the issue.
+      placeholder: |
+        cmake -S . -B build -DTEXGUI_BACKEND=headless
+        cmake --build build -j
+        ./build/texgui_offscreen '\sqrt{x+1}' /tmp/formula.png
+    validations:
+      required: true
+  - type: dropdown
+    id: backend
+    attributes:
+      label: Backend
+      options:
+        - raylib
+        - SDL2
+        - headless
+        - SVG
+        - custom IDrawSurface
+        - not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      placeholder: v0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, compiler, CMake version, package manager, and dependency mode.
+      placeholder: macOS 15, Apple Clang 17, CMake 3.31, FetchContent
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      render: text

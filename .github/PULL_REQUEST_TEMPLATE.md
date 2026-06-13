@@ -2,17 +2,23 @@
 
 <!-- What does this change, and why? Link the issue if one exists. -->
 
-## Testing
+-
 
-<!-- How was this verified? -->
+## Validation
 
-- [ ] `ctest` passes with the default (raylib) configuration
-- [ ] `ctest` passes with `-DTEXGUI_BACKEND=headless`
-- [ ] Public API docs updated for public header changes
-- [ ] Consumer/package examples updated for dependency-story changes
-- [ ] Touched files are formatted: `git ls-files '*.cpp' '*.hpp' | xargs clang-format -i`
-- [ ] Tests added or updated for behaviour changes
+<!-- Commands, presets, or workflows used to verify this change. -->
+
+- [ ] `cmake --build build -j`
+- [ ] `ctest --test-dir build --output-on-failure`
+- [ ] Added or updated focused tests/docs
+
+## Checklist
+
+- [ ] Public API changes are documented in `docs/api.md` or Doxygen comments
+- [ ] Dependency/package changes are reflected in `docs/package-publishing.md`
+- [ ] Release-facing changes are reflected in `CHANGELOG.md`
+- [ ] New rendering behavior has headless, SVG, or backend-specific coverage
 
 ## Risk
 
-<!-- What could regress? Rendering output, package exports, WebAssembly, resource paths, etc. -->
+<!-- What could regress? Rendering output, package exports, WebAssembly, resources, etc. -->

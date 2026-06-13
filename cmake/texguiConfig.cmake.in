@@ -6,6 +6,8 @@ find_dependency(Freetype)
 find_dependency(tinyxml2 CONFIG)
 if("@TEXGUI_BACKEND@" STREQUAL "raylib")
     find_dependency(raylib)
+elseif("@TEXGUI_BACKEND@" STREQUAL "sdl2")
+    find_dependency(SDL2)
 endif()
 
 set_and_check(TEXGUI_RESOURCE_DIR "@PACKAGE_TEXGUI_INSTALL_RESDIR@")

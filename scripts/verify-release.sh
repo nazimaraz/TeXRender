@@ -6,6 +6,7 @@ BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-verify-release}"
 GENERATOR="${GENERATOR:-Ninja}"
 HEADLESS_BUILD="${BUILD_ROOT}/headless"
 RAYLIB_BUILD="${BUILD_ROOT}/raylib"
+SDL2_BUILD="${BUILD_ROOT}/sdl2"
 SHARED_BUILD="${BUILD_ROOT}/headless-shared"
 SVG_BUILD="${BUILD_ROOT}/svg"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix"
@@ -68,8 +69,14 @@ cmake_configure "$ROOT_DIR" "$HEADLESS_BUILD" \
 cmake_build "$HEADLESS_BUILD"
 run ctest --test-dir "$HEADLESS_BUILD" --output-on-failure
 run "$HEADLESS_BUILD/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
+run "$HEADLESS_BUILD/texgui_custom_surface"
 run env TEXGUI_BUILD_DIR="$HEADLESS_BUILD" "$ROOT_DIR/scripts/generate-gallery.sh" \
     "$ROOT_DIR/docs/gallery-formulas.txt" "${BUILD_ROOT}/gallery"
+if has ffmpeg; then
+    run env GALLERY_DIR="${BUILD_ROOT}/gallery" "$ROOT_DIR/scripts/generate-preview-gif.sh" "${BUILD_ROOT}/live-preview.gif"
+else
+    printf '\n==> skipping README GIF generation: ffmpeg is not installed\n'
+fi
 run "$HEADLESS_BUILD/texgui_render_benchmark"
 run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texgui_headless_batch" 'e^{i\pi} + 1 = 0'
 
@@ -117,6 +124,13 @@ cmake_configure "$ROOT_DIR" "$RAYLIB_BUILD" \
 cmake_build "$RAYLIB_BUILD"
 run ctest --test-dir "$RAYLIB_BUILD" --output-on-failure
 
+rm -rf "$SDL2_BUILD"
+cmake_configure "$ROOT_DIR" "$SDL2_BUILD" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTEXGUI_BACKEND=sdl2
+cmake_build "$SDL2_BUILD"
+run ctest --test-dir "$SDL2_BUILD" --output-on-failure
+
 if has doxygen; then
     run rm -rf "$ROOT_DIR/build-api-docs"
     run doxygen "$ROOT_DIR/Doxyfile"
@@ -160,6 +174,10 @@ if [[ -n "${VCPKG_ROOT:-}" && -x "${VCPKG_ROOT}/vcpkg" ]]; then
     run "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
 else
     printf '\n==> skipping vcpkg manifest validation: set VCPKG_ROOT to a vcpkg checkout\n'
+fi
+
+if [[ "${TEXGUI_SKIP_ARCHIVE_SMOKE:-0}" != "1" ]]; then
+    run env BUILD_ROOT="${BUILD_ROOT}/archive-smoke" "$ROOT_DIR/scripts/verify-release-archive.sh"
 fi
 
 printf '\nrelease verification completed successfully\n'

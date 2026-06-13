@@ -6,10 +6,11 @@
 [![Coverage](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml)
 [![Workflow lint](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml)
 [![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
+[![Release smoke](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
 
-Render LaTeX math from C++ into raylib windows, offscreen RGBA buffers, or SVG files.
+Render LaTeX math from C++ into raylib/SDL2 windows, offscreen RGBA buffers, or SVG files.
 
 **[▶ Try the live editor in your browser](https://nazimaraz.github.io/latex-renderer/)** —
 the same C++ engine compiled to WebAssembly.
@@ -20,21 +21,25 @@ backends. Tools like [latexpp](https://github.com/goldsborough/latexpp) only
 render to image files. **latex-renderer** drives MicroTeX through a small,
 pluggable rendering layer so a formula can be drawn live into a window.
 
-The GUI backend is [raylib](https://www.raylib.com/); dependency-free
-**headless** and **SVG** surfaces ship in every build for offscreen rendering,
-server output, and tests. The `IDrawSurface` seam is proven by raylib, software
-RGBA, and SVG implementations; adding SDL2/SFML/etc. means implementing one
-small interface — nothing in the core changes.
+The default GUI backend is [raylib](https://www.raylib.com/), and an optional
+SDL2 backend proves the same API can sit inside another windowing stack.
+Dependency-free **headless** and **SVG** surfaces ship in every build for
+offscreen rendering, server output, and tests. The `IDrawSurface` seam is proven
+by raylib, SDL2, software RGBA, and SVG implementations; adding another GUI or
+engine backend means implementing one small interface — nothing in the core
+changes.
 
 ![demo](docs/demo.png)
+
+![formula preview](docs/live-preview.gif)
 
 ## Why use latex-renderer?
 
 * **No temporary images or subprocesses.** Parse a formula once, keep a
   `RenderHandle`, and draw it inside your normal frame loop.
 * **Windowed, raster, and SVG output.** The same API supports raylib overlays,
-  server-style headless rendering, self-contained SVG export, tests, and
-  WebAssembly.
+  SDL2 renderers, server-style headless rendering, self-contained SVG export,
+  tests, and WebAssembly.
 * **Dependency-shaped CMake.** Consumers can use `FetchContent`,
   `add_subdirectory`, installed `find_package`, vcpkg manifests, or Conan.
 * **Small backend contract.** Custom engines only implement `IDrawSurface`; the
@@ -43,7 +48,8 @@ small interface — nothing in the core changes.
 See the [gallery](docs/gallery.md), [integration examples](docs/integration-examples.md),
 hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/), and
 [case study](docs/case-study.md).
-The [roadmap](docs/roadmap.md) lists planned work and non-goals.
+The [support matrix](docs/support-matrix.md) describes tested platforms, and the
+[roadmap](docs/roadmap.md) lists planned work and non-goals.
 
 ## How it works
 
@@ -56,15 +62,16 @@ The [roadmap](docs/roadmap.md) lists planned work and non-goals.
                  │  Graphics2DAdapter : tex::Graphics2D       │  transforms, color,
                  │       │   (FreeType glyph rasterisation)   │  glyph cache
                  │       ▼                                    │
-                 │  IDrawSurface  ◀── RaylibSurface           │  paint primitives
+                 │  IDrawSurface  ◀── Raylib/SDL2/headless/SVG │ paint primitives
                  └──────────────────────────────────────────┘
-        you own the raylib window + render loop (InitWindow, BeginDrawing, ...)
+        you own the window + render loop (raylib, SDL2, your engine, ...)
 ```
 
-You drive raylib yourself — `InitWindow`, `BeginDrawing`/`EndDrawing`,
-`WindowShouldClose`, `CloseWindow`. The library never wraps the window or the
-loop; it just paints a parsed formula into the current frame through a
-`RaylibSurface`.
+You drive the window and event loop yourself. For raylib that means `InitWindow`,
+`BeginDrawing`/`EndDrawing`, `WindowShouldClose`, `CloseWindow`; for SDL2 that
+means your `SDL_Window`/`SDL_Renderer` and event loop. The library never wraps
+the application loop; it just paints a parsed formula into the current frame
+through the selected `IDrawSurface`.
 
 For a deeper design walk-through, see [`docs/architecture.md`](docs/architecture.md).
 For public API and lifetime details, see [`docs/api.md`](docs/api.md).
@@ -75,8 +82,8 @@ For public API and lifetime details, see [`docs/api.md`](docs/api.md).
   once, behind a backend-neutral seam.
 * **`IDrawSurface`** is the only interface a GUI backend implements — a handful of
   paint primitives in screen pixels. The affine transform, color and glyph
-  caching all live in the shared `Graphics2DAdapter`. `RaylibSurface` is the
-  raylib implementation.
+  caching all live in the shared `Graphics2DAdapter`. `RaylibSurface` and
+  `Sdl2Surface` are GUI implementations.
 
 ## Build
 
@@ -84,9 +91,9 @@ Requirements: a C++23 toolchain with `std::format`/`std::print` support — **GC
 ≥ 14, Clang ≥ 18 (libc++), MSVC ≥ 19.40, or a recent Apple Clang** — and CMake ≥
 3.21. That toolchain compiles texgui *itself*; consuming projects only need
 **C++17** (the standard texgui's public headers require and propagate). tinyxml2,
-FreeType and raylib are resolved with `find_package`, falling back to
+FreeType, raylib and SDL2 are resolved with `find_package`, falling back to
 `FetchContent`; MicroTeX's core is always fetched and compiled from source. On
-macOS `brew install freetype raylib tinyxml2` makes configuration instant.
+macOS `brew install freetype raylib sdl2 tinyxml2` makes configuration instant.
 
 ```sh
 cmake -S . -B build
@@ -113,13 +120,13 @@ ctest --preset headless-debug
 ```
 
 See [`docs/build-options.md`](docs/build-options.md) for backend presets,
-shared-library builds, and the `TEXGUI_WARNINGS_AS_ERRORS` policy.
+shared-library builds, SDL2 notes, and the `TEXGUI_WARNINGS_AS_ERRORS` policy.
 
 ## Using texgui in your project
 
 ### FetchContent / add_subdirectory
 
-texgui can build its dependencies (MicroTeX, FreeType, tinyxml2, raylib) via
+texgui can build its dependencies (MicroTeX, FreeType, tinyxml2, raylib, SDL2) via
 CMake `FetchContent`, so the simplest way to consume it is to fetch the project
 the same way — no system packages required:
 
@@ -139,7 +146,7 @@ texgui_copy_resources(my_app)
 Or, if you vendor the source, `add_subdirectory(path/to/latex-renderer)` and link
 `texgui::texgui` the same way. Either path skips texgui's own examples and tests
 automatically when it is built as a subproject. You still drive raylib yourself
-(`InitWindow`, the render loop, `CloseWindow`) — see [Usage](#usage).
+or provide your own SDL/custom surface — see [Usage](#usage).
 
 ### find_package install
 
@@ -159,10 +166,11 @@ texgui_copy_resources(my_app)
 ```
 
 The installed package uses `find_dependency` for FreeType, tinyxml2 and, when
-installed with `TEXGUI_BACKEND=raylib`, raylib. Raylib package export is enabled
-only when raylib was found with `find_package(raylib)`; if raylib is fetched from
-source, prefer `FetchContent` / `add_subdirectory`, or install the headless
-backend as shown above.
+installed with `TEXGUI_BACKEND=raylib` or `TEXGUI_BACKEND=sdl2`, the selected GUI
+dependency. GUI package export is enabled only when raylib/SDL2 was found with
+`find_package`; if a GUI dependency is fetched from source, prefer
+`FetchContent` / `add_subdirectory`, or install the headless backend as shown
+above.
 
 Starter metadata is included for package-manager workflows: [`vcpkg.json`](vcpkg.json)
 and [`conanfile.py`](conanfile.py). They are intended as project-local manifests
@@ -330,8 +338,8 @@ backend, including `TEXGUI_BACKEND=headless` and `TEXGUI_BACKEND=svg`.
 
 * **Prefer one rendering thread.** texgui serialises shared MicroTeX/glyph-cache
   render paths, and threaded construction/render smoke tests run in CI. GPU
-  backends still inherit their toolkit's thread rules, so raylib drawing should
-  happen on the render thread.
+  backends still inherit their toolkit's thread rules, so raylib/SDL2 drawing
+  should happen on the render thread.
 * **One resource root per process.** MicroTeX initialises from a single global
   resource directory the first time a `LatexDocument` is created, and stays
   initialised for the lifetime of the process (it cannot be safely re-initialised);
@@ -352,7 +360,7 @@ of paint primitives plus `draw_glyph` — and inject it into the document. **No
 fork required:**
 
 ```cpp
-TexGui::LatexDocument document(res_root, std::make_unique<MySdlSurface>());
+TexGui::LatexDocument document(res_root, std::make_unique<MySurface>());
 ```
 
 The compact [`HeadlessSurface`](source/backend/headless/headless_surface.cpp) is a
@@ -364,7 +372,7 @@ toolkit's own windowing; only the paint primitives are abstracted. The core,
 To ship a backend in-tree instead (selected by `TEXGUI_BACKEND` as the default
 surface), add its sources plus a small `make_surface` factory file under
 `source/backend/<name>/` and a branch in `CMakeLists.txt`, the way the raylib
-backend does.
+and SDL2 backends do.
 
 ## WebAssembly
 
@@ -405,12 +413,11 @@ rendering into injected headless and SVG surfaces, PNG/SVG writing, threaded
 handle lifetime stress, C++17 public header compatibility, multi-formula visual
 regression, and a separate CMake consumer smoke test — needs no window or GPU
 and runs under the non-GUI backends; `TEXGUI_BACKEND=headless` additionally drops
-the raylib dependency entirely. CI
-exercises this on Linux, macOS and Windows, the raylib backend + examples on
-Linux and macOS, runs the suite under ASan + UBSan, checks vcpkg/Conan
-packaging, verifies workflow linting and shared-library builds, uploads
-visual-regression artifacts on failure, gates formatting with clang-format, runs
-clang-tidy, and publishes coverage artifacts.
+GUI dependencies entirely. CI exercises this on Linux, macOS and Windows, the
+raylib backend + examples on Linux and macOS, the SDL2 backend on Linux, runs the
+suite under ASan + UBSan, checks vcpkg/Conan packaging, verifies workflow linting
+and shared-library builds, uploads visual-regression artifacts on failure, gates
+formatting with clang-format, runs clang-tidy, and publishes coverage artifacts.
 
 Additional developer tools:
 
@@ -426,6 +433,8 @@ analysis and coverage workflows are documented in
 [`docs/static-analysis.md`](docs/static-analysis.md) and
 [`docs/coverage.md`](docs/coverage.md). Workflow linting is documented in
 [`docs/workflow-linting.md`](docs/workflow-linting.md).
+The current platform/backend promise is summarized in
+[`docs/support-matrix.md`](docs/support-matrix.md).
 
 ## License
 

@@ -45,11 +45,11 @@ int main()
     // Compile-coverage for the public version header.
     CHECK(TexGui::version_major == TEXGUI_VERSION_MAJOR);
 
-    // 1) Default surface: a valid formula has positive metrics; try_render never
-    //    throws and yields nullopt on malformed input while keeping a value on
-    //    valid input.
+    // 1) Public render path with an injected software surface: a valid formula
+    //    has positive metrics; try_render never throws and yields nullopt on
+    //    malformed input while keeping a value on valid input.
     {
-        const auto document = LatexDocument{res};
+        const auto document = LatexDocument{res, std::make_unique<HeadlessSurface>()};
         const auto formula = document.render(R"(x^2 + y^2 = z^2)", 40.f, 0xff000000);
         CHECK(formula.width() > 0);
         CHECK(formula.height() > 0);

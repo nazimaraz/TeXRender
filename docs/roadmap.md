@@ -10,7 +10,6 @@ library with a clear embedding story, not grow into a full TeX distribution.
 - Prepare actual public registry submissions:
   - vcpkg port
   - Conan Center recipe
-- Add a short README GIF of the live editor.
 - Expand Doxygen comments as public API questions come in.
 - Track coverage and static-analysis findings from the first real CI runs.
 - Review first Dependabot PRs and tune grouping/labels if needed.
@@ -18,7 +17,8 @@ library with a clear embedding story, not grow into a full TeX distribution.
 ## Rendering And API
 
 - Improve headless rendering fidelity where it matters for regression testing.
-- Add one more GUI backend as a proof point, likely SDL2 or SFML.
+- Add another GUI/backend proof point if users ask for a specific ecosystem
+  such as SFML, Skia, or a game engine command buffer.
 - Consider compressed PNG output if file size becomes important for SVG glyph
   data URIs.
 
@@ -26,7 +26,7 @@ library with a clear embedding story, not grow into a full TeX distribution.
 
 - Keep `FetchContent`, `add_subdirectory`, installed CMake, vcpkg, and Conan
   examples working in CI.
-- Add release archive smoke tests for all published artifacts.
+- Keep release archive smoke tests current for published artifacts.
 - Keep `docs/package-publishing.md` aligned with registry requirements.
 
 ## Testing And Quality

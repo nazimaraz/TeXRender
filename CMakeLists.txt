@@ -24,8 +24,8 @@ unset(_texgui_version_header)
 # ---------------------------------------------------------------------------
 # Options
 # ---------------------------------------------------------------------------
-set(TEXGUI_BACKEND "raylib" CACHE STRING "Rendering backend to build (raylib, headless, svg)")
-set_property(CACHE TEXGUI_BACKEND PROPERTY STRINGS raylib headless svg)
+set(TEXGUI_BACKEND "raylib" CACHE STRING "Rendering backend to build (raylib, headless, svg, sdl2)")
+set_property(CACHE TEXGUI_BACKEND PROPERTY STRINGS raylib headless svg sdl2)
 option(TEXGUI_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TOP_LEVEL})
 option(TEXGUI_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(TEXGUI_BUILD_BENCHMARKS "Build the benchmark executables" ${PROJECT_IS_TOP_LEVEL})
@@ -100,9 +100,16 @@ elseif(TEXGUI_BACKEND STREQUAL "svg")
         source/backend/svg/svg_factory.cpp
     )
     set(TEXGUI_BACKEND_LIBS "")
+elseif(TEXGUI_BACKEND STREQUAL "sdl2")
+    set(TEXGUI_BACKEND_SOURCES
+        source/backend/sdl2/sdl2_surface.cpp
+        source/backend/sdl2/sdl2_factory.cpp
+    )
+    set(TEXGUI_BACKEND_LIBS "${TEXGUI_SDL2_TARGET}")
+    set(TEXGUI_BACKEND_EXECUTABLE_LIBS "${TEXGUI_SDL2MAIN_TARGET}")
 else()
     message(FATAL_ERROR
-        "Unsupported TEXGUI_BACKEND='${TEXGUI_BACKEND}'. Supported: 'raylib', 'headless', 'svg'.")
+        "Unsupported TEXGUI_BACKEND='${TEXGUI_BACKEND}'. Supported: 'raylib', 'headless', 'svg', 'sdl2'.")
 endif()
 
 # ---------------------------------------------------------------------------
@@ -155,9 +162,10 @@ target_link_libraries(texgui
 )
 if(TEXGUI_BACKEND_LIBS)
     # The selected backend's headers are part of our public surface (e.g. the
-    # user constructs a RaylibSurface), so the backend lib propagates. When
-    # raylib came from FetchContent, it is only a build-tree target; installed
-    # packages instead rely on find_dependency(raylib) creating that target.
+    # user constructs a RaylibSurface or Sdl2Surface), so the backend lib
+    # propagates. When a GUI dependency came from FetchContent, it is only a
+    # build-tree target; installed packages instead rely on find_dependency()
+    # creating that target.
     target_link_libraries(texgui PUBLIC
         "$<BUILD_INTERFACE:${TEXGUI_BACKEND_LIBS}>"
         "$<INSTALL_INTERFACE:${TEXGUI_BACKEND_LIBS}>"
@@ -189,6 +197,7 @@ if(TEXGUI_BUILD_EXAMPLES)
             texgui_offscreen examples/offscreen.cpp
             texgui_headless_batch examples/headless_batch.cpp
             texgui_svg_export examples/svg_export.cpp
+            texgui_custom_surface examples/custom_surface.cpp
         )
         if(TEXGUI_BACKEND STREQUAL "raylib")
             list(APPEND TEXGUI_EXAMPLES
@@ -197,12 +206,16 @@ if(TEXGUI_BUILD_EXAMPLES)
                 texgui_live           examples/live_edit.cpp
                 texgui_raylib_overlay examples/raylib_overlay.cpp
             )
+        elseif(TEXGUI_BACKEND STREQUAL "sdl2")
+            list(APPEND TEXGUI_EXAMPLES
+                texgui_sdl2_minimal examples/sdl2_minimal.cpp
+            )
         endif()
     endif()
     while(TEXGUI_EXAMPLES)
         list(POP_FRONT TEXGUI_EXAMPLES example_name example_source)
         add_executable(${example_name} ${example_source})
-        target_link_libraries(${example_name} PRIVATE texgui::texgui ${TEXGUI_BACKEND_LIBS})
+        target_link_libraries(${example_name} PRIVATE texgui::texgui ${TEXGUI_BACKEND_EXECUTABLE_LIBS})
         texgui_target_warnings(${example_name})
         # Examples are consumer-shaped code: pinning them to C++17 makes every
         # build prove the public headers require nothing newer than that.
@@ -319,6 +332,20 @@ if(TEXGUI_BUILD_TESTS AND NOT EMSCRIPTEN)
         texgui_target_warnings(texgui_public_headers_raylib_cxx17)
         target_compile_features(texgui_public_headers_raylib_cxx17 PRIVATE cxx_std_17)
         add_test(NAME public_headers_raylib_cxx17 COMMAND texgui_public_headers_raylib_cxx17)
+    elseif(TEXGUI_BACKEND STREQUAL "sdl2")
+        add_executable(texgui_public_headers_sdl2_cxx17 tests/public_headers_sdl2_cxx17.cpp)
+        target_link_libraries(texgui_public_headers_sdl2_cxx17 PRIVATE texgui::texgui ${TEXGUI_BACKEND_EXECUTABLE_LIBS})
+        texgui_target_warnings(texgui_public_headers_sdl2_cxx17)
+        target_compile_features(texgui_public_headers_sdl2_cxx17 PRIVATE cxx_std_17)
+        add_test(NAME public_headers_sdl2_cxx17 COMMAND texgui_public_headers_sdl2_cxx17)
+
+        add_executable(texgui_sdl2_surface_test tests/sdl2_surface_test.cpp)
+        target_link_libraries(texgui_sdl2_surface_test PRIVATE texgui::texgui ${TEXGUI_BACKEND_EXECUTABLE_LIBS})
+        texgui_target_warnings(texgui_sdl2_surface_test)
+        target_compile_features(texgui_sdl2_surface_test PRIVATE cxx_std_17)
+        target_compile_definitions(texgui_sdl2_surface_test PRIVATE TEXGUI_RES_DIR="${MICROTEX_RES_DIR}")
+        add_test(NAME sdl2_surface COMMAND texgui_sdl2_surface_test)
+        set_tests_properties(sdl2_surface PROPERTIES ENVIRONMENT "SDL_VIDEODRIVER=dummy")
     endif()
 
     # Configure/build/run a tiny external CMake project that consumes texgui via
@@ -363,12 +390,22 @@ set(_texgui_install_default ${PROJECT_IS_TOP_LEVEL})
 if(TEXGUI_RAYLIB_FETCHED)
     set(_texgui_install_default OFF)
 endif()
+if(TEXGUI_SDL2_FETCHED)
+    set(_texgui_install_default OFF)
+endif()
 option(TEXGUI_INSTALL "Generate install and find_package(texgui) support" ${_texgui_install_default})
 
 if(TEXGUI_INSTALL AND TEXGUI_RAYLIB_FETCHED)
     message(FATAL_ERROR
         "TEXGUI_INSTALL=ON with a FetchContent-built raylib cannot be exported cleanly. "
         "Install raylib so find_package(raylib) succeeds, or install with -DTEXGUI_BACKEND=headless "
+        "or -DTEXGUI_BACKEND=svg.")
+endif()
+
+if(TEXGUI_INSTALL AND TEXGUI_SDL2_FETCHED)
+    message(FATAL_ERROR
+        "TEXGUI_INSTALL=ON with a FetchContent-built SDL2 cannot be exported cleanly. "
+        "Install SDL2 so find_package(SDL2) succeeds, or install with -DTEXGUI_BACKEND=headless "
         "or -DTEXGUI_BACKEND=svg.")
 endif()
 

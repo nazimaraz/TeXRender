@@ -59,6 +59,16 @@
       }
     },
     {
+      "name": "sdl2-release",
+      "displayName": "SDL2 Release",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/sdl2-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "TEXGUI_BACKEND": "sdl2"
+      }
+    },
+    {
       "name": "asan",
       "displayName": "Headless ASan + UBSan",
       "generator": "Ninja",
@@ -120,6 +130,10 @@
       "configurePreset": "svg-release"
     },
     {
+      "name": "sdl2-release",
+      "configurePreset": "sdl2-release"
+    },
+    {
       "name": "asan",
       "configurePreset": "asan"
     },
@@ -165,6 +179,13 @@
     {
       "name": "svg-release",
       "configurePreset": "svg-release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "sdl2-release",
+      "configurePreset": "sdl2-release",
       "output": {
         "outputOnFailure": true
       }

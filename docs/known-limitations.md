@@ -27,6 +27,13 @@ With `RaylibSurface`, GPU textures are released when the last
 `LatexDocument`/`RenderHandle` using that surface is destroyed. Destroy those
 objects before `CloseWindow()`.
 
+## SDL2 Lifetime And Rounded Rectangles
+
+`Sdl2Surface` borrows an `SDL_Renderer`. Destroy texgui documents and handles
+before destroying the renderer so cached SDL textures can be released safely.
+SDL2 does not provide rounded rectangle primitives, so `Sdl2Surface` currently
+falls back to regular rectangles for rounded rectangle draw calls.
+
 ## Resource Guardrails Are Not A Sandbox
 
 `try_render()` applies input-size and layout guardrails for untrusted text, but it

@@ -1,7 +1,7 @@
 {
   "name": "latex-renderer",
   "version-string": "0.1.0",
-  "description": "C++ LaTeX math renderer with raylib, headless RGBA, and SVG backends",
+  "description": "C++ LaTeX math renderer with raylib, SDL2, headless RGBA, and SVG backends",
   "homepage": "https://github.com/nazimaraz/latex-renderer",
   "license": "MIT",
   "dependencies": [
@@ -21,6 +21,12 @@
       "description": "Build the raylib windowed rendering backend",
       "dependencies": [
         "raylib"
+      ]
+    },
+    "sdl2": {
+      "description": "Build the SDL2 windowed rendering backend",
+      "dependencies": [
+        "sdl2"
       ]
     }
   }

@@ -19,9 +19,10 @@ follow [Semantic Versioning](https://semver.org/).
   need non-throwing diagnostics instead of only `std::optional`.
 - `RenderOptions` for bounded untrusted-input rendering; the simple
   `try_render()` overload applies default input, text-size and wrap-width limits.
-- Two `IDrawSurface` backends: raylib (windowed, GPU glyph textures) and a
-  dependency-free headless RGBA canvas; any custom surface can be injected per
-  document — `LatexDocument(res_root, std::move(surface))`.
+- Three `IDrawSurface` backends: raylib (windowed, GPU glyph textures), SDL2
+  (`SDL_Renderer` integration), and a dependency-free headless RGBA canvas; any
+  custom surface can be injected per document —
+  `LatexDocument(res_root, std::move(surface))`.
 - `SvgSurface` and `TEXGUI_BACKEND=svg` for self-contained SVG output with
   vector shape primitives and embedded glyph PNGs.
 - `HeadlessSurface::write_png()` for dependency-free PNG output alongside PPM
@@ -30,8 +31,8 @@ follow [Semantic Versioning](https://semver.org/).
   backend texture cache sizing.
 - Shared-library symbol visibility via `TEXGUI_EXPORT`, including Windows DLL
   import/export definitions.
-- `CMakePresets.json` for headless, raylib, shared, sanitizer, coverage and
-  fuzzing builds.
+- `CMakePresets.json` for headless, raylib, SDL2, shared, sanitizer, coverage
+  and fuzzing builds.
 - `TEXGUI_WARNINGS_AS_ERRORS` for first-party warning gates without applying
   warning policy to bundled third-party sources.
 - CMake package support: `install()`, exported `texgui::texgui`, generated
@@ -42,8 +43,9 @@ follow [Semantic Versioning](https://semver.org/).
 - FreeType glyph rasterisation behind bounded LRU caches (CPU bitmaps and GPU
   textures, keyed identically).
 - Examples: minimal window, sample browser, live editor, offscreen render to
-  PNG/PPM, SVG export, headless batch output, raylib overlay, and copyable
-  FetchContent / installed-package consumer projects.
+  PNG/PPM, SVG export, headless batch output, raylib overlay, SDL2 minimal,
+  custom surface, and copyable FetchContent / installed-package consumer
+  projects.
 - Benchmark executable for cold render, warm render and headless draw timing.
 - libFuzzer harness for `try_render()` with sanitizer-friendly input limits.
 - WebAssembly build of the live editor (Emscripten, raylib Web/WebGL, native
@@ -53,7 +55,7 @@ follow [Semantic Versioning](https://semver.org/).
   SHA256 checksums plus grouped generated release notes.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, C++17 public-header checks, strict warning build,
-  SVG backend smoke, Windows shared-library install consumer, shared-library
+  SVG and SDL2 backend smoke, Windows shared-library install consumer, shared-library
   smoke, threaded lifetime stress test, multi-formula structural visual
   regression, optional exact PNG visual snapshots, visual failure artifacts,
   clang-format gate, ASan+UBSan pass, fuzz smoke, vcpkg/Conan validation,
@@ -61,11 +63,12 @@ follow [Semantic Versioning](https://semver.org/).
   non-blocking benchmark output, wasm build.
 - Generated gallery manifest/script that renders PNG and SVG sample artifacts in
   CI and release verification.
-- Local release verifier script for format/build/test/docs/package-consumer
-  checks before pushing.
+- Local release verifier and source archive smoke scripts for
+  format/build/test/docs/package-consumer checks before pushing.
 - Documentation: architecture, API notes, known limitations, integration
   examples, gallery, build options, fuzzing, benchmarks, static analysis,
-  coverage, workflow linting, API compatibility, package publishing, roadmap,
-  performance baseline, resume-oriented case study and release checklist.
+  coverage, workflow linting, API compatibility, package publishing, support
+  matrix, v0.1.0 release notes, roadmap, performance baseline, resume-oriented
+  case study and release checklist.
 
 [0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0

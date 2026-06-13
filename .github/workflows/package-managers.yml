@@ -72,3 +72,11 @@ jobs:
           -o "&:with_examples=False"
           -o "&:with_tests=False"
           -o "&:with_benchmarks=False"
+      - name: Create SDL2 package
+        run: >
+          CC=gcc-14 CXX=g++-14 conan create .
+          --build=missing
+          -o "&:backend=sdl2"
+          -o "&:with_examples=False"
+          -o "&:with_tests=False"
+          -o "&:with_benchmarks=False"

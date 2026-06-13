@@ -1,0 +1,43 @@
+name: Release smoke
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  pull_request:
+    paths:
+      - ".github/workflows/release-smoke.yml"
+      - "CMakeLists.txt"
+      - "cmake/**"
+      - "include/**"
+      - "source/**"
+      - "tests/package_consumer/**"
+      - "scripts/verify-release-archive.sh"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  archive:
+    name: Source archive install smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
+      - name: Verify release archive
+        env:
+          CXX: g++-14
+          TEXGUI_ARCHIVE_VERSION: ${{ github.ref_name }}
+        run: scripts/verify-release-archive.sh
+      - name: Upload archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-archive-${{ github.run_id }}
+          path: /tmp/texgui-release-archive/artifacts

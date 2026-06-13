@@ -1,5 +1,5 @@
 PROJECT_NAME           = "texgui"
-PROJECT_BRIEF          = "C++ LaTeX math renderer with raylib, headless RGBA, and SVG backends"
+PROJECT_BRIEF          = "C++ LaTeX math renderer with raylib, SDL2, headless RGBA, and SVG backends"
 PROJECT_NUMBER         = 0.1.0
 
 OUTPUT_DIRECTORY       = build-api-docs
@@ -18,6 +18,8 @@ INPUT                  = include \
                          docs/api-compatibility.md \
                          docs/gallery.md \
                          docs/package-publishing.md \
+                         docs/release-notes-v0.1.0.md \
+                         docs/support-matrix.md \
                          docs/benchmarks.md \
                          docs/fuzzing.md \
                          docs/performance-baseline.md \

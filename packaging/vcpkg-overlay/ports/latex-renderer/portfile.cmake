@@ -6,6 +6,8 @@ set(SOURCE_PATH "$ENV{TEXGUI_VCPKG_SOURCE_DIR}")
 set(TEXGUI_BACKEND "headless")
 if("raylib" IN_LIST FEATURES)
     set(TEXGUI_BACKEND "raylib")
+elseif("sdl2" IN_LIST FEATURES)
+    set(TEXGUI_BACKEND "sdl2")
 endif()
 
 vcpkg_cmake_configure(
