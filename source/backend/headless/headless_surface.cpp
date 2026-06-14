@@ -3,9 +3,11 @@
 #include <cmath>
 #include <cstdio>
 #include <fstream>
+#include <limits>
 #include <numeric>
 #include <string_view>
 #include <vector>
+#include "backend/glyph_bitmap_validation.hpp"
 
 using namespace TeXRender;
 
@@ -24,6 +26,31 @@ namespace
     [[nodiscard]] int clamp_ceil_to_canvas(const double value, const int max)
     {
         return static_cast<int>(std::clamp(std::ceil(value), 0.0, static_cast<double>(max)));
+    }
+
+    [[nodiscard]] bool pixel_byte_count(const int width, const int height, const size_t max_size, size_t& byte_count)
+    {
+        if (width <= 0 || height <= 0)
+        {
+            byte_count = 0;
+            return true;
+        }
+
+        const auto max_pixels = max_size / 4u;
+        const auto canvas_width = static_cast<size_t>(width);
+        const auto canvas_height = static_cast<size_t>(height);
+        if (canvas_height > max_pixels / canvas_width)
+            return false;
+
+        byte_count = canvas_width * canvas_height * 4u;
+        return true;
+    }
+
+    [[nodiscard]] bool valid_canvas(const int width, const int height, const std::vector<unsigned char>& pixels)
+    {
+        auto expected_bytes = size_t{0};
+        return pixel_byte_count(width, height, pixels.max_size(), expected_bytes) && expected_bytes > 0 &&
+               pixels.size() == expected_bytes;
     }
 
     [[nodiscard]] bool clip_line_to_rect(double& x1, double& y1, double& x2, double& y2, const double min_x, const double min_y,
@@ -160,7 +187,7 @@ namespace
 
     bool write_png_chunk(std::ofstream& file, const std::string_view type, const std::vector<unsigned char>& data)
     {
-        if (type.size() != 4)
+        if (type.size() != 4 || data.size() > std::numeric_limits<uint32_t>::max())
             return false;
 
         write_u32_be(file, static_cast<uint32_t>(data.size()));
@@ -184,8 +211,8 @@ void HeadlessSurface::resize(const int canvas_width, const int canvas_height)
 {
     const auto new_width = std::max(0, canvas_width);
     const auto new_height = std::max(0, canvas_height);
-    const auto max_pixels = pixels_.max_size() / 4u;
-    if (new_width > 0 && static_cast<size_t>(new_height) > max_pixels / static_cast<size_t>(new_width))
+    auto byte_count = size_t{0};
+    if (!pixel_byte_count(new_width, new_height, pixels_.max_size(), byte_count))
     {
         width_ = 0;
         height_ = 0;
@@ -193,9 +220,10 @@ void HeadlessSurface::resize(const int canvas_width, const int canvas_height)
         return;
     }
 
+    auto new_pixels = std::vector<unsigned char>(byte_count, 0);
     width_ = new_width;
     height_ = new_height;
-    pixels_.assign(static_cast<size_t>(width_) * static_cast<size_t>(height_) * 4u, 0);
+    pixels_ = std::move(new_pixels);
 }
 
 void HeadlessSurface::clear(const uint32_t argb)
@@ -322,8 +350,7 @@ void HeadlessSurface::fill_round_rect(const float x, const float y, const float 
 
 void HeadlessSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, float /*angle*/)
 {
-    if (!glyph.buffer || glyph.width <= 0 || glyph.height <= 0 || glyph.pitch <= 0 || glyph.width > glyph.pitch ||
-        !std::isfinite(pen_x) || !std::isfinite(pen_y))
+    if (!detail::valid_glyph_bitmap(glyph) || !std::isfinite(pen_x) || !std::isfinite(pen_y))
         return;
 
     const auto origin_x = std::round(static_cast<double>(pen_x)) + static_cast<double>(glyph.left);
@@ -357,6 +384,9 @@ size_t HeadlessSurface::covered_pixels() const
 
 bool HeadlessSurface::write_ppm(const std::string& path) const
 {
+    if (!valid_canvas(width_, height_, pixels_))
+        return false;
+
     auto* const file = std::fopen(path.c_str(), "wb");
     if (!file)
         return false;
@@ -373,7 +403,7 @@ bool HeadlessSurface::write_ppm(const std::string& path) const
 
 bool HeadlessSurface::write_png(const std::string& path) const
 {
-    if (width_ <= 0 || height_ <= 0 || pixels_.empty())
+    if (!valid_canvas(width_, height_, pixels_))
         return false;
 
     auto file = std::ofstream{path, std::ios::binary};
@@ -397,7 +427,14 @@ bool HeadlessSurface::write_png(const std::string& path) const
 
     auto scanlines = std::vector<unsigned char>{};
     const auto stride = static_cast<size_t>(width_) * 4u;
-    scanlines.reserve((stride + 1u) * static_cast<size_t>(height_));
+    if (stride == std::numeric_limits<size_t>::max())
+        return false;
+
+    const auto row_size = stride + 1u;
+    if (static_cast<size_t>(height_) > scanlines.max_size() / row_size)
+        return false;
+
+    scanlines.reserve(row_size * static_cast<size_t>(height_));
     for (auto y = 0; y < height_; ++y)
     {
         scanlines.push_back(0u); // filter type 0

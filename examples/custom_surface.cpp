@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <memory>
+#include <cstddef>
 #include <texrender/draw_surface.hpp>
 #include <texrender/glyph_bitmap.hpp>
 #include <texrender/latex_document.hpp>
@@ -54,7 +55,8 @@ namespace
         void draw_glyph(const TeXRender::GlyphBitmap& glyph, float, float, float) override
         {
             ++glyphs;
-            covered_pixels += static_cast<int>(glyph.width) * static_cast<int>(glyph.height);
+            if (glyph.width > 0 && glyph.height > 0)
+                covered_pixels += static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height);
         }
 
         uint32_t last_color = 0;
@@ -62,7 +64,7 @@ namespace
         int lines = 0;
         int rects = 0;
         int glyphs = 0;
-        int covered_pixels = 0;
+        std::size_t covered_pixels = 0;
     };
 } // namespace
 
@@ -76,7 +78,7 @@ int main()
     formula.draw(0, 0);
 
     std::printf("formula: %dx%d baseline %.1f\n", formula.width(), formula.height(), formula.baseline());
-    std::printf("draw calls: colors=%d lines=%d rects=%d glyphs=%d covered=%d last_color=0x%08x\n", stats->colors, stats->lines,
+    std::printf("draw calls: colors=%d lines=%d rects=%d glyphs=%d covered=%zu last_color=0x%08x\n", stats->colors, stats->lines,
         stats->rects, stats->glyphs, stats->covered_pixels, stats->last_color);
 
     return stats->glyphs > 0 ? 0 : 1;

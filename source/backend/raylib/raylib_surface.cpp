@@ -1,8 +1,10 @@
 #include "texrender/raylib_surface.hpp"
 #include <algorithm>
 #include <cstddef>
+#include <cmath>
 #include <rlgl.h>
 #include <vector>
+#include "backend/glyph_bitmap_validation.hpp"
 #include "texrender/cache_options.hpp"
 
 using namespace TeXRender;
@@ -22,6 +24,16 @@ namespace
             static_cast<unsigned char>(argb & 0xff),
             static_cast<unsigned char>((argb >> 24) & 0xff),
         };
+    }
+
+    [[nodiscard]] bool finite_line(const float x1, const float y1, const float x2, const float y2, const float width)
+    {
+        return std::isfinite(x1) && std::isfinite(y1) && std::isfinite(x2) && std::isfinite(y2) && std::isfinite(width);
+    }
+
+    [[nodiscard]] bool finite_rect(const float x, const float y, const float w, const float h)
+    {
+        return std::isfinite(x) && std::isfinite(y) && std::isfinite(w) && std::isfinite(h) && w > 0.f && h > 0.f;
     }
 } // namespace
 
@@ -84,22 +96,34 @@ void RaylibSurface::set_color(const uint32_t argb)
 
 void RaylibSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float width)
 {
+    if (!finite_line(x1, y1, x2, y2, width))
+        return;
+
     DrawLineEx(Vector2{x1, y1}, Vector2{x2, y2}, width, color_);
 }
 
 void RaylibSurface::draw_rect(const float x, const float y, const float w, const float h, const float width)
 {
+    if (!finite_rect(x, y, w, h) || !std::isfinite(width))
+        return;
+
     DrawRectangleLinesEx(Rectangle{x, y, w, h}, width, color_);
 }
 
 void RaylibSurface::fill_rect(const float x, const float y, const float w, const float h)
 {
+    if (!finite_rect(x, y, w, h))
+        return;
+
     DrawRectangleRec(Rectangle{x, y, w, h}, color_);
 }
 
 void RaylibSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry,
     const float width)
 {
+    if (!finite_rect(x, y, w, h) || !std::isfinite(rx) || !std::isfinite(ry) || !std::isfinite(width))
+        return;
+
     const auto shorter = std::min(w, h);
     const auto roundness = shorter > 0.f ? std::min(1.f, (std::min(rx, ry) * 2.f) / shorter) : 0.f;
     DrawRectangleRoundedLinesEx(Rectangle{x, y, w, h}, roundness, 8, width, color_);
@@ -107,6 +131,9 @@ void RaylibSurface::draw_round_rect(const float x, const float y, const float w,
 
 void RaylibSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)
 {
+    if (!finite_rect(x, y, w, h) || !std::isfinite(rx) || !std::isfinite(ry))
+        return;
+
     const auto shorter = std::min(w, h);
     const auto roundness = shorter > 0.f ? std::min(1.f, (std::min(rx, ry) * 2.f) / shorter) : 0.f;
     DrawRectangleRounded(Rectangle{x, y, w, h}, roundness, 8, color_);
@@ -153,7 +180,8 @@ const Texture2D& RaylibSurface::texture_for(const GlyphBitmap& glyph)
 
 void RaylibSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
 {
-    if (!glyph.buffer || glyph.width <= 0 || glyph.height <= 0)
+    if (!detail::valid_cacheable_glyph_bitmap_for_rgba(glyph) || !std::isfinite(pen_x) || !std::isfinite(pen_y) ||
+        !std::isfinite(angle))
         return;
 
     const auto& texture = texture_for(glyph);

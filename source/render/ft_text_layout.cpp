@@ -1,6 +1,7 @@
 #include "render/ft_text_layout.hpp"
 #include "core/document_state.hpp"
 #include "render/glyph_cache.hpp"
+#include "render/raster_size.hpp"
 #include <mutex>
 #include <stdexcept>
 
@@ -15,7 +16,16 @@ void FtTextLayout::getBounds(tex::Rect& bounds)
 {
     const auto lock = std::scoped_lock{detail::render_mutex()};
     auto& cache = detail::shared_cache();
-    const auto pixel_size = std::max(1, static_cast<int>(std::lround(font_->getSize())));
+    const auto pixel_size = detail::safe_raster_pixel_size(font_->getSize());
+    if (pixel_size <= 0)
+    {
+        bounds.x = 0.f;
+        bounds.y = 0.f;
+        bounds.w = 0.f;
+        bounds.h = 0.f;
+        return;
+    }
+
     const auto face_id = cache.face_for(font_->path());
 
     auto width = 0.f;

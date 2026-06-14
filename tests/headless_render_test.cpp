@@ -71,6 +71,9 @@ int main()
         CHECK(aligned_top(formula, 100, FormulaAnchor::baseline) == top_for_baseline(formula, 100));
         CHECK(aligned_top(formula, 100, FormulaAnchor::center) == 100 - formula.height() / 2);
         CHECK(aligned_top(formula, 100, FormulaAnchor::bottom) == 100 - formula.height());
+        CHECK(top_for_baseline(formula, std::numeric_limits<int>::min()) == std::numeric_limits<int>::min());
+        CHECK(aligned_top(formula, std::numeric_limits<int>::min(), FormulaAnchor::center) == std::numeric_limits<int>::min());
+        CHECK(aligned_top(formula, std::numeric_limits<int>::min(), FormulaAnchor::bottom) == std::numeric_limits<int>::min());
 
         CHECK(document.try_render(R"(\sqrt{a})", 40.f, 0xff000000).has_value());
         CHECK(!document.try_render(R"(})", 40.f, 0xff000000).has_value()); // unbalanced '}' -> parse error
@@ -98,6 +101,12 @@ int main()
         invalid_text_size.text_size = 0.f;
         invalid_text_size.argb = 0xff000000;
         CHECK_RENDER_ERROR(document.try_render_detailed("x", invalid_text_size), RenderErrorCode::invalid_options);
+
+        auto invalid_text_size_limit = RenderOptions{};
+        invalid_text_size_limit.text_size = 40.f;
+        invalid_text_size_limit.argb = 0xff000000;
+        invalid_text_size_limit.max_text_size = std::numeric_limits<float>::quiet_NaN();
+        CHECK_RENDER_ERROR(document.try_render_detailed("x", invalid_text_size_limit), RenderErrorCode::invalid_options);
 
         auto invalid_wrap = RenderOptions{};
         invalid_wrap.text_size = 40.f;
@@ -241,6 +250,7 @@ int main()
         const unsigned char glyph_pixels[4] = {255, 255, 255, 255};
         const auto before_invalid_glyph = canvas.covered_pixels();
         canvas.draw_glyph(GlyphBitmap{glyph_pixels, 2, 2, -2, 0, 0, 1}, 0.f, 0.f, 0.f);
+        canvas.draw_glyph(GlyphBitmap{glyph_pixels, 2, 2, 1, 0, 0, 2}, 0.f, 0.f, 0.f);
         canvas.draw_glyph(GlyphBitmap{glyph_pixels, 2, 2, 2, 0, 0, 2}, std::numeric_limits<float>::infinity(), 0.f, 0.f);
         CHECK(canvas.covered_pixels() == before_invalid_glyph);
     }
@@ -261,6 +271,7 @@ int main()
     {
         auto canvas = HeadlessSurface{};
         CHECK(!canvas.write_png((std::filesystem::temp_directory_path() / "texrender-empty.png").string()));
+        CHECK(!canvas.write_ppm((std::filesystem::temp_directory_path() / "texrender-empty.ppm").string()));
 
         canvas.resize(2, 1);
         canvas.clear(0x00000000);
@@ -276,10 +287,20 @@ int main()
         const auto expected = std::array<unsigned char, 8>{0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
         CHECK(signature == expected);
         std::filesystem::remove(path);
+
+        canvas.resize(std::numeric_limits<int>::max(), std::numeric_limits<int>::max());
+        CHECK(canvas.width() == 0);
+        CHECK(canvas.height() == 0);
+        CHECK(canvas.pixels().empty());
     }
 
     // 8) SvgSurface can capture a formula as a self-contained SVG document.
     {
+        auto direct_svg = SvgSurface{8, 8};
+        direct_svg.fill_rect(std::numeric_limits<float>::quiet_NaN(), 0.f, 2.f, 2.f);
+        direct_svg.draw_glyph(GlyphBitmap{nullptr, 2, 2, 2, 0, 0, 0}, 0.f, 0.f, 0.f);
+        CHECK(direct_svg.element_count() == 0);
+
         auto owned = std::make_unique<SvgSurface>();
         auto* const canvas = owned.get();
         const auto document = LatexDocument{res, std::move(owned)};

@@ -38,6 +38,9 @@ namespace
         if (options.max_wrap_width < 0)
             return RenderError{RenderErrorCode::invalid_options, "texrender: max_wrap_width must be non-negative"};
 
+        if (!std::isfinite(options.max_text_size) || options.max_text_size < 0.f)
+            return RenderError{RenderErrorCode::invalid_options, "texrender: max_text_size must be finite and non-negative"};
+
         if (options.max_input_bytes != RenderOptions::no_input_limit && latex.size() > options.max_input_bytes)
             return RenderError{RenderErrorCode::input_too_large, "texrender: LaTeX input exceeds max_input_bytes"};
 

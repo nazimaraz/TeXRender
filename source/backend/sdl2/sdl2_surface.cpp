@@ -2,10 +2,12 @@
 #include <algorithm>
 #include <atomic>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <SDL.h>
+#include "backend/glyph_bitmap_validation.hpp"
 #include "texrender/cache_options.hpp"
 
 using namespace TeXRender;
@@ -33,6 +35,25 @@ namespace
     [[nodiscard]] SDL_FRect rect(const float x, const float y, const float w, const float h)
     {
         return SDL_FRect{x, y, w, h};
+    }
+
+    [[nodiscard]] bool finite_line(const float x1, const float y1, const float x2, const float y2, const float width)
+    {
+        return std::isfinite(x1) && std::isfinite(y1) && std::isfinite(x2) && std::isfinite(y2) && std::isfinite(width);
+    }
+
+    [[nodiscard]] bool finite_rect(const float x, const float y, const float w, const float h)
+    {
+        return std::isfinite(x) && std::isfinite(y) && std::isfinite(w) && std::isfinite(h) && w > 0.f && h > 0.f;
+    }
+
+    [[nodiscard]] int stroke_steps(const float width)
+    {
+        if (!std::isfinite(width))
+            return 0;
+
+        constexpr auto max_stroke_width = 4096.f;
+        return static_cast<int>(std::ceil(std::clamp(width, 1.f, max_stroke_width)));
     }
 } // namespace
 
@@ -106,6 +127,9 @@ void Sdl2Surface::set_color(const uint32_t argb)
 
 void Sdl2Surface::draw_line(const float x1, const float y1, const float x2, const float y2, const float width)
 {
+    if (!finite_line(x1, y1, x2, y2, width))
+        return;
+
     if (width <= 1.f)
     {
         SDL_RenderDrawLineF(renderer_, x1, y1, x2, y2);
@@ -124,7 +148,10 @@ void Sdl2Surface::draw_line(const float x1, const float y1, const float x2, cons
 
     const auto nx = -dy / length;
     const auto ny = dx / length;
-    const auto count = std::max(1, static_cast<int>(std::ceil(width)));
+    const auto count = stroke_steps(width);
+    if (count <= 0)
+        return;
+
     const auto start = -(count - 1) / 2.f;
     for (auto i = 0; i < count; ++i)
     {
@@ -135,7 +162,13 @@ void Sdl2Surface::draw_line(const float x1, const float y1, const float x2, cons
 
 void Sdl2Surface::draw_rect(const float x, const float y, const float w, const float h, const float width)
 {
-    const auto count = std::max(1, static_cast<int>(std::ceil(width)));
+    if (!finite_rect(x, y, w, h))
+        return;
+
+    const auto count = stroke_steps(width);
+    if (count <= 0)
+        return;
+
     for (auto i = 0; i < count; ++i)
     {
         const auto inset = static_cast<float>(i);
@@ -146,6 +179,9 @@ void Sdl2Surface::draw_rect(const float x, const float y, const float w, const f
 
 void Sdl2Surface::fill_rect(const float x, const float y, const float w, const float h)
 {
+    if (!finite_rect(x, y, w, h))
+        return;
+
     const auto box = rect(x, y, w, h);
     SDL_RenderFillRectF(renderer_, &box);
 }
@@ -172,6 +208,9 @@ SDL_Texture* Sdl2Surface::texture_for(const GlyphBitmap& glyph)
         lru_.splice(lru_.begin(), lru_, found->second.lru_it);
         return found->second.texture;
     }
+
+    if (glyph.width > std::numeric_limits<int>::max() / 4)
+        throw std::runtime_error("texrender: glyph bitmap is too wide for SDL2 surface upload");
 
     auto rgba = std::vector<unsigned char>(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
     for (auto row = 0; row < glyph.height; ++row)
@@ -211,7 +250,8 @@ SDL_Texture* Sdl2Surface::texture_for(const GlyphBitmap& glyph)
 
 void Sdl2Surface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
 {
-    if (!glyph.buffer || glyph.width <= 0 || glyph.height <= 0)
+    if (!detail::valid_cacheable_glyph_bitmap_for_rgba(glyph) || !std::isfinite(pen_x) || !std::isfinite(pen_y) ||
+        !std::isfinite(angle))
         return;
 
     auto* const texture = texture_for(glyph);

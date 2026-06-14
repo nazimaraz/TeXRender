@@ -5,9 +5,11 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <limits>
 #include <mutex>
 #include <ft2build.h>
 #include FT_FREETYPE_H
+#include "render/raster_size.hpp"
 #include "texrender/cache_options.hpp"
 
 using namespace TeXRender;
@@ -76,7 +78,11 @@ uint32_t GlyphCache::face_for(const std::string& path)
 
 const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_t codepoint, const int pixel_size)
 {
-    if (face_id == 0 || pixel_size <= 0)
+    if (face_id == 0 || pixel_size <= 0 || pixel_size > detail::max_raster_pixel_size)
+        return nullptr;
+
+    const auto face_it = faces_by_id_.find(face_id);
+    if (face_it == faces_by_id_.end())
         return nullptr;
 
     const auto lookup = GlyphLookup{face_id, codepoint, pixel_size};
@@ -91,12 +97,12 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
         return &cached->second.glyph;
     }
 
-    const auto face_it = faces_by_id_.find(face_id);
-    if (face_it == faces_by_id_.end())
-        return nullptr;
-
     const auto face = face_it->second;
-    FT_Set_Pixel_Sizes(face, 0, static_cast<FT_UInt>(pixel_size));
+    if (FT_Set_Pixel_Sizes(face, 0, static_cast<FT_UInt>(pixel_size)) != 0)
+    {
+        detail::debug_log("failed to set FreeType pixel size");
+        return nullptr;
+    }
 
     Glyph g;
     g.key = key;
@@ -110,24 +116,37 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     {
         const auto slot = face->glyph;
         const auto& bmp = slot->bitmap;
-        g.width = static_cast<int>(bmp.width);
-        g.height = static_cast<int>(bmp.rows);
-        g.pitch = bmp.pitch < 0 ? -bmp.pitch : bmp.pitch;
-        g.left = slot->bitmap_left;
-        g.top = slot->bitmap_top;
-        g.advance = static_cast<float>(slot->advance.x) / 64.f;
-        if (g.width > 0 && g.height > 0 && bmp.buffer)
+        if (bmp.width > static_cast<unsigned int>(std::numeric_limits<int>::max()) ||
+            bmp.rows > static_cast<unsigned int>(std::numeric_limits<int>::max()) || bmp.pitch == std::numeric_limits<int>::min())
         {
-            g.pixels.resize(static_cast<size_t>(g.pitch) * static_cast<size_t>(g.height));
-            // FT_LOAD_RENDER produces down-flow bitmaps (pitch > 0) today, but
-            // handle up-flow too: there the top image row sits at the end of
-            // the buffer and the negative bmp.pitch walks backwards from it.
-            const auto* const top_row =
-                bmp.pitch < 0 ? bmp.buffer + static_cast<std::ptrdiff_t>(g.height - 1) * g.pitch : bmp.buffer;
-            for (auto row = 0; row < g.height; ++row)
+            detail::debug_log("FreeType returned an unsupported glyph bitmap size");
+        }
+        else
+        {
+            g.width = static_cast<int>(bmp.width);
+            g.height = static_cast<int>(bmp.rows);
+            g.pitch = bmp.pitch < 0 ? -bmp.pitch : bmp.pitch;
+            g.left = slot->bitmap_left;
+            g.top = slot->bitmap_top;
+            g.advance = static_cast<float>(slot->advance.x) / 64.f;
+            if (g.width > 0 && g.height > 0 && g.pitch >= g.width && bmp.buffer)
             {
-                const auto* const src = top_row + static_cast<std::ptrdiff_t>(row) * bmp.pitch;
-                std::copy_n(src, g.pitch, g.pixels.begin() + static_cast<std::ptrdiff_t>(row) * g.pitch);
+                const auto pitch = static_cast<size_t>(g.pitch);
+                const auto height = static_cast<size_t>(g.height);
+                if (height <= g.pixels.max_size() / pitch)
+                {
+                    g.pixels.resize(pitch * height);
+                    // FT_LOAD_RENDER produces down-flow bitmaps (pitch > 0) today, but
+                    // handle up-flow too: there the top image row sits at the end of
+                    // the buffer and the negative bmp.pitch walks backwards from it.
+                    const auto* const top_row =
+                        bmp.pitch < 0 ? bmp.buffer + static_cast<std::ptrdiff_t>(g.height - 1) * g.pitch : bmp.buffer;
+                    for (auto row = 0; row < g.height; ++row)
+                    {
+                        const auto* const src = top_row + static_cast<std::ptrdiff_t>(row) * bmp.pitch;
+                        std::copy_n(src, g.pitch, g.pixels.begin() + static_cast<std::ptrdiff_t>(row) * g.pitch);
+                    }
+                }
             }
         }
     }

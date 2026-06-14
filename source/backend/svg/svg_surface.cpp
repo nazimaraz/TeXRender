@@ -7,6 +7,7 @@
 #include <numeric>
 #include <sstream>
 #include <string_view>
+#include "backend/glyph_bitmap_validation.hpp"
 
 using namespace TeXRender;
 
@@ -192,6 +193,16 @@ namespace
     {
         return radians * (180.f / 3.14159265358979323846f);
     }
+
+    [[nodiscard]] bool finite_line(const float x1, const float y1, const float x2, const float y2, const float width)
+    {
+        return std::isfinite(x1) && std::isfinite(y1) && std::isfinite(x2) && std::isfinite(y2) && std::isfinite(width);
+    }
+
+    [[nodiscard]] bool finite_rect(const float x, const float y, const float w, const float h)
+    {
+        return std::isfinite(x) && std::isfinite(y) && std::isfinite(w) && std::isfinite(h) && w > 0.f && h > 0.f;
+    }
 } // namespace
 
 SvgSurface::SvgSurface(const int canvas_width, const int canvas_height)
@@ -240,6 +251,9 @@ std::string SvgSurface::paint_attributes(const char* const paint_kind) const
 
 void SvgSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float stroke_width)
 {
+    if (!finite_line(x1, y1, x2, y2, stroke_width))
+        return;
+
     elements_.push_back("<line x1=\"" + number(x1) + "\" y1=\"" + number(y1) + "\" x2=\"" + number(x2) + "\" y2=\"" + number(y2) +
                         "\" " + paint_attributes("stroke") + " stroke-width=\"" + number(stroke_width) +
                         "\" stroke-linecap=\"round\"/>");
@@ -247,12 +261,18 @@ void SvgSurface::draw_line(const float x1, const float y1, const float x2, const
 
 void SvgSurface::draw_rect(const float x, const float y, const float w, const float h, const float stroke_width)
 {
+    if (!finite_rect(x, y, w, h) || !std::isfinite(stroke_width))
+        return;
+
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
                         "\" fill=\"none\" " + paint_attributes("stroke") + " stroke-width=\"" + number(stroke_width) + "\"/>");
 }
 
 void SvgSurface::fill_rect(const float x, const float y, const float w, const float h)
 {
+    if (!finite_rect(x, y, w, h))
+        return;
+
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
                         "\" " + paint_attributes("fill") + "/>");
 }
@@ -260,6 +280,9 @@ void SvgSurface::fill_rect(const float x, const float y, const float w, const fl
 void SvgSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry,
     const float stroke_width)
 {
+    if (!finite_rect(x, y, w, h) || !std::isfinite(rx) || !std::isfinite(ry) || !std::isfinite(stroke_width))
+        return;
+
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
                         "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" fill=\"none\" " + paint_attributes("stroke") +
                         " stroke-width=\"" + number(stroke_width) + "\"/>");
@@ -267,13 +290,16 @@ void SvgSurface::draw_round_rect(const float x, const float y, const float w, co
 
 void SvgSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)
 {
+    if (!finite_rect(x, y, w, h) || !std::isfinite(rx) || !std::isfinite(ry))
+        return;
+
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
                         "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" " + paint_attributes("fill") + "/>");
 }
 
 void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
 {
-    if (!glyph.buffer || glyph.width <= 0 || glyph.height <= 0)
+    if (!detail::valid_glyph_bitmap_for_rgba(glyph) || !std::isfinite(pen_x) || !std::isfinite(pen_y) || !std::isfinite(angle))
         return;
 
     const auto c = color_from_argb(color_);

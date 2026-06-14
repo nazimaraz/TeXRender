@@ -1,6 +1,8 @@
 #pragma once
 
+#include <algorithm>
 #include <cmath>
+#include <limits>
 #include "texrender/render_handle.hpp"
 
 namespace TeXRender
@@ -39,6 +41,24 @@ namespace TeXRender
         bottom
     };
 
+    namespace detail
+    {
+        [[nodiscard]] inline int saturated_round_to_int(const double value) noexcept
+        {
+            if (!std::isfinite(value))
+                return 0;
+
+            const auto clamped = std::clamp(value, static_cast<double>(std::numeric_limits<int>::min()),
+                static_cast<double>(std::numeric_limits<int>::max()));
+            return static_cast<int>(std::round(clamped));
+        }
+
+        [[nodiscard]] inline int saturated_subtract(const int lhs, const int rhs) noexcept
+        {
+            return saturated_round_to_int(static_cast<double>(lhs) - static_cast<double>(rhs));
+        }
+    } // namespace detail
+
     /// Snapshot a formula's current metrics.
     ///
     /// This is a convenience for code that wants to store layout values without
@@ -53,7 +73,7 @@ namespace TeXRender
     /// This is useful when aligning formulas with ordinary text baselines.
     [[nodiscard]] inline int top_for_baseline(const RenderHandle& formula, const int baseline_y)
     {
-        return static_cast<int>(std::lround(static_cast<float>(baseline_y) - formula.baseline()));
+        return detail::saturated_round_to_int(static_cast<double>(baseline_y) - static_cast<double>(formula.baseline()));
     }
 
     /// Return the top-left y coordinate for a chosen vertical anchor.
@@ -68,9 +88,9 @@ namespace TeXRender
             case FormulaAnchor::baseline:
                 return top_for_baseline(formula, y);
             case FormulaAnchor::center:
-                return y - formula.height() / 2;
+                return detail::saturated_subtract(y, formula.height() / 2);
             case FormulaAnchor::bottom:
-                return y - formula.height();
+                return detail::saturated_subtract(y, formula.height());
         }
 
         return y;

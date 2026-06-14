@@ -51,6 +51,7 @@ int main()
 
     // Guard rails: face_id 0 and non-positive sizes yield null.
     CHECK(cache.glyph(0, U'A', 40) == nullptr);
+    CHECK(cache.glyph(face + 1000u, U'A', 40) == nullptr);
     CHECK(cache.glyph(face, U'A', 0) == nullptr);
 
     // The cache survives churn far beyond its capacity (LRU eviction) without

@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include "render/ft_font.hpp"
+#include "render/raster_size.hpp"
 
 using namespace TeXRender;
 
@@ -87,7 +88,10 @@ const GlyphCache::Glyph* Graphics2DAdapter::raster(const char32_t codepoint) con
     if (!font)
         return nullptr;
 
-    const auto pixel_size = std::max(1, static_cast<int>(std::lround(font->getSize() * transform_.scale_y())));
+    const auto pixel_size = detail::safe_raster_pixel_size(font->getSize(), transform_.scale_y());
+    if (pixel_size <= 0)
+        return nullptr;
+
     const auto face_id = cache_.face_for(font->path());
     return cache_.glyph(face_id, codepoint, pixel_size);
 }
