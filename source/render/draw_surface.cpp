@@ -1,6 +1,6 @@
-#include "texgui/draw_surface.hpp"
+#include "texrender/draw_surface.hpp"
 
-using namespace TexGui;
+using namespace TeXRender;
 
 IDrawSurface::IDrawSurface() = default;
 

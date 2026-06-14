@@ -3,14 +3,14 @@
 #include <optional>
 #include <string_view>
 #include <raylib.h>
-#include "texgui/latex_document.hpp"
+#include "texrender/latex_document.hpp"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -83,20 +83,20 @@ namespace
     // returns from main immediately, killing any locals.
     struct EditorState
     {
-        TexGui::LatexDocument document{TEXGUI_RES_DIR};
+        TeXRender::LatexDocument document{TEXRENDER_RES_DIR};
         std::string source{k_presets[0]};
         std::size_t caret{source.size()};
         std::size_t preset{0};
         float text_size{64.f};
         int caret_scroll{0};
-        std::optional<TexGui::RenderHandle> formula{};
+        std::optional<TeXRender::RenderHandle> formula{};
         bool valid{true};
     };
     std::optional<EditorState> g_editor;
 
     void apply_environment_overrides(EditorState& ed)
     {
-        if (const auto* const source = std::getenv("TEXGUI_LIVE_SOURCE"); source != nullptr)
+        if (const auto* const source = std::getenv("TEXRENDER_LIVE_SOURCE"); source != nullptr)
         {
             ed.source = source;
             ed.caret = ed.source.size();
@@ -104,7 +104,7 @@ namespace
             ed.caret_scroll = 0;
         }
 
-        if (const auto* const text_size = std::getenv("TEXGUI_LIVE_TEXT_SIZE"); text_size != nullptr)
+        if (const auto* const text_size = std::getenv("TEXRENDER_LIVE_TEXT_SIZE"); text_size != nullptr)
         {
             const auto parsed = std::strtof(text_size, nullptr);
             if (parsed >= 12.f && parsed <= 200.f)
@@ -248,12 +248,12 @@ namespace
 
 int main()
 {
-    InitWindow(1000, 560, "latex-renderer — live editor");
+    InitWindow(1000, 560, "TeXRender — live editor");
     g_editor.emplace();
     apply_environment_overrides(*g_editor);
     rebuild();
 
-    if (const auto* const shot = std::getenv("TEXGUI_SCREENSHOT"))
+    if (const auto* const shot = std::getenv("TEXRENDER_SCREENSHOT"))
     {
         const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
         BeginTextureMode(target);

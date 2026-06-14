@@ -1,25 +1,25 @@
 # API Notes
 
-This is the practical contract for embedding texgui in an application.
+This is the practical contract for embedding texrender in an application.
 
-## `TexGui::LatexDocument`
+## `TeXRender::LatexDocument`
 
 `LatexDocument` owns the renderer state and exactly one `IDrawSurface`.
 
 ```cpp
-TexGui::LatexDocument document(TEXGUI_RES_DIR);
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR);
 ```
 
 By default the document creates the backend selected at build time
-(`TEXGUI_BACKEND`). To render somewhere else, inject a surface:
+(`TEXRENDER_BACKEND`). To render somewhere else, inject a surface:
 
 ```cpp
-auto owned = std::make_unique<TexGui::HeadlessSurface>();
+auto owned = std::make_unique<TeXRender::HeadlessSurface>();
 auto& canvas = *owned;
-TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
 ```
 
-Documents are non-copyable and non-movable. texgui serializes shared
+Documents are non-copyable and non-movable. TeXRender serializes shared
 MicroTeX/glyph-cache render paths, but GPU toolkits still have their own thread
 rules; draw raylib-backed documents on the render thread.
 
@@ -50,7 +50,7 @@ The simple `try_render()` overload applies default guardrails:
 Tune those with `RenderOptions`:
 
 ```cpp
-TexGui::RenderOptions options;
+TeXRender::RenderOptions options;
 options.text_size = 42.f;
 options.argb = 0xff202020;
 options.wrap_width = 480;
@@ -72,10 +72,10 @@ if (!result)
 {
     switch (result.error().code)
     {
-    case TexGui::RenderErrorCode::parse_error:
+    case TeXRender::RenderErrorCode::parse_error:
         show_parse_error(result.error().message);
         break;
-    case TexGui::RenderErrorCode::input_too_large:
+    case TeXRender::RenderErrorCode::input_too_large:
         show_parse_error("Formula is too large");
         break;
     default:
@@ -90,7 +90,7 @@ text-size/wrap-width limits, MicroTeX parse errors and unexpected failures.
 The original `try_render()` remains the compact `std::optional<RenderHandle>`
 wrapper around the same implementation.
 
-## `TexGui::RenderHandle`
+## `TeXRender::RenderHandle`
 
 `RenderHandle` is move-only and owns one parsed/layouted formula. It exposes:
 
@@ -102,15 +102,15 @@ The handle keeps the document's internal state alive, so it can outlive the
 `LatexDocument` object that produced it. With GPU-backed surfaces, destroy all
 handles before closing the graphics context so cached textures can be released.
 
-For alignment, include `texgui/formula_layout.hpp`:
+For alignment, include `texrender/formula_layout.hpp`:
 
 ```cpp
-const auto y = TexGui::top_for_baseline(formula, row_baseline);
+const auto y = TeXRender::top_for_baseline(formula, row_baseline);
 formula.draw(x, y);
-TexGui::draw_aligned(formula, x, center_y, TexGui::FormulaAnchor::center);
+TeXRender::draw_aligned(formula, x, center_y, TeXRender::FormulaAnchor::center);
 ```
 
-## `TexGui::IDrawSurface`
+## `TeXRender::IDrawSurface`
 
 Backends implement a small immediate-mode drawing interface:
 
@@ -134,9 +134,9 @@ PNG writing is built in and does not require an image library dependency.
 `SvgSurface` records the same draw calls into a self-contained SVG document:
 
 ```cpp
-auto owned = std::make_unique<TexGui::SvgSurface>();
+auto owned = std::make_unique<TeXRender::SvgSurface>();
 auto& svg = *owned;
-TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
 auto formula = document.render(R"(\sqrt{x+1})", 48.f, 0xff000000);
 svg.resize(formula.width() + 20, formula.height() + 20);
 svg.clear(0xffffffff);
@@ -154,10 +154,10 @@ The shared CPU glyph cache and default backend texture cache limits are
 configurable:
 
 ```cpp
-auto limits = TexGui::cache_limits();
+auto limits = TeXRender::cache_limits();
 limits.max_cpu_glyphs = 2048;
 limits.max_gpu_textures = 512;
-TexGui::set_cache_limits(limits);
+TeXRender::set_cache_limits(limits);
 ```
 
 `RaylibSurface::set_max_textures()` can override the GPU texture limit for one
@@ -169,15 +169,15 @@ surface.
 for the default backend path:
 
 ```cpp
-TexGui::set_default_sdl_renderer(renderer);
-TexGui::LatexDocument document(TEXGUI_RES_DIR);
+TeXRender::set_default_sdl_renderer(renderer);
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR);
 ```
 
 or inject a surface explicitly:
 
 ```cpp
-auto owned = std::make_unique<TexGui::Sdl2Surface>(renderer);
-TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
+auto owned = std::make_unique<TeXRender::Sdl2Surface>(renderer);
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
 ```
 
 Like the raylib backend, SDL textures are cached per surface. Destroy formulas
@@ -188,10 +188,10 @@ and documents before destroying the SDL renderer.
 MicroTeX needs the `res/` tree at runtime. In CMake consumers, use:
 
 ```cmake
-target_link_libraries(my_app PRIVATE texgui::texgui)
-texgui_copy_resources(my_app)
+target_link_libraries(my_app PRIVATE texrender::texrender)
+texrender_copy_resources(my_app)
 ```
 
 The helper copies MicroTeX resources to a target-specific directory beside the
-executable and defines `TEXGUI_RES_DIR` to that exact path. Then construct
-documents with `TEXGUI_RES_DIR`.
+executable and defines `TEXRENDER_RES_DIR` to that exact path. Then construct
+documents with `TEXRENDER_RES_DIR`.

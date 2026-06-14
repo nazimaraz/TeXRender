@@ -13,8 +13,8 @@
       "binaryDir": "${sourceDir}/out/build/headless-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "TEXGUI_BACKEND": "headless",
-        "TEXGUI_WARNINGS_AS_ERRORS": "ON"
+        "TEXRENDER_BACKEND": "headless",
+        "TEXRENDER_WARNINGS_AS_ERRORS": "ON"
       }
     },
     {
@@ -24,7 +24,7 @@
       "binaryDir": "${sourceDir}/out/build/headless-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "TEXGUI_BACKEND": "headless"
+        "TEXRENDER_BACKEND": "headless"
       }
     },
     {
@@ -34,7 +34,7 @@
       "binaryDir": "${sourceDir}/out/build/raylib-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "TEXGUI_BACKEND": "raylib"
+        "TEXRENDER_BACKEND": "raylib"
       }
     },
     {
@@ -45,7 +45,7 @@
       "cacheVariables": {
         "BUILD_SHARED_LIBS": "ON",
         "CMAKE_BUILD_TYPE": "Release",
-        "TEXGUI_BACKEND": "headless"
+        "TEXRENDER_BACKEND": "headless"
       }
     },
     {
@@ -55,7 +55,7 @@
       "binaryDir": "${sourceDir}/out/build/svg-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "TEXGUI_BACKEND": "svg"
+        "TEXRENDER_BACKEND": "svg"
       }
     },
     {
@@ -65,7 +65,7 @@
       "binaryDir": "${sourceDir}/out/build/sdl2-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "TEXGUI_BACKEND": "sdl2"
+        "TEXRENDER_BACKEND": "sdl2"
       }
     },
     {
@@ -77,7 +77,7 @@
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_CXX_FLAGS": "-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer",
         "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address,undefined",
-        "TEXGUI_BACKEND": "headless"
+        "TEXRENDER_BACKEND": "headless"
       }
     },
     {
@@ -90,9 +90,9 @@
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_CXX_FLAGS": "-fsanitize=thread -fno-omit-frame-pointer",
         "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=thread",
-        "TEXGUI_BACKEND": "headless",
-        "TEXGUI_BUILD_EXAMPLES": "OFF",
-        "TEXGUI_BUILD_BENCHMARKS": "OFF"
+        "TEXRENDER_BACKEND": "headless",
+        "TEXRENDER_BUILD_EXAMPLES": "OFF",
+        "TEXRENDER_BUILD_BENCHMARKS": "OFF"
       }
     },
     {
@@ -104,7 +104,7 @@
         "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_CXX_FLAGS": "--coverage -O0 -g",
         "CMAKE_EXE_LINKER_FLAGS": "--coverage",
-        "TEXGUI_BACKEND": "headless"
+        "TEXRENDER_BACKEND": "headless"
       }
     },
     {
@@ -115,11 +115,11 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "CMAKE_CXX_COMPILER": "clang++",
-        "TEXGUI_BACKEND": "headless",
-        "TEXGUI_BUILD_BENCHMARKS": "OFF",
-        "TEXGUI_BUILD_EXAMPLES": "OFF",
-        "TEXGUI_BUILD_FUZZERS": "ON",
-        "TEXGUI_BUILD_TESTS": "OFF"
+        "TEXRENDER_BACKEND": "headless",
+        "TEXRENDER_BUILD_BENCHMARKS": "OFF",
+        "TEXRENDER_BUILD_EXAMPLES": "OFF",
+        "TEXRENDER_BUILD_FUZZERS": "ON",
+        "TEXRENDER_BUILD_TESTS": "OFF"
       }
     }
   ],
@@ -163,7 +163,7 @@
     {
       "name": "fuzz",
       "configurePreset": "fuzz",
-      "targets": ["texgui_try_render_fuzzer"]
+      "targets": ["texrender_try_render_fuzzer"]
     }
   ],
   "testPresets": [

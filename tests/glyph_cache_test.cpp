@@ -2,11 +2,11 @@
 #include <string>
 #include "render/glyph_cache.hpp"
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
-using TexGui::GlyphCache;
+using TeXRender::GlyphCache;
 
 namespace
 {
@@ -23,7 +23,7 @@ namespace
 
     std::string font_path()
     {
-        return std::string{TEXGUI_RES_DIR} + "/fonts/latin/cmr10.ttf";
+        return std::string{TEXRENDER_RES_DIR} + "/fonts/latin/cmr10.ttf";
     }
 } // namespace
 

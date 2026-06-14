@@ -2,11 +2,11 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-release-archive}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-release-archive}"
 GENERATOR="${GENERATOR:-Ninja}"
-SOURCE_REF="${TEXGUI_ARCHIVE_REF:-HEAD}"
-VERSION="${TEXGUI_ARCHIVE_VERSION:-$(git -C "$ROOT_DIR" describe --tags --always --dirty)}"
-PREFIX_NAME="latex-renderer-${VERSION#v}"
+SOURCE_REF="${TEXRENDER_ARCHIVE_REF:-HEAD}"
+VERSION="${TEXRENDER_ARCHIVE_VERSION:-$(git -C "$ROOT_DIR" describe --tags --always --dirty)}"
+PREFIX_NAME="TeXRender-${VERSION#v}"
 ARCHIVE_DIR="${BUILD_ROOT}/artifacts"
 EXTRACT_DIR="${BUILD_ROOT}/src"
 ARCHIVE="${ARCHIVE_DIR}/${PREFIX_NAME}.tar.gz"
@@ -53,12 +53,12 @@ SOURCE_DIR="${EXTRACT_DIR}/${PREFIX_NAME}"
 
 run cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_WARNINGS_AS_ERRORS=ON
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_WARNINGS_AS_ERRORS=ON
 run cmake --build "$BUILD_DIR" -j
 run ctest --test-dir "$BUILD_DIR" --output-on-failure
 
-run "$BUILD_DIR/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
+run "$BUILD_DIR/texrender_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
 run cmake --install "$BUILD_DIR" --prefix "$INSTALL_PREFIX"
 run cmake -S "$SOURCE_DIR/tests/package_consumer" -B "$CONSUMER_BUILD" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -66,10 +66,10 @@ run cmake -S "$SOURCE_DIR/tests/package_consumer" -B "$CONSUMER_BUILD" -G "$GENE
 run cmake --build "$CONSUMER_BUILD" -j
 run ctest --test-dir "$CONSUMER_BUILD" --output-on-failure
 run env \
-    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
-    TEXGUI_HEADER_BACKEND=headless \
-    TEXGUI_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
-    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
+    TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXRENDER_HEADER_BACKEND=headless \
+    TEXRENDER_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
+    TEXRENDER_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
     "$SOURCE_DIR/scripts/verify-installed-headers.sh"
 
 printf '\nrelease archive smoke completed successfully\n'

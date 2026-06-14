@@ -3,24 +3,24 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 extern "C" int LLVMFuzzerTestOneInput(const std::uint8_t* data, std::size_t size)
 {
-    static auto owned = std::make_unique<TexGui::HeadlessSurface>();
+    static auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     static auto* const canvas = owned.get();
-    static const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+    static const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
 
-    if (size > TexGui::RenderOptions::default_untrusted_input_limit)
-        size = TexGui::RenderOptions::default_untrusted_input_limit;
+    if (size > TeXRender::RenderOptions::default_untrusted_input_limit)
+        size = TeXRender::RenderOptions::default_untrusted_input_limit;
 
     auto input = std::string{reinterpret_cast<const char*>(data), size};
-    auto options = TexGui::RenderOptions{};
+    auto options = TeXRender::RenderOptions{};
     options.text_size = 32.f;
     options.argb = 0xff000000;
     options.max_input_bytes = 4096;

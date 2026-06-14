@@ -1,4 +1,4 @@
-#include "texgui/latex_document.hpp"
+#include "texrender/latex_document.hpp"
 #include <cmath>
 #include <exception>
 #include <limits>
@@ -11,7 +11,7 @@
 #include "render/glyph_cache.hpp"
 #include "utils/exceptions.h"
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {
@@ -30,22 +30,22 @@ namespace
     [[nodiscard]] std::optional<RenderError> validate_options(const std::string& latex, const RenderOptions& options)
     {
         if (!std::isfinite(options.text_size) || options.text_size <= 0.f)
-            return RenderError{RenderErrorCode::invalid_options, "texgui: text_size must be finite and positive"};
+            return RenderError{RenderErrorCode::invalid_options, "texrender: text_size must be finite and positive"};
 
         if (options.wrap_width < 0)
-            return RenderError{RenderErrorCode::invalid_options, "texgui: wrap_width must be non-negative"};
+            return RenderError{RenderErrorCode::invalid_options, "texrender: wrap_width must be non-negative"};
 
         if (options.max_wrap_width < 0)
-            return RenderError{RenderErrorCode::invalid_options, "texgui: max_wrap_width must be non-negative"};
+            return RenderError{RenderErrorCode::invalid_options, "texrender: max_wrap_width must be non-negative"};
 
         if (options.max_input_bytes != RenderOptions::no_input_limit && latex.size() > options.max_input_bytes)
-            return RenderError{RenderErrorCode::input_too_large, "texgui: LaTeX input exceeds max_input_bytes"};
+            return RenderError{RenderErrorCode::input_too_large, "texrender: LaTeX input exceeds max_input_bytes"};
 
         if (options.max_text_size != RenderOptions::no_text_size_limit && options.text_size > options.max_text_size)
-            return RenderError{RenderErrorCode::text_size_too_large, "texgui: text_size exceeds max_text_size"};
+            return RenderError{RenderErrorCode::text_size_too_large, "texrender: text_size exceeds max_text_size"};
 
         if (options.max_wrap_width != RenderOptions::no_wrap_width_limit && options.wrap_width > options.max_wrap_width)
-            return RenderError{RenderErrorCode::wrap_width_too_large, "texgui: wrap_width exceeds max_wrap_width"};
+            return RenderError{RenderErrorCode::wrap_width_too_large, "texrender: wrap_width exceeds max_wrap_width"};
 
         return std::nullopt;
     }
@@ -63,10 +63,10 @@ namespace
             case RenderErrorCode::parse_error:
             case RenderErrorCode::unexpected_failure:
             case RenderErrorCode::none:
-                throw std::runtime_error(error.message.empty() ? "texgui: render failed" : error.message);
+                throw std::runtime_error(error.message.empty() ? "texrender: render failed" : error.message);
         }
 
-        throw std::runtime_error(error.message.empty() ? "texgui: render failed" : error.message);
+        throw std::runtime_error(error.message.empty() ? "texrender: render failed" : error.message);
     }
 
     [[nodiscard]] int effective_wrap_width(const RenderOptions& options)
@@ -153,8 +153,8 @@ RenderResult LatexDocument::try_render_detailed(const std::string& latex, const 
     {
         // try_render exists for arbitrary caller input, so even a failure that
         // isn't a TeX error must not escape the noexcept boundary. Surface it
-        // via TEXGUI_DEBUG=1 instead of crashing the caller.
+        // via TEXRENDER_DEBUG=1 instead of crashing the caller.
         detail::debug_log("try_render_detailed: swallowed an unknown non-TeX failure");
-        return RenderResult{RenderError{RenderErrorCode::unexpected_failure, "texgui: unknown render failure"}};
+        return RenderResult{RenderError{RenderErrorCode::unexpected_failure, "texrender: unknown render failure"}};
     }
 }

@@ -13,7 +13,7 @@ The `Registry readiness` workflow runs the same check on package metadata PRs.
 
 ## pkg-config
 
-Installed builds write `texgui.pc` next to the CMake package metadata. This is
+Installed builds write `texrender.pc` next to the CMake package metadata. This is
 intended for small non-CMake tools and build systems that already use
 pkg-config. The complete example lives in
 [`examples/consumer-pkg-config`](../examples/consumer-pkg-config):
@@ -23,7 +23,7 @@ scripts/verify-pkg-config.sh
 ```
 
 The smoke test installs the headless backend into a temporary prefix, asks
-pkg-config for `--cflags --libs --static texgui`, compiles a standalone C++17
+pkg-config for `--cflags --libs --static texrender`, compiles a standalone C++17
 consumer, and runs it. Keep this green when install paths, dependencies, or
 resource-copy behavior change.
 
@@ -42,11 +42,11 @@ available through `find_package`.
 
 The same smoke verifies:
 
-- `find_package(texgui CONFIG REQUIRED COMPONENTS headless svg)` succeeds
+- `find_package(texrender CONFIG REQUIRED COMPONENTS headless svg)` succeeds
 - a headless/SVG install rejects `COMPONENTS raylib` and `COMPONENTS sdl2`
 - a GUI backend install accepts its matching component and rejects the other GUI
   component
-- `texgui_BACKEND`, `texgui_HAS_*`, and `texgui/config.hpp` agree
+- `texrender_BACKEND`, `texrender_HAS_*`, and `texrender/config.hpp` agree
 
 To validate installed GUI backend packages when local dependencies are
 discoverable:
@@ -57,7 +57,7 @@ scripts/verify-backend-packages.sh
 
 The script skips a backend when `find_package(raylib)` or `find_package(SDL2)`
 is not available, and verifies the package when it is. Set
-`TEXGUI_BACKEND_PACKAGE_REQUIRE=1` when preparing a machine specifically to
+`TEXRENDER_BACKEND_PACKAGE_REQUIRE=1` when preparing a machine specifically to
 prove GUI package exports; the script then fails instead of skipping a missing
 raylib/SDL2 package.
 
@@ -74,7 +74,7 @@ shared library was installed, compiles installed headers, checks CMake package
 components, and runs both the generic package consumer and the
 `examples/consumer-find-package` recipe with the runtime library path pointed at
 the installed prefix. By default it uses the dependency-free headless backend;
-set `TEXGUI_SHARED_BACKEND=svg` to exercise the SVG default surface as well.
+set `TEXRENDER_SHARED_BACKEND=svg` to exercise the SVG default surface as well.
 
 ## Conan
 
@@ -110,8 +110,8 @@ headless rendering, SVG export, and runtime resource copying. Add coverage there
 when package-facing API changes.
 
 The recipe exposes standard `shared` and `fPIC` options. Conan's generated
-`CMakeDeps` config also loads `texgui_copy_resources(target)` and sets
-`TEXGUI_RESOURCE_DIR`, matching the installed CMake package behavior.
+`CMakeDeps` config also loads `texrender_copy_resources(target)` and sets
+`TEXRENDER_RESOURCE_DIR`, matching the installed CMake package behavior.
 
 Before a Conan Center submission:
 
@@ -131,9 +131,9 @@ Project-local manifest validation:
 cmake -S . -B build-vcpkg \
   -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
   -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON \
-  -DTEXGUI_BACKEND=headless \
-  -DTEXGUI_BUILD_EXAMPLES=OFF \
-  -DTEXGUI_BUILD_BENCHMARKS=OFF
+  -DTEXRENDER_BACKEND=headless \
+  -DTEXRENDER_BUILD_EXAMPLES=OFF \
+  -DTEXRENDER_BUILD_BENCHMARKS=OFF
 cmake --build build-vcpkg -j
 ctest --test-dir build-vcpkg --output-on-failure
 ```
@@ -142,18 +142,18 @@ Overlay port smoke test:
 
 ```sh
 VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
-TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' \
+TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' \
   VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 ```
 
-The overlay port under `packaging/vcpkg-overlay/ports/latex-renderer/` builds
+The overlay port under `packaging/vcpkg-overlay/ports/texrender/` builds
 from the current checkout through vcpkg's portfile flow. It also fetches the
 pinned MicroTeX source archive in the portfile and passes it into CMake, so
 vcpkg can keep `FETCHCONTENT_FULLY_DISCONNECTED=ON` during configure. The port
-is intentionally local-development shaped: set `TEXGUI_VCPKG_SOURCE_DIR` or run
+is intentionally local-development shaped: set `TEXRENDER_VCPKG_SOURCE_DIR` or run
 the script, which sets it for you. After install, the script also configures the
-package component smoke through the vcpkg toolchain so `texgui/config.hpp`,
-`find_package(texgui COMPONENTS ...)`, and selected backend features agree with
+package component smoke through the vcpkg toolchain so `texrender/config.hpp`,
+`find_package(texrender COMPONENTS ...)`, and selected backend features agree with
 the installed port. It also checks that unavailable GUI components are rejected,
 matching the installed CMake package smoke.
 

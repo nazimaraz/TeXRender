@@ -7,51 +7,51 @@ Use this before cutting a public tag.
 - Configure/build/test default raylib:
   `cmake -S . -B build && cmake --build build -j && ctest --test-dir build --output-on-failure`
 - Configure/build/test headless:
-  `cmake -S . -B build-headless -DTEXGUI_BACKEND=headless && cmake --build build-headless -j && ctest --test-dir build-headless --output-on-failure`
+  `cmake -S . -B build-headless -DTEXRENDER_BACKEND=headless && cmake --build build-headless -j && ctest --test-dir build-headless --output-on-failure`
 - Configure/build/test SVG:
-  `cmake -S . -B build-svg -DTEXGUI_BACKEND=svg && cmake --build build-svg -j && ctest --test-dir build-svg --output-on-failure`
+  `cmake -S . -B build-svg -DTEXRENDER_BACKEND=svg && cmake --build build-svg -j && ctest --test-dir build-svg --output-on-failure`
 - Configure/build/test SDL2:
-  `cmake -S . -B build-sdl2 -DTEXGUI_BACKEND=sdl2 && cmake --build build-sdl2 -j && ctest --test-dir build-sdl2 --output-on-failure`
+  `cmake -S . -B build-sdl2 -DTEXRENDER_BACKEND=sdl2 && cmake --build build-sdl2 -j && ctest --test-dir build-sdl2 --output-on-failure`
 - Configure/build/test shared headless:
-  `cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXGUI_BACKEND=headless && cmake --build build-shared -j && ctest --test-dir build-shared --output-on-failure`
+  `cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXRENDER_BACKEND=headless && cmake --build build-shared -j && ctest --test-dir build-shared --output-on-failure`
 - Verify installed shared-library consumption:
   `scripts/verify-shared-library.sh`
 - Verify presets:
   `cmake --list-presets`
 - Smoke-run offscreen:
-  `./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png`
+  `./build-headless/texrender_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png`
 - Smoke-run custom surface:
-  `./build-headless/texgui_custom_surface`
+  `./build-headless/texrender_custom_surface`
 - Smoke-run SVG export:
-  `./build-svg/texgui_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg`
+  `./build-svg/texrender_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg`
 - Generate gallery artifacts:
-  `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt /tmp/texgui-gallery`
+  `TEXRENDER_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt /tmp/texrender-gallery`
 - Refresh committed gallery and README preview:
-  `TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery && TEXGUI_BUILD_DIR=build scripts/record-live-editor-demo.sh`
+  `TEXRENDER_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery && TEXRENDER_BUILD_DIR=build scripts/record-live-editor-demo.sh`
 - Optional exact visual snapshots:
-  `TEXGUI_VISUAL_SNAPSHOT_DIR=/tmp/texgui-snapshots TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1 ctest --test-dir build-headless --output-on-failure`
-  then rerun without `TEXGUI_VISUAL_UPDATE_SNAPSHOTS`.
+  `TEXRENDER_VISUAL_SNAPSHOT_DIR=/tmp/texrender-snapshots TEXRENDER_VISUAL_UPDATE_SNAPSHOTS=1 ctest --test-dir build-headless --output-on-failure`
+  then rerun without `TEXRENDER_VISUAL_UPDATE_SNAPSHOTS`.
 - Verify install/export:
-  `cmake --install build-headless --prefix /tmp/texgui-prefix`
+  `cmake --install build-headless --prefix /tmp/texrender-prefix`
 - Verify installed package consumption:
-  `cmake -S tests/package_consumer -B /tmp/texgui-package-consumer -DCMAKE_PREFIX_PATH=/tmp/texgui-prefix && cmake --build /tmp/texgui-package-consumer -j && ctest --test-dir /tmp/texgui-package-consumer --output-on-failure`
+  `cmake -S tests/package_consumer -B /tmp/texrender-package-consumer -DCMAKE_PREFIX_PATH=/tmp/texrender-prefix && cmake --build /tmp/texrender-package-consumer -j && ctest --test-dir /tmp/texrender-package-consumer --output-on-failure`
 - Verify installed headers:
   `scripts/verify-installed-headers.sh`
 - Verify installed GUI backend packages when dependencies are available:
   `scripts/verify-backend-packages.sh`
 - Fail on missing GUI package proof when using a prepared release machine:
-  `TEXGUI_BACKEND_PACKAGE_REQUIRE=1 scripts/verify-backend-packages.sh`
+  `TEXRENDER_BACKEND_PACKAGE_REQUIRE=1 scripts/verify-backend-packages.sh`
 - Confirm package components and feature metadata are covered by the installed
   header smoke: `headless`, `svg`, selected GUI backend, and rejected GUI
   backend components.
 - Verify pkg-config consumption:
   `scripts/verify-pkg-config.sh`
 - Run the benchmark once in Release:
-  `./build-headless/texgui_render_benchmark`
+  `./build-headless/texrender_render_benchmark`
 - Compare benchmark output against the loose local baseline:
-  `./build-headless/texgui_render_benchmark | tee /tmp/texgui-benchmark.txt && python3 scripts/check-benchmark-baseline.py --input /tmp/texgui-benchmark.txt --warn-only`
+  `./build-headless/texrender_render_benchmark | tee /tmp/texrender-benchmark.txt && python3 scripts/check-benchmark-baseline.py --input /tmp/texrender-benchmark.txt --warn-only`
 - Run a fuzz smoke if Clang/libFuzzer is available:
-  `./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256`
+  `./build-fuzz/texrender_try_render_fuzzer -runs=1000 -max_len=256`
 - Run the focused ThreadSanitizer smoke if your Clang runtime supports it:
   `CXX=clang++ scripts/verify-thread-sanitizer.sh`
 - Verify package-manager entry points:
@@ -59,7 +59,7 @@ Use this before cutting a public tag.
   `conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"`,
   a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`,
   `VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`, and
-  `TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`.
+  `TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`.
 - Regenerate API docs locally if Doxygen is available:
   `doxygen Doxyfile`
 - Run static analysis and coverage locally when the tools are available; see
@@ -70,7 +70,7 @@ Use this before cutting a public tag.
 - Run the fresh-clone verifier:
   `scripts/verify-fresh-clone.sh`
 - Run the full fresh-clone release rehearsal before the first public push:
-  `TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh`
+  `TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh`
 - Run the source archive verifier:
   `scripts/verify-release-archive.sh`
 - Run CPack archive validation:
@@ -92,7 +92,7 @@ Use this before cutting a public tag.
 - Follow the first public push dry run:
   [`docs/first-public-push-dry-run.md`](first-public-push-dry-run.md)
 - Run warnings as errors at least once:
-  `cmake -S . -B build-werror -DTEXGUI_BACKEND=headless -DTEXGUI_WARNINGS_AS_ERRORS=ON && cmake --build build-werror -j`
+  `cmake -S . -B build-werror -DTEXRENDER_BACKEND=headless -DTEXRENDER_WARNINGS_AS_ERRORS=ON && cmake --build build-werror -j`
 - Lint workflows locally when actionlint is available:
   `scripts/lint-workflows.sh`
 - Review generated local artifacts before final push:
@@ -114,22 +114,22 @@ Use this before cutting a public tag.
 
 ## Release Notes
 
-- Confirm `project(VERSION ...)`, `include/texgui/version.hpp`, `CHANGELOG.md`
+- Confirm `project(VERSION ...)`, `include/texrender/version.hpp`, `CHANGELOG.md`
   and the Git tag agree.
 - Include the demo image/GitHub Pages link in the release body.
 - Mention dependency modes: `FetchContent`, `add_subdirectory`, and installed
-  `find_package(texgui CONFIG REQUIRED)`.
+  `find_package(texrender CONFIG REQUIRED)`.
 - Mention shared-library support and CMake presets.
 - Mention installed shared-library consumer verification.
 - Mention `try_render_detailed()` for non-throwing user-input diagnostics.
 - Mention `HeadlessSurface::write_png()` for offscreen image output.
-- Mention `SvgSurface`, `TEXGUI_BACKEND=svg`, cache limits, and baseline layout
+- Mention `SvgSurface`, `TEXRENDER_BACKEND=svg`, cache limits, and baseline layout
   helpers.
-- Mention `Sdl2Surface` and `TEXGUI_BACKEND=sdl2`.
-- Mention `texgui/texgui.hpp` as the backend-neutral umbrella header.
-- Mention `texgui/config.hpp`, CMake package components, and `texgui_HAS_*`
+- Mention `Sdl2Surface` and `TEXRENDER_BACKEND=sdl2`.
+- Mention `texrender/texrender.hpp` as the backend-neutral umbrella header.
+- Mention `texrender/config.hpp`, CMake package components, and `texrender_HAS_*`
   package metadata.
-- Mention runtime resource shipping via `texgui_copy_resources(target)`.
+- Mention runtime resource shipping via `texrender_copy_resources(target)`.
 - Mention package-manager starter files: `vcpkg.json` and `conanfile.py`.
 - Mention third-party redistribution notes from [`THIRD_PARTY.md`](../THIRD_PARTY.md)
   and [`docs/dependency-license-audit.md`](dependency-license-audit.md).

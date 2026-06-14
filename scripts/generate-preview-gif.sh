@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GALLERY_DIR="${GALLERY_DIR:-$ROOT_DIR/docs/gallery}"
 OUTPUT="${1:-$ROOT_DIR/docs/live-preview.gif}"
-WORK_DIR="${TMPDIR:-/tmp}/texgui-preview-gif"
+WORK_DIR="${TMPDIR:-/tmp}/texrender-preview-gif"
 
 if ! command -v ffmpeg >/dev/null 2>&1; then
     printf 'ffmpeg is required to generate %s\n' "$OUTPUT" >&2

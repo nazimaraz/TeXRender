@@ -4,13 +4,13 @@
 #include <cstdint>
 #include <list>
 #include <unordered_map>
-#include "texgui/draw_surface.hpp"
-#include "texgui/export.hpp"
+#include "texrender/draw_surface.hpp"
+#include "texrender/export.hpp"
 
 struct SDL_Renderer;
 struct SDL_Texture;
 
-namespace TexGui
+namespace TeXRender
 {
     /// Set the renderer used when LatexDocument creates the default SDL2 surface.
     ///
@@ -18,19 +18,19 @@ namespace TexGui
     /// `LatexDocument`, or inject `std::make_unique<Sdl2Surface>(renderer)`.
     /// Passing nullptr clears the default and makes the default constructor
     /// unusable until a renderer is registered again.
-    TEXGUI_EXPORT void set_default_sdl_renderer(SDL_Renderer* renderer) noexcept;
+    TEXRENDER_EXPORT void set_default_sdl_renderer(SDL_Renderer* renderer) noexcept;
 
     /// Return the renderer currently used by default SDL2 surfaces.
-    [[nodiscard]] TEXGUI_EXPORT SDL_Renderer* default_sdl_renderer() noexcept;
+    [[nodiscard]] TEXRENDER_EXPORT SDL_Renderer* default_sdl_renderer() noexcept;
 
     /// SDL2-backed drawing surface for rendering formulas into an SDL_Renderer.
     ///
     /// The renderer is borrowed and must outlive the surface and every
-    /// RenderHandle using it. Destroy texgui handles/documents before destroying
+    /// RenderHandle using it. Destroy texrender handles/documents before destroying
     /// the renderer so cached glyph textures can be released safely. Rounded
     /// rectangle calls currently fall back to regular rectangles because SDL2's
     /// core renderer has no rounded-rectangle primitive.
-    class TEXGUI_EXPORT Sdl2Surface final : public IDrawSurface
+    class TEXRENDER_EXPORT Sdl2Surface final : public IDrawSurface
     {
     public:
         /// Construct from the process default renderer set by set_default_sdl_renderer().
@@ -83,4 +83,4 @@ namespace TexGui
         uint8_t b_ = 0;
         uint8_t a_ = 255;
     };
-} // namespace TexGui
+} // namespace TeXRender

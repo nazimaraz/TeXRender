@@ -4,7 +4,7 @@
 #include "render/glyph_cache.hpp"
 #include "render/surface_factory.hpp"
 
-namespace TexGui::detail
+namespace TeXRender::detail
 {
     namespace
     {
@@ -43,4 +43,4 @@ namespace TexGui::detail
         static auto mutex = std::recursive_mutex{};
         return mutex;
     }
-} // namespace TexGui::detail
+} // namespace TeXRender::detail

@@ -5,7 +5,7 @@ of pasting all of them.
 
 ## Short Project Summary
 
-Built `latex-renderer`, a C++ LaTeX math rendering library that embeds MicroTeX
+Built `TeXRender`, a C++ LaTeX math rendering library that embeds MicroTeX
 inside caller-owned render loops and exposes raylib, SDL2, headless RGBA, and SVG
 backends through a small `IDrawSurface` interface.
 
@@ -17,7 +17,7 @@ backends through a small `IDrawSurface` interface.
   move-only `RenderHandle`, injectable `IDrawSurface`, non-throwing
   `try_render()`, and explicit runtime resource handling.
 - Shipped production-style CMake packaging with install exports,
-  `find_package(texgui CONFIG REQUIRED)`, `FetchContent`, shared-library support,
+  `find_package(texrender CONFIG REQUIRED)`, `FetchContent`, shared-library support,
   and tested downstream package consumers.
 - Added package-manager starter metadata for Conan and vcpkg, including overlay
   smoke tests and release archive validation for dependency-style consumption.
@@ -49,6 +49,6 @@ backends through a small `IDrawSurface` interface.
 
 ## One-Line Pitch
 
-`latex-renderer` is a dependency-shaped C++ graphics library: small public API,
+`TeXRender` is a dependency-shaped C++ graphics library: small public API,
 clear ownership, multiple rendering backends, tested packaging, and public CI
 that proves downstream consumption.

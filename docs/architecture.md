@@ -1,13 +1,13 @@
 # Architecture
 
-latex-renderer keeps the public API small and pushes toolkit-specific work to a
+TeXRender keeps the public API small and pushes toolkit-specific work to a
 single drawing seam.
 
 ```mermaid
 flowchart LR
-    User["C++ app"] --> Doc["TexGui::LatexDocument"]
+    User["C++ app"] --> Doc["TeXRender::LatexDocument"]
     Doc --> MicroTeX["MicroTeX parser and box layout"]
-    MicroTeX --> Handle["TexGui::RenderHandle"]
+    MicroTeX --> Handle["TeXRender::RenderHandle"]
     Handle --> Adapter["Graphics2DAdapter"]
     Adapter --> Cache["FreeType GlyphCache"]
     Adapter --> Surface["IDrawSurface"]
@@ -23,7 +23,7 @@ For contributors, the most common change paths look like this:
 ```mermaid
 flowchart TD
     Feature["Desired change"] --> API["Public API?"]
-    API -->|yes| Headers["include/texgui/*.hpp"]
+    API -->|yes| Headers["include/texrender/*.hpp"]
     Headers --> Compat["docs/api-compatibility.md and API snapshot"]
     API -->|no| Core["source/core or source/render"]
     Feature --> Backend["New backend?"]
@@ -36,7 +36,7 @@ flowchart TD
 
 ## Public Boundary
 
-Applications include headers from `include/texgui/` and link `texgui::texgui`.
+Applications include headers from `include/texrender/` and link `texrender::texrender`.
 The primary objects are:
 
 - `LatexDocument`: owns the runtime state and the drawing surface.
@@ -76,19 +76,19 @@ For SDL2, the user owns the `SDL_Window`, `SDL_Renderer`, and event loop.
 Custom backends implement `IDrawSurface` and can be injected directly:
 
 ```cpp
-TexGui::LatexDocument document(res_root, std::make_unique<MySurface>());
+TeXRender::LatexDocument document(res_root, std::make_unique<MySurface>());
 ```
 
 No core changes are required for out-of-tree backends. In-tree default backends
-add a factory file selected by `TEXGUI_BACKEND`. See
+add a factory file selected by `TEXRENDER_BACKEND`. See
 [`docs/backend-authoring.md`](backend-authoring.md) for the draw contract,
 glyph lifetime, color format and packaging checklist.
 
 ## Global State
 
-MicroTeX initializes its resource tree once per process, so texgui documents
+MicroTeX initializes its resource tree once per process, so TeXRender documents
 should use one resource root consistently. Shared MicroTeX/glyph-cache render
-paths are serialized inside texgui. GUI backends still follow their toolkit
+paths are serialized inside TeXRender. GUI backends still follow their toolkit
 threading rules, so raylib/SDL2 drawing belongs on the rendering thread.
 
 `try_render()` is the API for caller-supplied input. It catches parser failures

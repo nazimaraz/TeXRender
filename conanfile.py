@@ -6,12 +6,12 @@ import os
 required_conan_version = ">=2.28"
 
 
-class LatexRendererConan(ConanFile):
-    name = "latex-renderer"
+class TeXRenderConan(ConanFile):
+    name = "texrender"
     version = "0.1.0"
     license = "MIT"
     author = "Nazim Can"
-    url = "https://github.com/nazimaraz/latex-renderer"
+    url = "https://github.com/nazimaraz/TeXRender"
     description = "C++ LaTeX math renderer with raylib, SDL2, headless RGBA, and SVG backends"
     topics = ("latex", "renderer", "raylib", "sdl2", "svg", "freetype", "cmake", "webassembly")
     package_type = "library"
@@ -70,12 +70,12 @@ class LatexRendererConan(ConanFile):
 
         tc = CMakeToolchain(self)
         tc.variables["BUILD_SHARED_LIBS"] = bool(self.options.shared)
-        tc.variables["TEXGUI_BACKEND"] = str(self.options.backend)
-        tc.variables["TEXGUI_BUILD_EXAMPLES"] = bool(self.options.with_examples)
-        tc.variables["TEXGUI_BUILD_TESTS"] = bool(self.options.with_tests)
-        tc.variables["TEXGUI_BUILD_BENCHMARKS"] = bool(self.options.with_benchmarks)
-        tc.variables["TEXGUI_BUILD_FUZZERS"] = False
-        tc.variables["TEXGUI_INSTALL"] = True
+        tc.variables["TEXRENDER_BACKEND"] = str(self.options.backend)
+        tc.variables["TEXRENDER_BUILD_EXAMPLES"] = bool(self.options.with_examples)
+        tc.variables["TEXRENDER_BUILD_TESTS"] = bool(self.options.with_tests)
+        tc.variables["TEXRENDER_BUILD_BENCHMARKS"] = bool(self.options.with_benchmarks)
+        tc.variables["TEXRENDER_BUILD_FUZZERS"] = False
+        tc.variables["TEXRENDER_INSTALL"] = True
         tc.generate()
 
     def build(self):
@@ -87,19 +87,19 @@ class LatexRendererConan(ConanFile):
         cmake = CMake(self)
         cmake.install()
         copy(self, "LICENSE", self.source_folder, os.path.join(self.package_folder, "licenses"))
-        helper_path = os.path.join(self.package_folder, "lib", "cmake", "texgui", "texguiConanHelpers.cmake")
+        helper_path = os.path.join(self.package_folder, "lib", "cmake", "texrender", "texrenderConanHelpers.cmake")
         save(
             self,
             helper_path,
-            'set(TEXGUI_RESOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../share/texgui/res")\n'
-            'include("${CMAKE_CURRENT_LIST_DIR}/texguiHelpers.cmake")\n',
+            'set(TEXRENDER_RESOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../share/texrender/res")\n'
+            'include("${CMAKE_CURRENT_LIST_DIR}/texrenderHelpers.cmake")\n',
         )
 
     def package_info(self):
-        self.cpp_info.set_property("cmake_file_name", "texgui")
-        self.cpp_info.set_property("cmake_target_name", "texgui::texgui")
+        self.cpp_info.set_property("cmake_file_name", "texrender")
+        self.cpp_info.set_property("cmake_target_name", "texrender::texrender")
         self.cpp_info.set_property(
             "cmake_build_modules",
-            [os.path.join("lib", "cmake", "texgui", "texguiConanHelpers.cmake")],
+            [os.path.join("lib", "cmake", "texrender", "texrenderConanHelpers.cmake")],
         )
-        self.cpp_info.libs = ["texgui", "microtex_core"]
+        self.cpp_info.libs = ["texrender", "microtex_core"]

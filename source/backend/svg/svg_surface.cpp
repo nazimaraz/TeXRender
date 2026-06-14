@@ -1,4 +1,4 @@
-#include "texgui/svg_surface.hpp"
+#include "texrender/svg_surface.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -7,7 +7,7 @@
 #include <sstream>
 #include <string_view>
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {

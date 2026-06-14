@@ -1,6 +1,6 @@
 # Upstream MicroTeX Patch Note
 
-texgui carries one configure-time patch against the pinned MicroTeX checkout.
+TeXRender carries one configure-time patch against the pinned MicroTeX checkout.
 The patch is applied in [`cmake/Dependencies.cmake`](../cmake/Dependencies.cmake)
 before MicroTeX is compiled.
 

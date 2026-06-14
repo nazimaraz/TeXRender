@@ -8,7 +8,7 @@
 #include <utility>
 #include "render/glyph_cache.hpp"
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {

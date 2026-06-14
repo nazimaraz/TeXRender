@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstddef>
-#include "texgui/export.hpp"
+#include "texrender/export.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     /// Process-wide cache limits used by the shared FreeType glyph cache and
     /// newly-created backend surfaces.
@@ -24,10 +24,10 @@ namespace TexGui
     };
 
     /// Return the current process-wide cache limits.
-    [[nodiscard]] TEXGUI_EXPORT CacheLimits cache_limits() noexcept;
+    [[nodiscard]] TEXRENDER_EXPORT CacheLimits cache_limits() noexcept;
     /// Set process-wide cache limits. Zero values are clamped to one.
     ///
     /// Newly-created GUI surfaces pick up `max_gpu_textures`; existing surfaces
     /// can be tuned directly with their `set_max_textures()` member.
-    TEXGUI_EXPORT void set_cache_limits(CacheLimits limits) noexcept;
-} // namespace TexGui
+    TEXRENDER_EXPORT void set_cache_limits(CacheLimits limits) noexcept;
+} // namespace TeXRender

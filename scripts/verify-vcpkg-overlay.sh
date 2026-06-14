@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VCPKG_ROOT="${VCPKG_ROOT:-}"
 TRIPLET="${VCPKG_DEFAULT_TRIPLET:-}"
-PACKAGE_SPEC="${TEXGUI_VCPKG_PACKAGE_SPEC:-${1:-latex-renderer}}"
-COMPONENT_BUILD="${TEXGUI_VCPKG_COMPONENT_BUILD:-/tmp/texgui-vcpkg-components}"
+PACKAGE_SPEC="${TEXRENDER_VCPKG_PACKAGE_SPEC:-${1:-texrender}}"
+COMPONENT_BUILD="${TEXRENDER_VCPKG_COMPONENT_BUILD:-/tmp/texrender-vcpkg-components}"
 GENERATOR="${GENERATOR:-Ninja}"
 
 component_build_name() {
@@ -24,10 +24,10 @@ configure_component_smoke() {
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
         -DVCPKG_TARGET_TRIPLET="$TRIPLET" \
-        "-DTEXGUI_REQUIRED_COMPONENTS=${components}" \
-        -DTEXGUI_EXPECT_BACKEND="$backend" \
-        -DTEXGUI_EXPECT_HAS_RAYLIB="$expect_raylib" \
-        -DTEXGUI_EXPECT_HAS_SDL2="$expect_sdl2"
+        "-DTEXRENDER_REQUIRED_COMPONENTS=${components}" \
+        -DTEXRENDER_EXPECT_BACKEND="$backend" \
+        -DTEXRENDER_EXPECT_HAS_RAYLIB="$expect_raylib" \
+        -DTEXRENDER_EXPECT_HAS_SDL2="$expect_sdl2"
 }
 
 verify_component_success() {
@@ -54,7 +54,7 @@ expect_component_failure() {
     if configure_component_smoke "$component" "$build_dir" "$backend" "$expect_raylib" "$expect_sdl2" \
         > "${build_dir}/configure.log" 2>&1; then
         cat "${build_dir}/configure.log" >&2
-        printf 'expected vcpkg package %s to reject texgui component %s\n' "$PACKAGE_SPEC" "$component" >&2
+        printf 'expected vcpkg package %s to reject texrender component %s\n' "$PACKAGE_SPEC" "$component" >&2
         exit 1
     fi
 
@@ -89,7 +89,7 @@ if [[ -z "$TRIPLET" ]]; then
     esac
 fi
 
-export TEXGUI_VCPKG_SOURCE_DIR="$ROOT_DIR"
+export TEXRENDER_VCPKG_SOURCE_DIR="$ROOT_DIR"
 
 "$VCPKG_ROOT/vcpkg" install "$PACKAGE_SPEC" \
     --classic \

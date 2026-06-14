@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-backend-packages}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-backend-packages}"
 GENERATOR="${GENERATOR:-Ninja}"
-BACKENDS="${TEXGUI_BACKEND_PACKAGE_BACKENDS:-raylib sdl2}"
-REQUIRE_AVAILABLE="${TEXGUI_BACKEND_PACKAGE_REQUIRE:-0}"
+BACKENDS="${TEXRENDER_BACKEND_PACKAGE_BACKENDS:-raylib sdl2}"
+REQUIRE_AVAILABLE="${TEXRENDER_BACKEND_PACKAGE_REQUIRE:-0}"
 
 run() {
     printf '\n==> %s\n' "$*"
@@ -23,7 +23,7 @@ cmake_dependency_available() {
     mkdir -p "$probe_dir"
     cat > "${probe_dir}/CMakeLists.txt" <<EOF
 cmake_minimum_required(VERSION 3.21)
-project(texgui_dependency_probe LANGUAGES CXX)
+project(texrender_dependency_probe LANGUAGES CXX)
 find_package(${package} REQUIRED)
 EOF
     cmake -S "$probe_dir" -B "${probe_dir}/build" -G "$GENERATOR" >/dev/null 2>&1
@@ -43,7 +43,7 @@ verify_backend() {
             exit 1
         fi
         printf '\n==> skipping %s package smoke: find_package(%s) is not available\n' "$backend" "$dependency_package"
-        printf '    install a CMake-discoverable %s package, or set TEXGUI_BACKEND_PACKAGE_REQUIRE=1 to fail on skips\n' \
+        printf '    install a CMake-discoverable %s package, or set TEXRENDER_BACKEND_PACKAGE_REQUIRE=1 to fail on skips\n' \
             "$dependency_package"
         return
     fi
@@ -51,25 +51,25 @@ verify_backend() {
     rm -rf "${BUILD_ROOT:?}/${backend}"
     run cmake -S "$ROOT_DIR" -B "$build_dir" -G "$GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
-        -DTEXGUI_BACKEND="$backend" \
-        -DTEXGUI_INSTALL=ON \
-        -DTEXGUI_BUILD_EXAMPLES=OFF \
-        -DTEXGUI_BUILD_TESTS=OFF \
-        -DTEXGUI_BUILD_BENCHMARKS=OFF
+        -DTEXRENDER_BACKEND="$backend" \
+        -DTEXRENDER_INSTALL=ON \
+        -DTEXRENDER_BUILD_EXAMPLES=OFF \
+        -DTEXRENDER_BUILD_TESTS=OFF \
+        -DTEXRENDER_BUILD_BENCHMARKS=OFF
     run cmake --build "$build_dir" -j
     run cmake --install "$build_dir" --prefix "$prefix"
 
     run env \
-        TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
-        TEXGUI_HEADER_BACKEND="$backend" \
-        TEXGUI_HEADER_INSTALL_PREFIX="$prefix" \
-        TEXGUI_HEADER_CONSUMER_BUILD="$header_consumer" \
+        TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
+        TEXRENDER_HEADER_BACKEND="$backend" \
+        TEXRENDER_HEADER_INSTALL_PREFIX="$prefix" \
+        TEXRENDER_HEADER_CONSUMER_BUILD="$header_consumer" \
         "$ROOT_DIR/scripts/verify-installed-headers.sh"
 
     run cmake -S "$ROOT_DIR/tests/backend_package_consumer" -B "$backend_consumer" -G "$GENERATOR" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_PREFIX_PATH="$prefix" \
-        -DTEXGUI_BACKEND_PACKAGE="$backend"
+        -DTEXRENDER_BACKEND_PACKAGE="$backend"
     run cmake --build "$backend_consumer" -j
     run ctest --test-dir "$backend_consumer" --output-on-failure
 

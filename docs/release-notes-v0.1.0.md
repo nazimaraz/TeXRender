@@ -1,6 +1,6 @@
 # Release Notes: v0.1.0
 
-`v0.1.0` is the first public release candidate for texgui, a small C++ library
+`v0.1.0` is the first public release candidate for texrender, a small C++ library
 for embedding LaTeX math rendering into applications.
 
 ## Highlights
@@ -11,12 +11,12 @@ for embedding LaTeX math rendering into applications.
 - Dependency-free headless RGBA surface with PNG/PPM output.
 - Self-contained SVG export surface.
 - CMake consumption through `FetchContent`, `add_subdirectory`, installed
-  `find_package(texgui CONFIG REQUIRED)`, installed pkg-config metadata, and
+  `find_package(texrender CONFIG REQUIRED)`, installed pkg-config metadata, and
   package-manager starter metadata.
 - Implementation and public headers validated as C++17.
-- Backend-neutral umbrella header `texgui/texgui.hpp`, with installed packages
+- Backend-neutral umbrella header `texrender/texrender.hpp`, with installed packages
   exposing only the backend headers their dependencies support.
-- Generated `texgui/config.hpp`, CMake package feature metadata, and CMake
+- Generated `texrender/config.hpp`, CMake package feature metadata, and CMake
   package components for backend-aware consumers.
 - Non-throwing `try_render()` and `try_render_detailed()` paths for
   caller-supplied formulas.
@@ -57,7 +57,7 @@ before `1.0`.
 
 ## Known Limits
 
-- texgui renders formulas, not full TeX documents.
+- TeXRender renders formulas, not full TeX documents.
 - MicroTeX resources are required at runtime.
 - GUI backends inherit their toolkit lifetime/threading rules.
 - `try_render()` guardrails are not a security sandbox.

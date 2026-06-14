@@ -3,9 +3,9 @@
 #include <memory>
 #include <mutex>
 #include <string>
-#include "texgui/draw_surface.hpp"
+#include "texrender/draw_surface.hpp"
 
-namespace TexGui::detail
+namespace TeXRender::detail
 {
     class DocumentState
     {
@@ -25,4 +25,4 @@ namespace TexGui::detail
     };
 
     [[nodiscard]] std::recursive_mutex& render_mutex();
-} // namespace TexGui::detail
+} // namespace TeXRender::detail

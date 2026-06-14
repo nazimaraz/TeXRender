@@ -1,0 +1,31 @@
+#pragma once
+
+/// Backend selected when this texrender target/package was built.
+///
+/// Values currently include `headless`, `svg`, `raylib`, and `sdl2`.
+#define TEXRENDER_BACKEND_NAME "@TEXRENDER_BACKEND@"
+
+/// Backend-neutral software RGBA surface support is always available.
+#define TEXRENDER_HAS_HEADLESS @TEXRENDER_HAS_HEADLESS@
+/// Backend-neutral SVG export surface support is always available.
+#define TEXRENDER_HAS_SVG @TEXRENDER_HAS_SVG@
+/// raylib surface support is available only in raylib builds/packages.
+#define TEXRENDER_HAS_RAYLIB @TEXRENDER_HAS_RAYLIB@
+/// SDL2 surface support is available only in SDL2 builds/packages.
+#define TEXRENDER_HAS_SDL2 @TEXRENDER_HAS_SDL2@
+
+namespace TeXRender
+{
+    /// Backend selected when this texrender target/package was built.
+    ///
+    /// Useful in portable examples, logs, and package-manager smoke tests.
+    inline constexpr const char* build_backend = TEXRENDER_BACKEND_NAME;
+    /// Whether `HeadlessSurface` is compiled into this target/package.
+    inline constexpr bool has_headless = TEXRENDER_HAS_HEADLESS != 0;
+    /// Whether `SvgSurface` is compiled into this target/package.
+    inline constexpr bool has_svg = TEXRENDER_HAS_SVG != 0;
+    /// Whether `RaylibSurface` is compiled into this target/package.
+    inline constexpr bool has_raylib = TEXRENDER_HAS_RAYLIB != 0;
+    /// Whether `Sdl2Surface` is compiled into this target/package.
+    inline constexpr bool has_sdl2 = TEXRENDER_HAS_SDL2 != 0;
+} // namespace TeXRender

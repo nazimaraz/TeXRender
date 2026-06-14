@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-cpack}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-cpack}"
 GENERATOR="${GENERATOR:-Ninja}"
 BUILD_DIR="${BUILD_ROOT}/build"
 ARTIFACT_DIR="${BUILD_ROOT}/artifacts"
@@ -21,17 +21,17 @@ mkdir -p "$ARTIFACT_DIR" "$BINARY_EXTRACT" "$SOURCE_EXTRACT"
 
 run cmake -S "$ROOT_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_BUILD_EXAMPLES=OFF \
-    -DTEXGUI_BUILD_TESTS=OFF \
-    -DTEXGUI_BUILD_BENCHMARKS=OFF
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_BUILD_EXAMPLES=OFF \
+    -DTEXRENDER_BUILD_TESTS=OFF \
+    -DTEXRENDER_BUILD_BENCHMARKS=OFF
 run cmake --build "$BUILD_DIR" -j
 
 run cpack --config "$BUILD_DIR/CPackConfig.cmake" -G TGZ -B "$ARTIFACT_DIR"
 run cpack --config "$BUILD_DIR/CPackSourceConfig.cmake" -G TGZ -B "$ARTIFACT_DIR"
 
-BINARY_PACKAGE="$(find "$ARTIFACT_DIR" -maxdepth 1 -name 'latex-renderer-*.tar.gz' ! -name '*source*' | head -n 1)"
-SOURCE_PACKAGE="$(find "$ARTIFACT_DIR" -maxdepth 1 -name 'latex-renderer-*-source.tar.gz' | head -n 1)"
+BINARY_PACKAGE="$(find "$ARTIFACT_DIR" -maxdepth 1 -name 'TeXRender-*.tar.gz' ! -name '*source*' | head -n 1)"
+SOURCE_PACKAGE="$(find "$ARTIFACT_DIR" -maxdepth 1 -name 'TeXRender-*-source.tar.gz' | head -n 1)"
 
 if [[ -z "$BINARY_PACKAGE" || -z "$SOURCE_PACKAGE" ]]; then
     printf 'expected binary and source CPack archives in %s\n' "$ARTIFACT_DIR" >&2
@@ -47,20 +47,20 @@ run cmake -S "$ROOT_DIR/tests/package_consumer" -B "$CONSUMER_BUILD" -G "$GENERA
 run cmake --build "$CONSUMER_BUILD" -j
 run ctest --test-dir "$CONSUMER_BUILD" --output-on-failure
 run env \
-    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
-    TEXGUI_HEADER_BACKEND=headless \
-    TEXGUI_HEADER_INSTALL_PREFIX="$BINARY_PREFIX" \
-    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/binary-installed-headers" \
+    TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXRENDER_HEADER_BACKEND=headless \
+    TEXRENDER_HEADER_INSTALL_PREFIX="$BINARY_PREFIX" \
+    TEXRENDER_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/binary-installed-headers" \
     "$ROOT_DIR/scripts/verify-installed-headers.sh"
 
 run tar -xzf "$SOURCE_PACKAGE" -C "$SOURCE_EXTRACT"
 SOURCE_DIR="$(find "$SOURCE_EXTRACT" -mindepth 1 -maxdepth 1 -type d | head -n 1)"
 run cmake -S "$SOURCE_DIR" -B "$SOURCE_BUILD" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_BUILD_EXAMPLES=OFF \
-    -DTEXGUI_BUILD_TESTS=OFF \
-    -DTEXGUI_BUILD_BENCHMARKS=OFF
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_BUILD_EXAMPLES=OFF \
+    -DTEXRENDER_BUILD_TESTS=OFF \
+    -DTEXRENDER_BUILD_BENCHMARKS=OFF
 run cmake --build "$SOURCE_BUILD" -j
 
 printf '\nCPack smoke completed successfully\n'

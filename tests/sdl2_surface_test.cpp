@@ -2,11 +2,11 @@
 #include <memory>
 #include <vector>
 #include <SDL.h>
-#include <texgui/latex_document.hpp>
-#include <texgui/sdl2_surface.hpp>
+#include <texrender/latex_document.hpp>
+#include <texrender/sdl2_surface.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -15,7 +15,7 @@ namespace
     {
         ~SdlCleanup()
         {
-            TexGui::set_default_sdl_renderer(nullptr);
+            TeXRender::set_default_sdl_renderer(nullptr);
             SDL_Quit();
         }
     };
@@ -37,7 +37,7 @@ int main()
     const auto cleanup = SdlCleanup{};
 
     auto* const window =
-        SDL_CreateWindow("texgui SDL2 test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 320, 180, SDL_WINDOW_HIDDEN);
+        SDL_CreateWindow("texrender SDL2 test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 320, 180, SDL_WINDOW_HIDDEN);
     if (!window)
     {
         std::fprintf(stderr, "SDL_CreateWindow failed, skipping SDL2 render smoke: %s\n", SDL_GetError());
@@ -54,8 +54,8 @@ int main()
 
     auto exit_code = 0;
     {
-        TexGui::set_default_sdl_renderer(renderer);
-        const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR};
+        TeXRender::set_default_sdl_renderer(renderer);
+        const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
         const auto formula = document.render(R"(\sqrt{x+1})", 44.f, 0xff101820);
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);

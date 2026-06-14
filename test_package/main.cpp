@@ -3,63 +3,63 @@
 #include <string_view>
 #include <type_traits>
 #include <utility>
-#include <texgui/cache_options.hpp>
-#include <texgui/config.hpp>
-#include <texgui/formula_layout.hpp>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
-#include <texgui/svg_surface.hpp>
-#include <texgui/version.hpp>
+#include <texrender/cache_options.hpp>
+#include <texrender/config.hpp>
+#include <texrender/formula_layout.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
+#include <texrender/svg_surface.hpp>
+#include <texrender/version.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#error "texgui_copy_resources() must define TEXGUI_RES_DIR"
+#ifndef TEXRENDER_RES_DIR
+#error "texrender_copy_resources() must define TEXRENDER_RES_DIR"
 #endif
 
-static_assert(TexGui::version_major == TEXGUI_VERSION_MAJOR);
-static_assert(std::is_move_constructible_v<TexGui::RenderHandle>);
-static_assert(!std::is_copy_constructible_v<TexGui::RenderHandle>);
-static_assert(TEXGUI_HAS_HEADLESS == 1);
-static_assert(TEXGUI_HAS_SVG == 1);
+static_assert(TeXRender::version_major == TEXRENDER_VERSION_MAJOR);
+static_assert(std::is_move_constructible_v<TeXRender::RenderHandle>);
+static_assert(!std::is_copy_constructible_v<TeXRender::RenderHandle>);
+static_assert(TEXRENDER_HAS_HEADLESS == 1);
+static_assert(TEXRENDER_HAS_SVG == 1);
 
-#ifdef TEXGUI_EXPECT_BACKEND
-static_assert(TEXGUI_HAS_RAYLIB == TEXGUI_EXPECT_HAS_RAYLIB);
-static_assert(TEXGUI_HAS_SDL2 == TEXGUI_EXPECT_HAS_SDL2);
-static_assert(TexGui::has_raylib == static_cast<bool>(TEXGUI_EXPECT_HAS_RAYLIB));
-static_assert(TexGui::has_sdl2 == static_cast<bool>(TEXGUI_EXPECT_HAS_SDL2));
+#ifdef TEXRENDER_EXPECT_BACKEND
+static_assert(TEXRENDER_HAS_RAYLIB == TEXRENDER_EXPECT_HAS_RAYLIB);
+static_assert(TEXRENDER_HAS_SDL2 == TEXRENDER_EXPECT_HAS_SDL2);
+static_assert(TeXRender::has_raylib == static_cast<bool>(TEXRENDER_EXPECT_HAS_RAYLIB));
+static_assert(TeXRender::has_sdl2 == static_cast<bool>(TEXRENDER_EXPECT_HAS_SDL2));
 #endif
 
 int main()
 {
-#ifdef TEXGUI_EXPECT_BACKEND
-    if (std::string_view{TexGui::build_backend} != TEXGUI_EXPECT_BACKEND)
+#ifdef TEXRENDER_EXPECT_BACKEND
+    if (std::string_view{TeXRender::build_backend} != TEXRENDER_EXPECT_BACKEND)
         return 10;
 #endif
 
-    auto limits = TexGui::cache_limits();
+    auto limits = TeXRender::cache_limits();
     limits.max_cpu_glyphs = 32;
     limits.max_gpu_textures = 32;
-    TexGui::set_cache_limits(limits);
+    TeXRender::set_cache_limits(limits);
 
-    auto owned = std::make_unique<TexGui::HeadlessSurface>();
+    auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     auto* const canvas = owned.get();
-    const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
     const auto formula = document.try_render(R"(\frac{1}{2})", 40.f, 0xff000000);
     if (!formula)
         return 1;
 
-    const auto box = TexGui::formula_box(*formula);
+    const auto box = TeXRender::formula_box(*formula);
     if (box.width <= 0 || box.height <= 0)
         return 2;
 
     canvas->resize(formula->width() + 20, formula->height() + 20);
     canvas->clear(0xffffffff);
-    TexGui::draw_aligned(*formula, 10, 10, TexGui::FormulaAnchor::top);
+    TeXRender::draw_aligned(*formula, 10, 10, TeXRender::FormulaAnchor::top);
     if (canvas->covered_pixels() == 0)
         return 3;
 
-    auto svg_owned = std::make_unique<TexGui::SvgSurface>();
+    auto svg_owned = std::make_unique<TeXRender::SvgSurface>();
     auto* const svg = svg_owned.get();
-    const auto svg_document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(svg_owned)};
+    const auto svg_document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(svg_owned)};
     const auto svg_formula = svg_document.try_render(R"(\sqrt{x+1})", 40.f, 0xff223344);
     if (!svg_formula)
         return 4;

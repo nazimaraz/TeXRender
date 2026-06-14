@@ -1,6 +1,6 @@
 # Support Matrix
 
-This is the support promise for the `0.1.x` line. texgui is pre-1.0, so source
+This is the support promise for the `0.1.x` line. TeXRender is pre-1.0, so source
 compatibility matters more than ABI stability; see
 [`api-compatibility.md`](api-compatibility.md).
 
@@ -14,7 +14,7 @@ compatibility matters more than ABI stability; see
 | macOS | Apple Clang | yes | raylib and headless builds |
 | Windows | MSVC | yes | headless static/shared builds and installed consumer smoke |
 
-texgui itself and its public headers compile as C++17 and expose `texgui::texgui`
+TeXRender itself and its public headers compile as C++17 and expose `texrender::texrender`
 with `cxx_std_17`.
 
 ## Backends
@@ -27,7 +27,7 @@ with `cxx_std_17`.
 | SVG | supported | Self-contained SVG files and docs/gallery output |
 | custom `IDrawSurface` | supported interface | Engine-specific renderer integrations |
 
-`HeadlessSurface` and `SvgSurface` are available in every build. `TEXGUI_BACKEND`
+`HeadlessSurface` and `SvgSurface` are available in every build. `TEXRENDER_BACKEND`
 selects the default surface created by `LatexDocument`.
 
 ## Dependency Modes
@@ -35,7 +35,7 @@ selects the default surface created by `LatexDocument`.
 | Mode | Status |
 | --- | --- |
 | `FetchContent` / `add_subdirectory` | supported and tested |
-| installed `find_package(texgui CONFIG REQUIRED)` | supported and tested |
+| installed `find_package(texrender CONFIG REQUIRED)` | supported and tested |
 | installed public headers | selected backend headers only, compiled as C++17 |
 | CMake package components | `headless`, `svg`, `raylib`, `sdl2` |
 | shared library | installed headless shared package consumed in release smoke |
@@ -47,7 +47,7 @@ selects the default surface created by `LatexDocument`.
 ## Runtime Notes
 
 - MicroTeX resources must be shipped with the application; use
-  `texgui_copy_resources(target)` in CMake consumers.
+  `texrender_copy_resources(target)` in CMake consumers.
 - GUI surfaces borrow their graphics context. Destroy formulas/documents before
   closing raylib windows or SDL renderers.
 - `try_render()` applies guardrails for user-provided formulas but is not a

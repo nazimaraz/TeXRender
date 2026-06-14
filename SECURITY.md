@@ -12,7 +12,7 @@ Please **do not** open a public issue for security problems. Use GitHub's
 private vulnerability reporting on this repository (Security tab → "Report a
 vulnerability"). You can expect an initial response within a week.
 
-texgui is explicitly designed to accept **untrusted LaTeX input** through
+TeXRender is explicitly designed to accept **untrusted LaTeX input** through
 `LatexDocument::try_render` (for example, the live editor feeds it raw user
 keystrokes). The simple `try_render()` overload applies default guardrails for
 input size, text size and wrap width; callers with different requirements can

@@ -4,10 +4,10 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include "texgui/draw_surface.hpp"
-#include "texgui/export.hpp"
+#include "texrender/draw_surface.hpp"
+#include "texrender/export.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     /// Windowless IDrawSurface that composites into an in-memory RGBA8 canvas.
     ///
@@ -16,7 +16,7 @@ namespace TexGui
     /// rendering, tests, CI, and server-side/offscreen output. Draws are clipped
     /// to the canvas bounds. Construct it directly and inject it into
     /// `LatexDocument` when you need deterministic output without a window.
-    class TEXGUI_EXPORT HeadlessSurface final : public IDrawSurface
+    class TEXRENDER_EXPORT HeadlessSurface final : public IDrawSurface
     {
     public:
         HeadlessSurface() = default;
@@ -68,4 +68,4 @@ namespace TexGui
         unsigned char b_ = 0;
         unsigned char a_ = 255;
     };
-} // namespace TexGui
+} // namespace TeXRender

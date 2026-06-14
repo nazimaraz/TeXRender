@@ -41,21 +41,21 @@ def main() -> int:
 
     cmake = read("CMakeLists.txt")
     conan = read("conanfile.py")
-    portfile = read("packaging/vcpkg-overlay/ports/latex-renderer/portfile.cmake")
+    portfile = read("packaging/vcpkg-overlay/ports/texrender/portfile.cmake")
     manifest = load_json("vcpkg.json")
-    overlay_manifest = load_json("packaging/vcpkg-overlay/ports/latex-renderer/vcpkg.json")
+    overlay_manifest = load_json("packaging/vcpkg-overlay/ports/texrender/vcpkg.json")
 
     try:
-        cmake_version = match(r"project\s*\(\s*latex_renderer\s+VERSION\s+([0-9]+(?:\.[0-9]+){2})", cmake, "CMake project version")
+        cmake_version = match(r"project\s*\(\s*texrender\s+VERSION\s+([0-9]+(?:\.[0-9]+){2})", cmake, "CMake project version")
     except ValueError as error:
         failures.append(str(error))
         cmake_version = ""
 
     conan_required_fields = {
-        "name": "latex-renderer",
+        "name": "texrender",
         "version": cmake_version,
         "license": "MIT",
-        "url": "https://github.com/nazimaraz/latex-renderer",
+        "url": "https://github.com/nazimaraz/TeXRender",
         "package_type": "library",
     }
     for field, expected in conan_required_fields.items():
@@ -78,8 +78,8 @@ def main() -> int:
     for exported in ('"CMakeLists.txt"', '"cmake/*"', '"include/*"', '"source/*"', '"tests/*"', '"docs/*"'):
         require(exported in conan, f"conanfile.py exports_sources is missing {exported}", failures)
 
-    for path, data in (("vcpkg.json", manifest), ("packaging/vcpkg-overlay/ports/latex-renderer/vcpkg.json", overlay_manifest)):
-        require(data.get("name") == "latex-renderer", f"{path} has wrong package name", failures)
+    for path, data in (("vcpkg.json", manifest), ("packaging/vcpkg-overlay/ports/texrender/vcpkg.json", overlay_manifest)):
+        require(data.get("name") == "texrender", f"{path} has wrong package name", failures)
         require(data.get("version-string") == cmake_version, f"{path} version-string does not match CMake project version", failures)
         require(data.get("license") == "MIT", f"{path} license must be MIT", failures)
         require(str(data.get("homepage", "")).startswith("https://github.com/"), f"{path} homepage should point at GitHub", failures)
@@ -95,11 +95,11 @@ def main() -> int:
 
     require("raylib" in manifest.get("default-features", []), "vcpkg.json should keep raylib as the default feature", failures)
 
-    for token in ("vcpkg_from_github", "SHA512", "FETCHCONTENT_SOURCE_DIR_MICROTEX", "TEXGUI_VCPKG_SOURCE_DIR"):
+    for token in ("vcpkg_from_github", "SHA512", "FETCHCONTENT_SOURCE_DIR_MICROTEX", "TEXRENDER_VCPKG_SOURCE_DIR"):
         require(token in portfile, f"vcpkg overlay portfile is missing {token}", failures)
 
     for path in (
-        "cmake/texgui.pc.in",
+        "cmake/texrender.pc.in",
         "scripts/verify-cpack.sh",
         "scripts/verify-external-consumers.sh",
         "scripts/verify-path-with-spaces.sh",
@@ -111,7 +111,7 @@ def main() -> int:
         require((ROOT / path).exists(), f"missing release/registry support file: {path}", failures)
 
     require("CPACK_GENERATOR" in cmake and "CPACK_SOURCE_GENERATOR" in cmake, "CMakeLists.txt is missing CPack generator setup", failures)
-    require("TEXGUI_INSTALL_PKGCONFIGDIR" in cmake and "texgui.pc" in cmake, "CMakeLists.txt is missing pkg-config install setup", failures)
+    require("TEXRENDER_INSTALL_PKGCONFIGDIR" in cmake and "texrender.pc" in cmake, "CMakeLists.txt is missing pkg-config install setup", failures)
 
     if failures:
         for failure in failures:

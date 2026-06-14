@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-external-consumers}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-external-consumers}"
 GENERATOR="${GENERATOR:-Ninja}"
-SOURCE_REF="${TEXGUI_ARCHIVE_REF:-HEAD}"
+SOURCE_REF="${TEXRENDER_ARCHIVE_REF:-HEAD}"
 SOURCE_ARCHIVE="${BUILD_ROOT}/source.tar"
 SOURCE_DIR="${BUILD_ROOT}/archived-source"
 FETCH_PROJECT="${BUILD_ROOT}/fetch-consumer"
@@ -23,32 +23,32 @@ write_fetch_consumer() {
     mkdir -p "$FETCH_PROJECT"
     cat > "$FETCH_PROJECT/CMakeLists.txt" <<EOF
 cmake_minimum_required(VERSION 3.21)
-project(texgui_external_fetch LANGUAGES CXX)
+project(texrender_external_fetch LANGUAGES CXX)
 include(FetchContent)
-FetchContent_Declare(texgui SOURCE_DIR [[${SOURCE_DIR}]])
-set(TEXGUI_BACKEND headless CACHE STRING "" FORCE)
-set(TEXGUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(TEXGUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(TEXGUI_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(texgui)
+FetchContent_Declare(texrender SOURCE_DIR [[${SOURCE_DIR}]])
+set(TEXRENDER_BACKEND headless CACHE STRING "" FORCE)
+set(TEXRENDER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TEXRENDER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(TEXRENDER_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(texrender)
 add_executable(external_fetch main.cpp)
-target_link_libraries(external_fetch PRIVATE texgui::texgui)
-texgui_copy_resources(external_fetch)
+target_link_libraries(external_fetch PRIVATE texrender::texrender)
+texrender_copy_resources(external_fetch)
 EOF
     cat > "$FETCH_PROJECT/main.cpp" <<'EOF'
 #include <memory>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#error "texgui_copy_resources must define TEXGUI_RES_DIR"
+#ifndef TEXRENDER_RES_DIR
+#error "texrender_copy_resources must define TEXRENDER_RES_DIR"
 #endif
 
 int main()
 {
-    auto surface = std::make_unique<TexGui::HeadlessSurface>();
+    auto surface = std::make_unique<TeXRender::HeadlessSurface>();
     auto* canvas = surface.get();
-    TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(surface));
+    TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(surface));
     auto formula = document.render(R"(\sqrt{x+1})", 36.f, 0xff000000);
     canvas->resize(formula.width() + 10, formula.height() + 10);
     canvas->clear(0xffffffff);
@@ -62,11 +62,11 @@ write_find_consumer() {
     mkdir -p "$FIND_PROJECT"
     cat > "$FIND_PROJECT/CMakeLists.txt" <<'EOF'
 cmake_minimum_required(VERSION 3.21)
-project(texgui_external_find LANGUAGES CXX)
-find_package(texgui CONFIG REQUIRED)
+project(texrender_external_find LANGUAGES CXX)
+find_package(texrender CONFIG REQUIRED)
 add_executable(external_find main.cpp)
-target_link_libraries(external_find PRIVATE texgui::texgui)
-texgui_copy_resources(external_find)
+target_link_libraries(external_find PRIVATE texrender::texrender)
+texrender_copy_resources(external_find)
 EOF
     cp "$FETCH_PROJECT/main.cpp" "$FIND_PROJECT/main.cpp"
 }
@@ -83,10 +83,10 @@ run "$FETCH_BUILD/external_fetch"
 
 run cmake -S "$SOURCE_DIR" -B "$INSTALL_BUILD" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_BUILD_EXAMPLES=OFF \
-    -DTEXGUI_BUILD_TESTS=OFF \
-    -DTEXGUI_BUILD_BENCHMARKS=OFF
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_BUILD_EXAMPLES=OFF \
+    -DTEXRENDER_BUILD_TESTS=OFF \
+    -DTEXRENDER_BUILD_BENCHMARKS=OFF
 run cmake --build "$INSTALL_BUILD" -j
 run cmake --install "$INSTALL_BUILD" --prefix "$INSTALL_PREFIX"
 

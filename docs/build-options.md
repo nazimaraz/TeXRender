@@ -28,55 +28,55 @@ Useful presets:
 
 ## Library Options
 
-- `TEXGUI_BACKEND`: `raylib`, `sdl2`, `headless`, or `svg`. The selected backend
+- `TEXRENDER_BACKEND`: `raylib`, `sdl2`, `headless`, or `svg`. The selected backend
   controls the default surface created by `LatexDocument`; `HeadlessSurface` and
   `SvgSurface` are available in every build for injection.
-- `TEXGUI_BUILD_EXAMPLES`: build example executables. Defaults on only when this
+- `TEXRENDER_BUILD_EXAMPLES`: build example executables. Defaults on only when this
   project is top-level.
-- `TEXGUI_BUILD_TESTS`: build tests. Defaults on only when this project is
+- `TEXRENDER_BUILD_TESTS`: build tests. Defaults on only when this project is
   top-level.
-- `TEXGUI_BUILD_BENCHMARKS`: build benchmark executables. Defaults on only when
+- `TEXRENDER_BUILD_BENCHMARKS`: build benchmark executables. Defaults on only when
   this project is top-level.
-- `TEXGUI_BUILD_FUZZERS`: build libFuzzer targets. Defaults off.
-- `TEXGUI_INSTALL`: generate install/export support. Defaults off when raylib or
+- `TEXRENDER_BUILD_FUZZERS`: build libFuzzer targets. Defaults off.
+- `TEXRENDER_INSTALL`: generate install/export support. Defaults off when raylib or
   SDL2 is fetched from source because those targets are not cleanly exportable.
-- `TEXGUI_WARNINGS_AS_ERRORS`: treat first-party warnings as errors. This never
+- `TEXRENDER_WARNINGS_AS_ERRORS`: treat first-party warnings as errors. This never
   applies to MicroTeX or other third-party sources.
 
-Runtime cache limits are controlled from C++ with `TexGui::set_cache_limits()`.
+Runtime cache limits are controlled from C++ with `TeXRender::set_cache_limits()`.
 The CPU glyph limit is process-wide; the GPU texture limit is used by newly
 created `RaylibSurface` instances and can also be set per surface.
 
 ## Public Headers
 
-Use `#include <texgui/texgui.hpp>` for the backend-neutral public API. It includes
-`texgui/config.hpp`, document/render types, cache options, layout helpers,
+Use `#include <texrender/texrender.hpp>` for the backend-neutral public API. It includes
+`texrender/config.hpp`, document/render types, cache options, layout helpers,
 `HeadlessSurface`, `SvgSurface`, and version constants.
 
 Backend-specific headers are deliberately opt-in. Installed packages include
-`raylib_surface.hpp` only for `TEXGUI_BACKEND=raylib` packages and
-`sdl2_surface.hpp` only for `TEXGUI_BACKEND=sdl2` packages. This keeps a
+`raylib_surface.hpp` only for `TEXRENDER_BACKEND=raylib` packages and
+`sdl2_surface.hpp` only for `TEXRENDER_BACKEND=sdl2` packages. This keeps a
 headless or SVG install usable without GUI development headers.
 
-`texgui/config.hpp` exposes compile-time package features:
+`texrender/config.hpp` exposes compile-time package features:
 
 ```cpp
-#include <texgui/config.hpp>
+#include <texrender/config.hpp>
 
-static_assert(TEXGUI_HAS_HEADLESS == 1);
-static_assert(TEXGUI_HAS_SVG == 1);
-if constexpr (TexGui::has_sdl2) {
-    // This package was built with TEXGUI_BACKEND=sdl2.
+static_assert(TEXRENDER_HAS_HEADLESS == 1);
+static_assert(TEXRENDER_HAS_SVG == 1);
+if constexpr (TeXRender::has_sdl2) {
+    // This package was built with TEXRENDER_BACKEND=sdl2.
 }
 ```
 
 Installed CMake packages expose matching metadata and components:
 
 ```cmake
-find_package(texgui CONFIG REQUIRED COMPONENTS headless svg)
+find_package(texrender CONFIG REQUIRED COMPONENTS headless svg)
 
-message(STATUS "texgui backend: ${texgui_BACKEND}")
-message(STATUS "SDL2 support: ${texgui_HAS_SDL2}")
+message(STATUS "texrender backend: ${texrender_BACKEND}")
+message(STATUS "SDL2 support: ${texrender_HAS_SDL2}")
 ```
 
 Supported components are `headless`, `svg`, `raylib`, and `sdl2`. Requesting a
@@ -85,20 +85,20 @@ GUI component that the installed package was not built with fails during
 
 ## SDL2 Backend
 
-`TEXGUI_BACKEND=sdl2` builds `TexGui::Sdl2Surface` and the
-`texgui_sdl2_minimal` example. SDL2 applications can either set a process
+`TEXRENDER_BACKEND=sdl2` builds `TeXRender::Sdl2Surface` and the
+`texrender_sdl2_minimal` example. SDL2 applications can either set a process
 default renderer before constructing `LatexDocument`:
 
 ```cpp
-TexGui::set_default_sdl_renderer(renderer);
-TexGui::LatexDocument document(TEXGUI_RES_DIR);
+TeXRender::set_default_sdl_renderer(renderer);
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR);
 ```
 
 or inject an explicit surface:
 
 ```cpp
-auto surface = std::make_unique<TexGui::Sdl2Surface>(renderer);
-TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(surface));
+auto surface = std::make_unique<TeXRender::Sdl2Surface>(renderer);
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(surface));
 ```
 
 The renderer is borrowed. Destroy documents and handles before destroying the
@@ -106,12 +106,12 @@ SDL renderer so cached glyph textures can be released while SDL is still alive.
 
 ## Shared Libraries
 
-`BUILD_SHARED_LIBS=ON` builds `texgui` as a shared library. Public classes use
-`TEXGUI_EXPORT`, and consumers of a Windows DLL receive `TEXGUI_SHARED` from the
+`BUILD_SHARED_LIBS=ON` builds `texrender` as a shared library. Public classes use
+`TEXRENDER_EXPORT`, and consumers of a Windows DLL receive `TEXRENDER_SHARED` from the
 exported target automatically.
 
 ```sh
-cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXGUI_BACKEND=headless
+cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXRENDER_BACKEND=headless
 cmake --build build-shared -j
 ctest --test-dir build-shared --output-on-failure
 ```
@@ -132,5 +132,5 @@ shared-library package check.
 
 `visual_regression` is structural by default so it stays portable across
 platforms and font rasterizer differences. For exact local PNG comparisons, set
-`TEXGUI_VISUAL_SNAPSHOT_DIR` when running the tests. To intentionally refresh
-snapshots, also set `TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1`.
+`TEXRENDER_VISUAL_SNAPSHOT_DIR` when running the tests. To intentionally refresh
+snapshots, also set `TEXRENDER_VISUAL_UPDATE_SNAPSHOTS=1`.

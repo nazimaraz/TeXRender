@@ -1,6 +1,6 @@
-# Case Study: Building texgui
+# Case Study: Building TeXRender
 
-texgui started with a narrow problem: render LaTeX math directly inside a C++
+TeXRender started with a narrow problem: render LaTeX math directly inside a C++
 application frame loop, without spawning TeX, rasterizing temporary files, or
 owning the caller's windowing code.
 
@@ -15,7 +15,7 @@ shutdown order.
 The library therefore separates three jobs:
 
 - MicroTeX parses and lays out formulas.
-- texgui adapts MicroTeX's `tex::Graphics2D` calls into backend-neutral drawing.
+- TeXRender adapts MicroTeX's `tex::Graphics2D` calls into backend-neutral drawing.
 - A small `IDrawSurface` implementation paints into raylib, SDL2, a software
   canvas, SVG output, or a user-provided backend.
 
@@ -109,19 +109,19 @@ CPack smoke, external consumer smoke, and path-with-spaces smoke.
 
 ## Packaging Story
 
-texgui supports the ways C++ developers commonly consume a library:
+TeXRender supports the ways C++ developers commonly consume a library:
 
 - `FetchContent`
 - `add_subdirectory`
-- installed `find_package(texgui CONFIG REQUIRED)`
+- installed `find_package(texrender CONFIG REQUIRED)`
 - vcpkg manifest mode
 - local vcpkg overlay port smoke tests
 - Conan 2 recipe and `test_package`
 - release archive install smoke
 
 MicroTeX's `res/` directory is a runtime dependency. The CMake helper
-`texgui_copy_resources(target)` copies it to a target-specific output directory
-and defines `TEXGUI_RES_DIR` for that target.
+`texrender_copy_resources(target)` copies it to a target-specific output directory
+and defines `TEXRENDER_RES_DIR` for that target.
 
 The package consumers are intentionally not empty link tests: they include public
 headers as C++17, call cache/layout helpers, render into `HeadlessSurface`, and

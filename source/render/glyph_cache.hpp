@@ -11,7 +11,7 @@
 struct FT_LibraryRec_;
 struct FT_FaceRec_;
 
-namespace TexGui
+namespace TeXRender
 {
     class GlyphCache
     {
@@ -100,4 +100,4 @@ namespace TexGui
         [[nodiscard]] bool debug_enabled();
         void debug_log(const std::string& message);
     } // namespace detail
-} // namespace TexGui
+} // namespace TeXRender

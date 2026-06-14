@@ -5,10 +5,10 @@
 #include <optional>
 #include <string>
 #include <vector>
-#include "texgui/draw_surface.hpp"
-#include "texgui/export.hpp"
+#include "texrender/draw_surface.hpp"
+#include "texrender/export.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     /// IDrawSurface implementation that records draw calls into an SVG document.
     ///
@@ -16,7 +16,7 @@ namespace TexGui
     /// this backend as FreeType bitmaps, so they are embedded as small RGBA PNG
     /// data URIs inside the SVG. This keeps SVG export backend-neutral while
     /// preserving MicroTeX's font rendering choices.
-    class TEXGUI_EXPORT SvgSurface final : public IDrawSurface
+    class TEXRENDER_EXPORT SvgSurface final : public IDrawSurface
     {
     public:
         SvgSurface() = default;
@@ -62,4 +62,4 @@ namespace TexGui
         std::optional<uint32_t> background_;
         std::vector<std::string> elements_;
     };
-} // namespace TexGui
+} // namespace TeXRender

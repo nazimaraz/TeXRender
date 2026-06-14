@@ -10,18 +10,18 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include "texgui/cache_options.hpp"
-#include "texgui/formula_layout.hpp"
-#include "texgui/headless_surface.hpp"
-#include "texgui/latex_document.hpp"
-#include "texgui/svg_surface.hpp"
-#include "texgui/version.hpp"
+#include "texrender/cache_options.hpp"
+#include "texrender/formula_layout.hpp"
+#include "texrender/headless_surface.hpp"
+#include "texrender/latex_document.hpp"
+#include "texrender/svg_surface.hpp"
+#include "texrender/version.hpp"
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {
@@ -51,10 +51,10 @@ namespace
 
 int main()
 {
-    const auto res = std::string{TEXGUI_RES_DIR};
+    const auto res = std::string{TEXRENDER_RES_DIR};
 
     // Compile-coverage for the public version header.
-    CHECK(TexGui::version_major == TEXGUI_VERSION_MAJOR);
+    CHECK(TeXRender::version_major == TEXRENDER_VERSION_MAJOR);
 
     // 1) Public render path with an injected software surface: a valid formula
     //    has positive metrics; try_render never throws and yields nullopt on
@@ -242,14 +242,14 @@ int main()
     // 7) HeadlessSurface can write real PNG files without extra dependencies.
     {
         auto canvas = HeadlessSurface{};
-        CHECK(!canvas.write_png((std::filesystem::temp_directory_path() / "texgui-empty.png").string()));
+        CHECK(!canvas.write_png((std::filesystem::temp_directory_path() / "texrender-empty.png").string()));
 
         canvas.resize(2, 1);
         canvas.clear(0x00000000);
         canvas.set_color(0xffff0000);
         canvas.fill_rect(0, 0, 1, 1);
 
-        const auto path = std::filesystem::temp_directory_path() / "texgui-headless-surface-test.png";
+        const auto path = std::filesystem::temp_directory_path() / "texrender-headless-surface-test.png";
         CHECK(canvas.write_png(path.string()));
 
         auto file = std::ifstream{path, std::ios::binary};
@@ -276,7 +276,7 @@ int main()
         CHECK(svg.find("<image") != std::string::npos);
         CHECK(svg.find("data:image/png;base64,") != std::string::npos);
 
-        const auto path = std::filesystem::temp_directory_path() / "texgui-svg-surface-test.svg";
+        const auto path = std::filesystem::temp_directory_path() / "texrender-svg-surface-test.svg";
         CHECK(canvas->write_svg(path.string()));
         auto file = std::ifstream{path};
         auto first_line = std::string{};

@@ -4,14 +4,14 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include "texgui/headless_surface.hpp"
-#include "texgui/latex_document.hpp"
+#include "texrender/headless_surface.hpp"
+#include "texrender/latex_document.hpp"
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {
@@ -31,7 +31,7 @@ namespace
 
 int main()
 {
-    const auto res = std::string{TEXGUI_RES_DIR};
+    const auto res = std::string{TEXRENDER_RES_DIR};
 
     for (auto i = 0; i < 50; ++i)
     {

@@ -44,7 +44,7 @@ candidates=(
     scripts/__pycache__
     test_package/CMakeUserPresets.json
     formula.ppm
-    texgui_shot.png
+    texrender_shot.png
     shot_*.png
 )
 shopt -u nullglob

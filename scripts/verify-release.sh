@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-verify-release}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-verify-release}"
 GENERATOR="${GENERATOR:-Ninja}"
 HEADLESS_BUILD="${BUILD_ROOT}/headless"
 RAYLIB_BUILD="${BUILD_ROOT}/raylib"
@@ -38,7 +38,7 @@ cmake_build() {
 
 cd "$ROOT_DIR"
 
-printf 'texgui release verification\n'
+printf 'texrender release verification\n'
 printf 'root: %s\n' "$ROOT_DIR"
 printf 'build root: %s\n' "$BUILD_ROOT"
 mkdir -p "$BUILD_ROOT"
@@ -73,45 +73,45 @@ fi
 
 cmake_configure "$ROOT_DIR" "$HEADLESS_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_WARNINGS_AS_ERRORS=ON
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_WARNINGS_AS_ERRORS=ON
 cmake_build "$HEADLESS_BUILD"
 run ctest --test-dir "$HEADLESS_BUILD" --output-on-failure
-run "$HEADLESS_BUILD/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
-run "$HEADLESS_BUILD/texgui_custom_surface"
-run env TEXGUI_BUILD_DIR="$HEADLESS_BUILD" "$ROOT_DIR/scripts/generate-gallery.sh" \
+run "$HEADLESS_BUILD/texrender_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
+run "$HEADLESS_BUILD/texrender_custom_surface"
+run env TEXRENDER_BUILD_DIR="$HEADLESS_BUILD" "$ROOT_DIR/scripts/generate-gallery.sh" \
     "$ROOT_DIR/docs/gallery-formulas.txt" "${BUILD_ROOT}/gallery"
 if has ffmpeg; then
     run env GALLERY_DIR="${BUILD_ROOT}/gallery" "$ROOT_DIR/scripts/generate-preview-gif.sh" "${BUILD_ROOT}/live-preview.gif"
 else
     printf '\n==> skipping README GIF generation: ffmpeg is not installed\n'
 fi
-run "$HEADLESS_BUILD/texgui_render_benchmark"
-run "$HEADLESS_BUILD/texgui_render_benchmark" > "${BUILD_ROOT}/benchmark-results.txt"
+run "$HEADLESS_BUILD/texrender_render_benchmark"
+run "$HEADLESS_BUILD/texrender_render_benchmark" > "${BUILD_ROOT}/benchmark-results.txt"
 if has python3; then
     run python3 "$ROOT_DIR/scripts/check-benchmark-baseline.py" --input "${BUILD_ROOT}/benchmark-results.txt" --warn-only
 fi
-run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texgui_headless_batch" 'e^{i\pi} + 1 = 0'
+run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texrender_headless_batch" 'e^{i\pi} + 1 = 0'
 
 rm -rf "$SVG_BUILD"
 cmake_configure "$ROOT_DIR" "$SVG_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=svg
+    -DTEXRENDER_BACKEND=svg
 cmake_build "$SVG_BUILD"
 run ctest --test-dir "$SVG_BUILD" --output-on-failure
-run "$SVG_BUILD/texgui_svg_export" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.svg"
+run "$SVG_BUILD/texrender_svg_export" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.svg"
 
 rm -rf "$SHARED_BUILD"
 cmake_configure "$ROOT_DIR" "$SHARED_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=ON \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_BUILD_EXAMPLES=OFF \
-    -DTEXGUI_BUILD_BENCHMARKS=OFF
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_BUILD_EXAMPLES=OFF \
+    -DTEXRENDER_BUILD_BENCHMARKS=OFF
 cmake_build "$SHARED_BUILD"
 run ctest --test-dir "$SHARED_BUILD" --output-on-failure
 
-if [[ "${TEXGUI_SKIP_SHARED_LIBRARY_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_SHARED_LIBRARY_SMOKE:-0}" != "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/shared-library" "$ROOT_DIR/scripts/verify-shared-library.sh"
 fi
 
@@ -123,24 +123,24 @@ cmake_configure "$ROOT_DIR/tests/package_consumer" "$PACKAGE_CONSUMER_BUILD" \
 cmake_build "$PACKAGE_CONSUMER_BUILD"
 run ctest --test-dir "$PACKAGE_CONSUMER_BUILD" --output-on-failure
 run env \
-    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
-    TEXGUI_HEADER_BACKEND=headless \
-    TEXGUI_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
-    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
+    TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXRENDER_HEADER_BACKEND=headless \
+    TEXRENDER_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
+    TEXRENDER_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
     "$ROOT_DIR/scripts/verify-installed-headers.sh"
 
 cmake_configure "$ROOT_DIR/examples/consumer-find-package" "$FIND_EXAMPLE_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
 cmake_build "$FIND_EXAMPLE_BUILD"
-run cmake -E chdir "$FIND_EXAMPLE_BUILD" "$FIND_EXAMPLE_BUILD/texgui_find_package_example"
+run cmake -E chdir "$FIND_EXAMPLE_BUILD" "$FIND_EXAMPLE_BUILD/texrender_find_package_example"
 
 rm -rf "$FETCH_EXAMPLE_BUILD"
 cmake_configure "$ROOT_DIR/examples/consumer-fetchcontent" "$FETCH_EXAMPLE_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_FETCHCONTENT_SOURCE_DIR="$ROOT_DIR"
+    -DTEXRENDER_FETCHCONTENT_SOURCE_DIR="$ROOT_DIR"
 cmake_build "$FETCH_EXAMPLE_BUILD"
-run cmake -E chdir "$FETCH_EXAMPLE_BUILD" "$FETCH_EXAMPLE_BUILD/texgui_fetchcontent_example"
+run cmake -E chdir "$FETCH_EXAMPLE_BUILD" "$FETCH_EXAMPLE_BUILD/texrender_fetchcontent_example"
 
 cmake_configure "$ROOT_DIR" "$RAYLIB_BUILD" \
     -DCMAKE_BUILD_TYPE=Release
@@ -150,11 +150,11 @@ run ctest --test-dir "$RAYLIB_BUILD" --output-on-failure
 rm -rf "$SDL2_BUILD"
 cmake_configure "$ROOT_DIR" "$SDL2_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=sdl2
+    -DTEXRENDER_BACKEND=sdl2
 cmake_build "$SDL2_BUILD"
 run ctest --test-dir "$SDL2_BUILD" --output-on-failure
 
-if [[ "${TEXGUI_SKIP_BACKEND_PACKAGE_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_BACKEND_PACKAGE_SMOKE:-0}" != "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/backend-packages" "$ROOT_DIR/scripts/verify-backend-packages.sh"
 fi
 
@@ -171,7 +171,7 @@ else
     printf '\n==> skipping actionlint: not installed\n'
 fi
 
-if [[ "${TEXGUI_SKIP_TSAN_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_TSAN_SMOKE:-0}" != "1" ]]; then
     if has clang++; then
         run env BUILD_DIR="${BUILD_ROOT}/tsan" "$ROOT_DIR/scripts/verify-thread-sanitizer.sh"
     else
@@ -212,30 +212,30 @@ if [[ -n "${VCPKG_ROOT:-}" && -x "${VCPKG_ROOT}/vcpkg" ]]; then
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
         -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON \
-        -DTEXGUI_BACKEND=headless \
-        -DTEXGUI_BUILD_EXAMPLES=OFF \
-        -DTEXGUI_BUILD_BENCHMARKS=OFF
+        -DTEXRENDER_BACKEND=headless \
+        -DTEXRENDER_BUILD_EXAMPLES=OFF \
+        -DTEXRENDER_BUILD_BENCHMARKS=OFF
     cmake_build "$VCPKG_BUILD"
     run ctest --test-dir "$VCPKG_BUILD" --output-on-failure
     run "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
-    run env TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
+    run env TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
 else
     printf '\n==> skipping vcpkg manifest validation: set VCPKG_ROOT to a vcpkg checkout\n'
 fi
 
-if [[ "${TEXGUI_SKIP_CPACK_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_CPACK_SMOKE:-0}" != "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/cpack-smoke" "$ROOT_DIR/scripts/verify-cpack.sh"
 fi
 
-if [[ "${TEXGUI_SKIP_EXTERNAL_CONSUMER_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_EXTERNAL_CONSUMER_SMOKE:-0}" != "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/external-consumers" "$ROOT_DIR/scripts/verify-external-consumers.sh"
 fi
 
-if [[ "${TEXGUI_SKIP_PATH_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_PATH_SMOKE:-0}" != "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/path smoke" "$ROOT_DIR/scripts/verify-path-with-spaces.sh"
 fi
 
-if [[ "${TEXGUI_SKIP_PKG_CONFIG_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_PKG_CONFIG_SMOKE:-0}" != "1" ]]; then
     if has pkg-config; then
         run env BUILD_ROOT="${BUILD_ROOT}/pkg-config" "$ROOT_DIR/scripts/verify-pkg-config.sh"
     else
@@ -243,7 +243,7 @@ if [[ "${TEXGUI_SKIP_PKG_CONFIG_SMOKE:-0}" != "1" ]]; then
     fi
 fi
 
-if [[ "${TEXGUI_SKIP_ARCHIVE_SMOKE:-0}" != "1" ]]; then
+if [[ "${TEXRENDER_SKIP_ARCHIVE_SMOKE:-0}" != "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/archive-smoke" "$ROOT_DIR/scripts/verify-release-archive.sh"
 fi
 

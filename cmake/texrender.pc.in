@@ -2,11 +2,11 @@ prefix=${pcfiledir}/../..
 exec_prefix=${prefix}
 libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
 includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
-resdir=${prefix}/@TEXGUI_INSTALL_RESDIR@
+resdir=${prefix}/@TEXRENDER_INSTALL_RESDIR@
 
-Name: texgui
+Name: texrender
 Description: @PROJECT_DESCRIPTION@
 Version: @PROJECT_VERSION@
-Requires.private: @TEXGUI_PKG_CONFIG_REQUIRES_PRIVATE@
-Libs: -L${libdir} -ltexgui -lmicrotex_core
+Requires.private: @TEXRENDER_PKG_CONFIG_REQUIRES_PRIVATE@
+Libs: -L${libdir} -ltexrender -lmicrotex_core
 Cflags: -I${includedir}

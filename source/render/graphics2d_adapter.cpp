@@ -3,7 +3,7 @@
 #include <cmath>
 #include "render/ft_font.hpp"
 
-using namespace TexGui;
+using namespace TeXRender;
 
 Graphics2DAdapter::Graphics2DAdapter(IDrawSurface& surface)
     : surface_{surface}

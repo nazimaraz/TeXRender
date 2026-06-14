@@ -1,16 +1,16 @@
 // Render a formula offscreen — no window, GPU, or display — by injecting the
 // dependency-free HeadlessSurface, then write the canvas to a PNG/PPM file. Works
-// under any TEXGUI_BACKEND, including dependency-free headless and SVG builds.
+// under any TEXRENDER_BACKEND, including dependency-free headless and SVG builds.
 //
-//   texgui_offscreen [latex] [out.png]
+//   texrender_offscreen [latex] [out.png]
 #include <cstdio>
 #include <memory>
 #include <string>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -26,9 +26,9 @@ int main(int argc, char** argv)
     const auto latex = std::string{argc > 1 ? argv[1] : R"(\int_{0}^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2})"};
     const auto out = std::string{argc > 2 ? argv[2] : "formula.png"};
 
-    auto owned = std::make_unique<TexGui::HeadlessSurface>();
+    auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     auto& canvas = *owned;
-    const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
 
     const auto formula = document.try_render(latex, 64.f, 0xff1a1a2e);
     if (!formula)

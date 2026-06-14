@@ -14,7 +14,7 @@ follow [Semantic Versioning](https://semver.org/).
 - `LatexDocument` / `RenderHandle` public API: throwing `render()` and
   `noexcept try_render()` for untrusted input, UTF-8 LaTeX strings, metrics
   (`width`/`height`/`depth`/`baseline`), recolouring, optional wrap width.
-- Baseline and anchor layout helpers in `texgui/formula_layout.hpp`.
+- Baseline and anchor layout helpers in `texrender/formula_layout.hpp`.
 - `try_render_detailed()`, `RenderResult` and `RenderErrorCode` for callers that
   need non-throwing diagnostics instead of only `std::optional`.
 - `RenderOptions` for bounded untrusted-input rendering; the simple
@@ -23,30 +23,30 @@ follow [Semantic Versioning](https://semver.org/).
   (`SDL_Renderer` integration), and a dependency-free headless RGBA canvas; any
   custom surface can be injected per document —
   `LatexDocument(res_root, std::move(surface))`.
-- `SvgSurface` and `TEXGUI_BACKEND=svg` for self-contained SVG output with
+- `SvgSurface` and `TEXRENDER_BACKEND=svg` for self-contained SVG output with
   vector shape primitives and embedded glyph PNGs.
 - `HeadlessSurface::write_png()` for dependency-free PNG output alongside PPM
   and raw RGBA pixels.
 - `CacheLimits`, `cache_limits()` and `set_cache_limits()` for CPU glyph and
   backend texture cache sizing.
-- Shared-library symbol visibility via `TEXGUI_EXPORT`, including Windows DLL
+- Shared-library symbol visibility via `TEXRENDER_EXPORT`, including Windows DLL
   import/export definitions.
 - Installed shared-library package smoke test for dynamic-linking consumers.
-- Backend-neutral umbrella header `texgui/texgui.hpp`.
-- Generated `texgui/config.hpp` feature header with backend support macros and
+- Backend-neutral umbrella header `texrender/texrender.hpp`.
+- Generated `texrender/config.hpp` feature header with backend support macros and
   constexpr flags.
 - Selective installed public headers: raylib and SDL2 surface headers are
   packaged only when the selected installed backend exports that dependency.
-- CMake package metadata: `texgui_BACKEND`, `texgui_HAS_HEADLESS`,
-  `texgui_HAS_SVG`, `texgui_HAS_RAYLIB`, `texgui_HAS_SDL2`, and package
+- CMake package metadata: `texrender_BACKEND`, `texrender_HAS_HEADLESS`,
+  `texrender_HAS_SVG`, `texrender_HAS_RAYLIB`, `texrender_HAS_SDL2`, and package
   components for `headless`, `svg`, `raylib`, and `sdl2`.
 - `CMakePresets.json` for headless, raylib, SDL2, shared, sanitizer, coverage
   and fuzzing builds.
-- `TEXGUI_WARNINGS_AS_ERRORS` for first-party warning gates without applying
+- `TEXRENDER_WARNINGS_AS_ERRORS` for first-party warning gates without applying
   warning policy to bundled third-party sources.
-- CMake package support: `install()`, exported `texgui::texgui`, generated
-  `texguiConfig.cmake`, and `texgui_copy_resources(target)`.
-- Installed `texgui.pc` metadata for pkg-config consumers.
+- CMake package support: `install()`, exported `texrender::texrender`, generated
+  `texrenderConfig.cmake`, and `texrender_copy_resources(target)`.
+- Installed `texrender.pc` metadata for pkg-config consumers.
 - Package-manager starter metadata for vcpkg and Conan consumers.
 - Dependabot configuration for GitHub Actions dependency updates.
 - Open-source project hygiene: CODEOWNERS, support policy, code of conduct,
@@ -108,4 +108,4 @@ follow [Semantic Versioning](https://semver.org/).
   baseline, resume notes, dependency/license audit, security threat model, first
   public push dry run, resume-oriented case study and release checklist.
 
-[0.1.0]: https://github.com/nazimaraz/latex-renderer/releases/tag/v0.1.0
+[0.1.0]: https://github.com/nazimaraz/TeXRender/releases/tag/v0.1.0

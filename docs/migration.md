@@ -1,6 +1,6 @@
 # Migration Guide
 
-texgui is pre-1.0, so public APIs may still evolve. This guide records the
+TeXRender is pre-1.0, so public APIs may still evolve. This guide records the
 intended migration path for consumers as the library moves through `0.x`.
 
 ## Version 0.1.x
@@ -9,19 +9,19 @@ intended migration path for consumers as the library moves through `0.x`.
 
 Stable source-level entry points:
 
-- `TexGui::LatexDocument`
-- `TexGui::RenderHandle`
-- `TexGui::RenderOptions`
-- `TexGui::RenderResult` / `TexGui::RenderError`
-- `TexGui::IDrawSurface`
-- `TexGui::HeadlessSurface`
-- `TexGui::SvgSurface`
-- `TexGui::RaylibSurface`
-- `TexGui::Sdl2Surface`
-- `TexGui::CacheLimits`
-- formula layout helpers in `texgui/formula_layout.hpp`
-- CMake target `texgui::texgui`
-- CMake helper `texgui_copy_resources(target)`
+- `TeXRender::LatexDocument`
+- `TeXRender::RenderHandle`
+- `TeXRender::RenderOptions`
+- `TeXRender::RenderResult` / `TeXRender::RenderError`
+- `TeXRender::IDrawSurface`
+- `TeXRender::HeadlessSurface`
+- `TeXRender::SvgSurface`
+- `TeXRender::RaylibSurface`
+- `TeXRender::Sdl2Surface`
+- `TeXRender::CacheLimits`
+- formula layout helpers in `texrender/formula_layout.hpp`
+- CMake target `texrender::texrender`
+- CMake helper `texrender_copy_resources(target)`
 
 Expected migration cost inside `0.1.x`:
 
@@ -49,11 +49,11 @@ if (!result)
 
 ### From top-left layout to baseline layout
 
-Use `texgui/formula_layout.hpp` when formulas need to align with surrounding UI
+Use `texrender/formula_layout.hpp` when formulas need to align with surrounding UI
 text:
 
 ```cpp
-TexGui::draw_at_baseline(formula, x, row_baseline);
+TeXRender::draw_at_baseline(formula, x, row_baseline);
 ```
 
 ### From default GUI backend to injected surfaces
@@ -62,9 +62,9 @@ Inject a surface when you need deterministic output, server-side rendering, or a
 custom renderer:
 
 ```cpp
-auto surface = std::make_unique<TexGui::HeadlessSurface>();
+auto surface = std::make_unique<TeXRender::HeadlessSurface>();
 auto& canvas = *surface;
-TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(surface));
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(surface));
 ```
 
 ## Before 1.0

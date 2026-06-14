@@ -1,6 +1,6 @@
 # Registry Submissions
 
-texgui already carries starter metadata for Conan and vcpkg. Treat public
+TeXRender already carries starter metadata for Conan and vcpkg. Treat public
 registry submission as a follow-up to the first green public tag, not a
 pre-push step.
 
@@ -21,25 +21,25 @@ Before opening registry PRs:
 The local overlay port lives at:
 
 ```text
-packaging/vcpkg-overlay/ports/latex-renderer/
+packaging/vcpkg-overlay/ports/texrender/
 ```
 
 Before submitting to the public registry:
 
-1. Replace the local `TEXGUI_VCPKG_SOURCE_DIR` development source path with a
+1. Replace the local `TEXRENDER_VCPKG_SOURCE_DIR` development source path with a
    release archive or GitHub tag source.
 2. Add the registry-required source hash.
 3. Keep features aligned with `vcpkg.json`: default `raylib`, optional `sdl2`.
 4. Validate the default, no-default-feature/headless, `raylib`, and `sdl2`
    combinations.
-5. Confirm installed CMake config files land under `share/latex-renderer` or the
+5. Confirm installed CMake config files land under `lib/cmake/texrender` or the
    layout expected by the registry review.
 
 The local smoke command remains:
 
 ```sh
 VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
-TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' \
+TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' \
   VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 ```
 

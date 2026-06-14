@@ -2,12 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-fresh-clone}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-fresh-clone}"
 GENERATOR="${GENERATOR:-Ninja}"
-SOURCE_REPO="${TEXGUI_FRESH_CLONE_SOURCE:-$ROOT_DIR}"
-SOURCE_REF="${TEXGUI_FRESH_CLONE_REF:-$(git -C "$ROOT_DIR" rev-parse HEAD)}"
-ALLOW_DIRTY="${TEXGUI_FRESH_CLONE_ALLOW_DIRTY:-0}"
-FULL_SMOKE="${TEXGUI_FRESH_CLONE_FULL:-0}"
+SOURCE_REPO="${TEXRENDER_FRESH_CLONE_SOURCE:-$ROOT_DIR}"
+SOURCE_REF="${TEXRENDER_FRESH_CLONE_REF:-$(git -C "$ROOT_DIR" rev-parse HEAD)}"
+ALLOW_DIRTY="${TEXRENDER_FRESH_CLONE_ALLOW_DIRTY:-0}"
+FULL_SMOKE="${TEXRENDER_FRESH_CLONE_FULL:-0}"
 CLONE_DIR="${BUILD_ROOT}/clone"
 BUILD_DIR="${BUILD_ROOT}/build"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix"
@@ -45,7 +45,7 @@ fi
 
 if [[ "$ALLOW_DIRTY" != "1" && -n "$(git -C "$ROOT_DIR" status --porcelain)" ]]; then
     printf 'fresh-clone verification requires a clean worktree by default\n' >&2
-    printf 'commit/stash changes, or set TEXGUI_FRESH_CLONE_ALLOW_DIRTY=1 to test committed HEAD anyway\n' >&2
+    printf 'commit/stash changes, or set TEXRENDER_FRESH_CLONE_ALLOW_DIRTY=1 to test committed HEAD anyway\n' >&2
     git -C "$ROOT_DIR" status --short >&2
     exit 1
 fi
@@ -62,11 +62,11 @@ run python3 "$CLONE_DIR/scripts/check-public-api.py"
 
 run cmake -S "$CLONE_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_WARNINGS_AS_ERRORS=ON
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_WARNINGS_AS_ERRORS=ON
 run cmake --build "$BUILD_DIR" -j
 run ctest --test-dir "$BUILD_DIR" --output-on-failure
-run "$BUILD_DIR/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
+run "$BUILD_DIR/texrender_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula.png"
 
 run cmake --install "$BUILD_DIR" --prefix "$INSTALL_PREFIX"
 run cmake -S "$CLONE_DIR/tests/package_consumer" -B "$PACKAGE_CONSUMER_BUILD" -G "$GENERATOR" \
@@ -75,17 +75,17 @@ run cmake -S "$CLONE_DIR/tests/package_consumer" -B "$PACKAGE_CONSUMER_BUILD" -G
 run cmake --build "$PACKAGE_CONSUMER_BUILD" -j
 run ctest --test-dir "$PACKAGE_CONSUMER_BUILD" --output-on-failure
 run env \
-    TEXGUI_HEADER_USE_EXISTING_INSTALL=1 \
-    TEXGUI_HEADER_BACKEND=headless \
-    TEXGUI_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
-    TEXGUI_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
+    TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
+    TEXRENDER_HEADER_BACKEND=headless \
+    TEXRENDER_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \
+    TEXRENDER_HEADER_CONSUMER_BUILD="${BUILD_ROOT}/installed-headers" \
     "$CLONE_DIR/scripts/verify-installed-headers.sh"
 
 run cmake -S "$CLONE_DIR/examples/consumer-fetchcontent" -B "$FETCH_CONSUMER_BUILD" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_FETCHCONTENT_SOURCE_DIR="$CLONE_DIR"
+    -DTEXRENDER_FETCHCONTENT_SOURCE_DIR="$CLONE_DIR"
 run cmake --build "$FETCH_CONSUMER_BUILD" -j
-run cmake -E chdir "$FETCH_CONSUMER_BUILD" "$FETCH_CONSUMER_BUILD/texgui_fetchcontent_example"
+run cmake -E chdir "$FETCH_CONSUMER_BUILD" "$FETCH_CONSUMER_BUILD/texrender_fetchcontent_example"
 
 if [[ "$FULL_SMOKE" == "1" ]]; then
     run env BUILD_ROOT="${BUILD_ROOT}/cpack" "$CLONE_DIR/scripts/verify-cpack.sh"

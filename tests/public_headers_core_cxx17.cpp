@@ -1,47 +1,47 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
-#include <texgui/cache_options.hpp>
-#include <texgui/config.hpp>
-#include <texgui/draw_surface.hpp>
-#include <texgui/export.hpp>
-#include <texgui/formula_layout.hpp>
-#include <texgui/glyph_bitmap.hpp>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
-#include <texgui/render_handle.hpp>
-#include <texgui/svg_surface.hpp>
-#include <texgui/texgui.hpp>
-#include <texgui/version.hpp>
+#include <texrender/cache_options.hpp>
+#include <texrender/config.hpp>
+#include <texrender/draw_surface.hpp>
+#include <texrender/export.hpp>
+#include <texrender/formula_layout.hpp>
+#include <texrender/glyph_bitmap.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
+#include <texrender/render_handle.hpp>
+#include <texrender/svg_surface.hpp>
+#include <texrender/texrender.hpp>
+#include <texrender/version.hpp>
 
-static_assert(TexGui::version_major == TEXGUI_VERSION_MAJOR);
-static_assert(TEXGUI_HAS_HEADLESS == 1);
-static_assert(TEXGUI_HAS_SVG == 1);
-static_assert(TexGui::has_headless);
-static_assert(TexGui::has_svg);
-static_assert(std::is_move_constructible_v<TexGui::RenderHandle>);
-static_assert(!std::is_copy_constructible_v<TexGui::RenderHandle>);
-static_assert(!std::is_copy_constructible_v<TexGui::LatexDocument>);
+static_assert(TeXRender::version_major == TEXRENDER_VERSION_MAJOR);
+static_assert(TEXRENDER_HAS_HEADLESS == 1);
+static_assert(TEXRENDER_HAS_SVG == 1);
+static_assert(TeXRender::has_headless);
+static_assert(TeXRender::has_svg);
+static_assert(std::is_move_constructible_v<TeXRender::RenderHandle>);
+static_assert(!std::is_copy_constructible_v<TeXRender::RenderHandle>);
+static_assert(!std::is_copy_constructible_v<TeXRender::LatexDocument>);
 
 int main()
 {
-    auto options = TexGui::RenderOptions{};
+    auto options = TeXRender::RenderOptions{};
     options.text_size = 24.f;
     options.argb = 0xff000000;
 
-    auto error = TexGui::RenderError{};
-    error.code = TexGui::RenderErrorCode::parse_error;
+    auto error = TeXRender::RenderError{};
+    error.code = TeXRender::RenderErrorCode::parse_error;
     error.message = "parse error";
 
-    const auto result = TexGui::RenderResult{std::move(error)};
-    auto canvas = TexGui::HeadlessSurface{};
+    const auto result = TeXRender::RenderResult{std::move(error)};
+    auto canvas = TeXRender::HeadlessSurface{};
     canvas.resize(2, 2);
     canvas.clear(0x00000000);
 
-    auto svg = TexGui::SvgSurface{2, 2};
+    auto svg = TeXRender::SvgSurface{2, 2};
     svg.clear(0xffffffff);
 
-    auto limits = TexGui::CacheLimits{};
+    auto limits = TeXRender::CacheLimits{};
     limits.max_cpu_glyphs = 16;
     limits.max_gpu_textures = 16;
 

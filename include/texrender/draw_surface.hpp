@@ -1,12 +1,12 @@
 #pragma once
 
 #include <cstdint>
-#include "texgui/export.hpp"
-#include "texgui/glyph_bitmap.hpp"
+#include "texrender/export.hpp"
+#include "texrender/glyph_bitmap.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
-    /// Backend interface used by MicroTeX draw commands after texgui has
+    /// Backend interface used by MicroTeX draw commands after texrender has
     /// applied transforms, color state, and FreeType glyph rasterization.
     ///
     /// Coordinates are screen pixels in the target surface. Implementations can
@@ -15,7 +15,7 @@ namespace TexGui
     /// RenderHandle::draw(), so custom backends do not need to store draw
     /// commands unless their own rendering API requires it. All dimensions are
     /// floating-point pixels so backends can preserve subpixel placement.
-    class TEXGUI_EXPORT IDrawSurface
+    class TEXRENDER_EXPORT IDrawSurface
     {
     public:
         IDrawSurface();
@@ -46,4 +46,4 @@ namespace TexGui
         /// Backends that cannot rotate glyph bitmaps may ignore `angle`.
         virtual void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) = 0;
     };
-} // namespace TexGui
+} // namespace TeXRender

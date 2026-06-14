@@ -84,7 +84,7 @@ def main() -> int:
     require_contains(
         "CMakeLists.txt",
         (
-            'install(DIRECTORY "${MICROTEX_RES_DIR}/" DESTINATION "${TEXGUI_INSTALL_RESDIR}")',
+            'install(DIRECTORY "${MICROTEX_RES_DIR}/" DESTINATION "${TEXRENDER_INSTALL_RESDIR}")',
             "CPACK_RESOURCE_FILE_LICENSE",
         ),
         failures,

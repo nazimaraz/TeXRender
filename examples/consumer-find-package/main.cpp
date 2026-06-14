@@ -1,17 +1,17 @@
 #include <iostream>
 #include <memory>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#error "texgui_copy_resources() must define TEXGUI_RES_DIR"
+#ifndef TEXRENDER_RES_DIR
+#error "texrender_copy_resources() must define TEXRENDER_RES_DIR"
 #endif
 
 int main()
 {
-    auto owned = std::make_unique<TexGui::HeadlessSurface>();
+    auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     auto* const canvas = owned.get();
-    const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
     const auto formula = document.try_render(R"(\int_0^1 x^2\,dx)", 42.f, 0xff202020);
     if (!formula)
         return 1;

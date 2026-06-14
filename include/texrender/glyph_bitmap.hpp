@@ -2,9 +2,9 @@
 
 #include <cstdint>
 
-namespace TexGui
+namespace TeXRender
 {
-    /// Borrowed grayscale glyph bitmap produced by texgui's FreeType cache.
+    /// Borrowed grayscale glyph bitmap produced by texrender's FreeType cache.
     ///
     /// The buffer is owned by the cache and remains valid for the duration of
     /// the draw call. `left` and `top` are FreeType bitmap bearings relative to
@@ -28,4 +28,4 @@ namespace TexGui
         /// Stable cache key for backend-side glyph caches.
         uint64_t key = 0;
     };
-} // namespace TexGui
+} // namespace TeXRender

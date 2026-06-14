@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_DIR="${BUILD_DIR:-/tmp/texgui-tsan}"
+BUILD_DIR="${BUILD_DIR:-/tmp/texrender-tsan}"
 GENERATOR="${GENERATOR:-Ninja}"
 CXX_COMPILER="${CXX:-clang++}"
 
@@ -32,16 +32,16 @@ cd "$ROOT_DIR"
 run cmake -S "$ROOT_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_CXX_COMPILER="$CXX_COMPILER" \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_BUILD_EXAMPLES=OFF \
-    -DTEXGUI_BUILD_BENCHMARKS=OFF \
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_BUILD_EXAMPLES=OFF \
+    -DTEXRENDER_BUILD_BENCHMARKS=OFF \
     -DCMAKE_CXX_FLAGS="-fsanitize=thread -fno-omit-frame-pointer ${CMAKE_CXX_FLAGS:-}" \
     -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=thread ${CMAKE_EXE_LINKER_FLAGS:-}"
 
-run cmake --build "$BUILD_DIR" --target texgui_lifetime_stress_test texgui_headless_render_test -j
+run cmake --build "$BUILD_DIR" --target texrender_lifetime_stress_test texrender_headless_render_test -j
 
 export TSAN_OPTIONS="${TSAN_OPTIONS:-halt_on_error=1}"
-run "$BUILD_DIR/texgui_lifetime_stress_test"
-run "$BUILD_DIR/texgui_headless_render_test"
+run "$BUILD_DIR/texrender_lifetime_stress_test"
+run "$BUILD_DIR/texrender_headless_render_test"
 
 printf '\nThreadSanitizer smoke completed successfully\n'

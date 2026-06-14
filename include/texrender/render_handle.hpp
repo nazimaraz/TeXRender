@@ -2,14 +2,14 @@
 
 #include <cstdint>
 #include <memory>
-#include "texgui/export.hpp"
+#include "texrender/export.hpp"
 
 namespace tex
 {
     class TeXRender;
 }
 
-namespace TexGui
+namespace TeXRender
 {
     class LatexDocument;
 
@@ -27,7 +27,7 @@ namespace TexGui
     ///
     /// Drawing is immediate: `draw(x, y)` sends primitives to the document's
     /// surface using the current transform/color state owned by the handle.
-    class TEXGUI_EXPORT RenderHandle
+    class TEXRENDER_EXPORT RenderHandle
     {
     public:
         ~RenderHandle();
@@ -66,4 +66,4 @@ namespace TexGui
         std::shared_ptr<detail::DocumentState> state_;
         std::unique_ptr<tex::TeXRender> render_;
     };
-} // namespace TexGui
+} // namespace TeXRender

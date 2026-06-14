@@ -1,4 +1,4 @@
-#include "texgui/headless_surface.hpp"
+#include "texrender/headless_surface.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {

@@ -2,7 +2,7 @@
 #include <cstdio>
 #include "render/transform2d.hpp"
 
-using TexGui::Transform2D;
+using TeXRender::Transform2D;
 
 namespace
 {

@@ -2,11 +2,11 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 int main(int argc, char** argv)
@@ -24,14 +24,14 @@ int main(int argc, char** argv)
         };
     }
 
-    auto owned = std::make_unique<TexGui::HeadlessSurface>();
+    auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     auto* const canvas = owned.get();
-    const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
 
     auto index = 1;
     for (const auto& latex : formulas)
     {
-        auto options = TexGui::RenderOptions{};
+        auto options = TeXRender::RenderOptions{};
         options.text_size = 48.f;
         options.argb = 0xff111111;
         options.max_input_bytes = 8192;

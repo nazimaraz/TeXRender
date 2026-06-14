@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap is intentionally practical. texgui should stay a small rendering
+This roadmap is intentionally practical. TeXRender should stay a small rendering
 library with a clear embedding story, not grow into a full TeX distribution.
 
 ## Near Term

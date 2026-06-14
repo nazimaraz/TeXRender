@@ -1,16 +1,16 @@
 # API Compatibility
 
-texgui is pre-1.0, so the project is still allowed to evolve. The goal is to
+TeXRender is pre-1.0, so the project is still allowed to evolve. The goal is to
 make that evolution explicit rather than surprising consumers.
 
 ## Public Surface
 
 These files are the public API:
 
-- `include/texgui/*.hpp`
-- the exported CMake target `texgui::texgui`
-- CMake helper functions installed from `cmake/texguiHelpers.cmake`
-- installed `pkg-config` metadata from `texgui.pc`
+- `include/texrender/*.hpp`
+- the exported CMake target `texrender::texrender`
+- CMake helper functions installed from `cmake/texrenderHelpers.cmake`
+- installed `pkg-config` metadata from `texrender.pc`
 - documented executable examples in `examples/`
 
 Implementation files under `source/`, bundled MicroTeX integration details, test
@@ -18,19 +18,19 @@ helpers, and CI scripts are not API.
 
 ## Naming
 
-The repository and package-manager package name is `latex-renderer`. The public
-C++ namespace, installed headers, CMake package, exported target, and pkg-config
-file use `texgui`/`TexGui`: `TexGui::LatexDocument`,
-`#include <texgui/texgui.hpp>`, `find_package(texgui CONFIG REQUIRED)`,
-`texgui::texgui`, and `texgui.pc`.
+The repository name is `TeXRender`. Package-manager IDs, installed headers,
+CMake package, exported target, and pkg-config file use lowercase `texrender`;
+the C++ namespace is `TeXRender`: `TeXRender::LatexDocument`,
+`#include <texrender/texrender.hpp>`, `find_package(texrender CONFIG REQUIRED)`,
+`texrender::texrender`, and `texrender.pc`.
 
 ## Compatibility Promise
 
 For `0.1.x` releases:
 
 - Public headers stay C++17-compatible.
-- `texgui::texgui` remains the CMake target name.
-- `texgui_copy_resources(target)` remains the resource-copy helper.
+- `texrender::texrender` remains the CMake target name.
+- `texrender_copy_resources(target)` remains the resource-copy helper.
 - Existing public functions and classes are not renamed or removed without a
   changelog entry and migration note.
 - New backends may be added without changing `IDrawSurface`.
@@ -41,7 +41,7 @@ release notes.
 
 ## ABI
 
-texgui does not promise binary ABI stability yet. Consumers should rebuild when
+TeXRender does not promise binary ABI stability yet. Consumers should rebuild when
 upgrading the library, especially across compiler versions, standard libraries,
 or shared-library builds. Source compatibility is the priority until a stable
 `1.x` line exists.
@@ -53,8 +53,8 @@ The repository keeps several compatibility checks in CI:
 - public headers compile as C++17
 - the public API snapshot in `docs/public-api-snapshot.txt` matches the current
   headers and install metadata
-- installed `find_package(texgui CONFIG REQUIRED)` consumers build and run
-- installed `pkg-config --static texgui` consumers build and run on Unix-like
+- installed `find_package(texrender CONFIG REQUIRED)` consumers build and run
+- installed `pkg-config --static texrender` consumers build and run on Unix-like
   hosts with pkg-config metadata for dependencies
 - shared-library install/consumer checks run on Windows
 - Conan and vcpkg entry points build package-shaped consumers

@@ -1,10 +1,10 @@
 #include <cstdio>
 #include <SDL.h>
-#include <texgui/latex_document.hpp>
-#include <texgui/sdl2_surface.hpp>
+#include <texrender/latex_document.hpp>
+#include <texrender/sdl2_surface.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 int main()
@@ -16,7 +16,7 @@ int main()
     }
 
     auto* const window =
-        SDL_CreateWindow("texgui SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 760, 420, SDL_WINDOW_SHOWN);
+        SDL_CreateWindow("texrender SDL2", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 760, 420, SDL_WINDOW_SHOWN);
     if (!window)
     {
         std::fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
@@ -33,10 +33,10 @@ int main()
         return 1;
     }
 
-    TexGui::set_default_sdl_renderer(renderer);
+    TeXRender::set_default_sdl_renderer(renderer);
 
     {
-        const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR};
+        const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
         const auto formula = document.render(R"(\sum_{n=1}^{\infty}\frac{1}{n^2}=\frac{\pi^2}{6})", 46.f, 0xff101820);
 
         auto running = true;
@@ -63,7 +63,7 @@ int main()
         }
     }
 
-    TexGui::set_default_sdl_renderer(nullptr);
+    TeXRender::set_default_sdl_renderer(nullptr);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

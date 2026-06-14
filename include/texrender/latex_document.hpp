@@ -6,11 +6,11 @@
 #include <optional>
 #include <string>
 #include <utility>
-#include "texgui/draw_surface.hpp"
-#include "texgui/export.hpp"
-#include "texgui/render_handle.hpp"
+#include "texrender/draw_surface.hpp"
+#include "texrender/export.hpp"
+#include "texrender/render_handle.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     namespace detail
     {
@@ -145,14 +145,14 @@ namespace TexGui
     /// context lifetime requirements. Construct and use documents on the
     /// rendering thread. The first document in a process initializes MicroTeX's
     /// resource root; later documents should use the same `res_root`.
-    class TEXGUI_EXPORT LatexDocument
+    class TEXRENDER_EXPORT LatexDocument
     {
     public:
         /// Construct a document using a MicroTeX resource directory.
         ///
         /// `res_root` must point to MicroTeX's runtime resource tree. When
-        /// `surface` is null, texgui creates the default surface for the
-        /// configured backend (`TEXGUI_BACKEND`). Pass a custom IDrawSurface to
+        /// `surface` is null, texrender creates the default surface for the
+        /// configured backend (`TEXRENDER_BACKEND`). Pass a custom IDrawSurface to
         /// render into another target, for example HeadlessSurface for offscreen
         /// RGBA output. GUI surfaces are borrowed from their toolkit context, so
         /// keep that context alive until documents and handles are destroyed.
@@ -198,4 +198,4 @@ namespace TexGui
     private:
         std::shared_ptr<detail::DocumentState> state_;
     };
-} // namespace TexGui
+} // namespace TeXRender

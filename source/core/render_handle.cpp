@@ -1,10 +1,10 @@
-#include "texgui/render_handle.hpp"
+#include "texrender/render_handle.hpp"
 #include "core/document_state.hpp"
 #include "render.h"
 #include "render/graphics2d_adapter.hpp"
 #include <mutex>
 
-using namespace TexGui;
+using namespace TeXRender;
 
 RenderHandle::RenderHandle(tex::TeXRender* render, std::shared_ptr<detail::DocumentState> state)
     : state_{std::move(state)}

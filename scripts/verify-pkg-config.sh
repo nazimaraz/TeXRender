@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui-pkg-config}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-pkg-config}"
 GENERATOR="${GENERATOR:-Ninja}"
 BUILD_DIR="${BUILD_ROOT}/build"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix"
@@ -44,16 +44,16 @@ mkdir -p "$CONSUMER_BUILD_DIR"
 run cmake -S "$ROOT_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_BUILD_EXAMPLES=OFF \
-    -DTEXGUI_BUILD_TESTS=OFF \
-    -DTEXGUI_BUILD_BENCHMARKS=OFF
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_BUILD_EXAMPLES=OFF \
+    -DTEXRENDER_BUILD_TESTS=OFF \
+    -DTEXRENDER_BUILD_BENCHMARKS=OFF
 run cmake --build "$BUILD_DIR" -j
 run cmake --install "$BUILD_DIR"
 
-PC_FILE="$(find "$INSTALL_PREFIX" -path '*/pkgconfig/texgui.pc' -type f -print -quit)"
+PC_FILE="$(find "$INSTALL_PREFIX" -path '*/pkgconfig/texrender.pc' -type f -print -quit)"
 if [[ -z "$PC_FILE" ]]; then
-    printf 'installed texgui.pc was not found under %s\n' "$INSTALL_PREFIX" >&2
+    printf 'installed texrender.pc was not found under %s\n' "$INSTALL_PREFIX" >&2
     exit 1
 fi
 
@@ -77,8 +77,8 @@ if has brew; then
     done
 fi
 export PKG_CONFIG_PATH="${pkg_config_path}${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
-run pkg-config --exists texgui
-run pkg-config --print-errors --exists --static texgui
+run pkg-config --exists texrender
+run pkg-config --print-errors --exists --static texrender
 run make -C "$ROOT_DIR/examples/consumer-pkg-config" \
     BUILD_DIR="$CONSUMER_BUILD_DIR" \
     CXX="$CXX_BIN" \

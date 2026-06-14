@@ -1,7 +1,7 @@
 #include <type_traits>
-#include <texgui/raylib_surface.hpp>
+#include <texrender/raylib_surface.hpp>
 
-static_assert(!std::is_copy_constructible_v<TexGui::RaylibSurface>);
+static_assert(!std::is_copy_constructible_v<TeXRender::RaylibSurface>);
 
 int main()
 {

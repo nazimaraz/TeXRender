@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in improving latex-renderer!
+Thanks for your interest in improving TeXRender!
 
 Please follow the expectations in [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 Usage questions and support boundaries are described in [SUPPORT.md](SUPPORT.md).
@@ -14,12 +14,12 @@ cmake --build build -j
 ctest --test-dir build --output-on-failure
 
 # headless backend — no GPU, display, or raylib needed
-cmake -S . -B build-headless -DTEXGUI_BACKEND=headless
+cmake -S . -B build-headless -DTEXRENDER_BACKEND=headless
 cmake --build build-headless -j
 ctest --test-dir build-headless --output-on-failure
 
 # SVG backend — validates serialized vector output
-cmake -S . -B build-svg -DTEXGUI_BACKEND=svg
+cmake -S . -B build-svg -DTEXRENDER_BACKEND=svg
 cmake --build build-svg -j
 ctest --test-dir build-svg --output-on-failure
 ```
@@ -45,14 +45,14 @@ library builds and project options.
 Optional developer checks:
 
 ```sh
-cmake --build build-headless --target texgui_render_benchmark -j
-./build-headless/texgui_render_benchmark
+cmake --build build-headless --target texrender_render_benchmark -j
+./build-headless/texrender_render_benchmark
 
-cmake -S . -B build-fuzz -DTEXGUI_BACKEND=headless -DTEXGUI_BUILD_FUZZERS=ON \
-  -DTEXGUI_BUILD_EXAMPLES=OFF -DTEXGUI_BUILD_TESTS=OFF -DTEXGUI_BUILD_BENCHMARKS=OFF \
+cmake -S . -B build-fuzz -DTEXRENDER_BACKEND=headless -DTEXRENDER_BUILD_FUZZERS=ON \
+  -DTEXRENDER_BUILD_EXAMPLES=OFF -DTEXRENDER_BUILD_TESTS=OFF -DTEXRENDER_BUILD_BENCHMARKS=OFF \
   -DCMAKE_CXX_COMPILER=clang++
-cmake --build build-fuzz --target texgui_try_render_fuzzer -j
-./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256
+cmake --build build-fuzz --target texrender_try_render_fuzzer -j
+./build-fuzz/texrender_try_render_fuzzer -runs=1000 -max_len=256
 ```
 
 Static analysis and coverage are documented in
@@ -78,19 +78,19 @@ the vcpkg overlay:
 ```sh
 conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"
 VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
-TEXGUI_VCPKG_PACKAGE_SPEC='latex-renderer[sdl2]' \
+TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' \
   VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 ```
 
 Generated gallery artifacts can be refreshed with:
 
 ```sh
-TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh
+TEXRENDER_BUILD_DIR=build-headless scripts/generate-gallery.sh
 ```
 
 Visual regression tests are structural by default. Maintainers can opt into
-exact PNG snapshot comparisons by setting `TEXGUI_VISUAL_SNAPSHOT_DIR`; set
-`TEXGUI_VISUAL_UPDATE_SNAPSHOTS=1` at the same time to intentionally rewrite
+exact PNG snapshot comparisons by setting `TEXRENDER_VISUAL_SNAPSHOT_DIR`; set
+`TEXRENDER_VISUAL_UPDATE_SNAPSHOTS=1` at the same time to intentionally rewrite
 the snapshot files.
 
 For a full pre-release local pass, run:
@@ -108,7 +108,7 @@ Local clean-clone and cleanup rehearsal is documented in
 
 ## Code style
 
-* Implementation files are C++23; the public headers in `include/texgui/` must
+* Implementation files are C++23; the public headers in `include/texrender/` must
   stay **C++17-compatible** — that is the standard consumers build against.
 * Formatting is enforced in CI with **clang-format 22** and the repo's
   [`.clang-format`](.clang-format). Before committing:
@@ -119,7 +119,7 @@ Local clean-clone and cleanup rehearsal is documented in
 
 * A [`.clang-tidy`](.clang-tidy) configuration is enforced in CI for project
   translation units.
-* `TEXGUI_WARNINGS_AS_ERRORS=ON` enables the same first-party warning policy used
+* `TEXRENDER_WARNINGS_AS_ERRORS=ON` enables the same first-party warning policy used
   by the strict CI job. Third-party code is still treated separately.
 * GitHub Actions workflows are linted with actionlint in CI.
 * Match the existing naming: `lower_case` functions and variables, `CamelCase`
@@ -130,7 +130,7 @@ Local clean-clone and cleanup rehearsal is documented in
 An out-of-tree backend needs no changes here at all — implement `IDrawSurface`
 and inject it into `LatexDocument` (see "Adding a backend" in the README). For
 an in-tree backend: put the sources plus a small `make_surface` factory file
-under `source/backend/<name>/`, add a `TEXGUI_BACKEND` branch in
+under `source/backend/<name>/`, add a `TEXRENDER_BACKEND` branch in
 `CMakeLists.txt`, and extend CI if it can build headlessly.
 
 ## Pull requests

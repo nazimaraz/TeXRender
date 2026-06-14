@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-namespace TexGui
+namespace TeXRender
 {
     class Transform2D
     {
@@ -87,4 +87,4 @@ namespace TexGui
         float e_ = 0.f;
         float f_ = 0.f;
     };
-} // namespace TexGui
+} // namespace TeXRender

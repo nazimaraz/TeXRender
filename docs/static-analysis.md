@@ -33,10 +33,10 @@ TSan.
 cmake -S . -B build-tidy -G Ninja \
   -DCMAKE_BUILD_TYPE=Debug \
   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DTEXGUI_BACKEND=headless \
-  -DTEXGUI_BUILD_EXAMPLES=OFF \
-  -DTEXGUI_BUILD_TESTS=ON \
-  -DTEXGUI_BUILD_BENCHMARKS=OFF
+  -DTEXRENDER_BACKEND=headless \
+  -DTEXRENDER_BUILD_EXAMPLES=OFF \
+  -DTEXRENDER_BUILD_TESTS=ON \
+  -DTEXRENDER_BUILD_BENCHMARKS=OFF
 
 clang-tidy -p build-tidy source/core/latex_document.cpp
 ```
@@ -56,7 +56,7 @@ Or use the CMake preset directly:
 
 ```sh
 cmake --preset tsan
-cmake --build --preset tsan --target texgui_lifetime_stress_test texgui_headless_render_test
-TSAN_OPTIONS=halt_on_error=1 ./out/build/tsan/texgui_lifetime_stress_test
-TSAN_OPTIONS=halt_on_error=1 ./out/build/tsan/texgui_headless_render_test
+cmake --build --preset tsan --target texrender_lifetime_stress_test texrender_headless_render_test
+TSAN_OPTIONS=halt_on_error=1 ./out/build/tsan/texrender_lifetime_stress_test
+TSAN_OPTIONS=halt_on_error=1 ./out/build/tsan/texrender_headless_render_test
 ```

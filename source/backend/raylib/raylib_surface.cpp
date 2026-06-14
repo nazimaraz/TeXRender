@@ -1,11 +1,11 @@
-#include "texgui/raylib_surface.hpp"
+#include "texrender/raylib_surface.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <rlgl.h>
 #include <vector>
-#include "texgui/cache_options.hpp"
+#include "texrender/cache_options.hpp"
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {

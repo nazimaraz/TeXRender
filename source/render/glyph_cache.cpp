@@ -8,9 +8,9 @@
 #include <mutex>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "texgui/cache_options.hpp"
+#include "texrender/cache_options.hpp"
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {
@@ -169,7 +169,7 @@ std::string detail::default_font_path()
 bool detail::debug_enabled()
 {
     static const auto enabled = [] {
-        const auto* const value = std::getenv("TEXGUI_DEBUG");
+        const auto* const value = std::getenv("TEXRENDER_DEBUG");
         return value && value[0] != '\0';
     }();
     return enabled;
@@ -178,5 +178,5 @@ bool detail::debug_enabled()
 void detail::debug_log(const std::string& message)
 {
     if (debug_enabled())
-        std::fprintf(stderr, "[texgui] %s\n", message.c_str());
+        std::fprintf(stderr, "[texrender] %s\n", message.c_str());
 }

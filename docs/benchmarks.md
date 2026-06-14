@@ -6,9 +6,9 @@ headless drawing for a few representative formulas.
 ## Build And Run
 
 ```sh
-cmake -S . -B build -DTEXGUI_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target texgui_render_benchmark -j
-./build/texgui_render_benchmark
+cmake -S . -B build -DTEXRENDER_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target texrender_render_benchmark -j
+./build/texrender_render_benchmark
 ```
 
 The output reports:
@@ -31,6 +31,6 @@ failures.
 To check a local run against the baseline:
 
 ```sh
-./build/texgui_render_benchmark | tee /tmp/texgui-benchmark.txt
-python3 scripts/check-benchmark-baseline.py --input /tmp/texgui-benchmark.txt
+./build/texrender_render_benchmark | tee /tmp/texrender-benchmark.txt
+python3 scripts/check-benchmark-baseline.py --input /tmp/texrender-benchmark.txt
 ```

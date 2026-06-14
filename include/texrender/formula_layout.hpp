@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cmath>
-#include "texgui/render_handle.hpp"
+#include "texrender/render_handle.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     /// Public formula metrics collected from a RenderHandle.
     ///
@@ -87,4 +87,4 @@ namespace TexGui
     {
         formula.draw(x, aligned_top(formula, y, anchor));
     }
-} // namespace TexGui
+} // namespace TeXRender

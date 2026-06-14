@@ -1,13 +1,13 @@
-#include "texgui/sdl2_surface.hpp"
+#include "texrender/sdl2_surface.hpp"
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <SDL.h>
-#include "texgui/cache_options.hpp"
+#include "texrender/cache_options.hpp"
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {
@@ -26,7 +26,7 @@ namespace
     void ensure_renderer(SDL_Renderer* const renderer)
     {
         if (!renderer)
-            throw std::invalid_argument("texgui: Sdl2Surface requires an SDL_Renderer");
+            throw std::invalid_argument("texrender: Sdl2Surface requires an SDL_Renderer");
     }
 
     [[nodiscard]] SDL_FRect rect(const float x, const float y, const float w, const float h)
@@ -35,12 +35,12 @@ namespace
     }
 } // namespace
 
-void TexGui::set_default_sdl_renderer(SDL_Renderer* const renderer) noexcept
+void TeXRender::set_default_sdl_renderer(SDL_Renderer* const renderer) noexcept
 {
     g_default_renderer = renderer;
 }
 
-SDL_Renderer* TexGui::default_sdl_renderer() noexcept
+SDL_Renderer* TeXRender::default_sdl_renderer() noexcept
 {
     return g_default_renderer;
 }
@@ -191,12 +191,12 @@ SDL_Texture* Sdl2Surface::texture_for(const GlyphBitmap& glyph)
     auto* const surface =
         SDL_CreateRGBSurfaceWithFormatFrom(rgba.data(), glyph.width, glyph.height, 32, glyph.width * 4, SDL_PIXELFORMAT_RGBA32);
     if (!surface)
-        throw std::runtime_error(std::string{"texgui: SDL_CreateRGBSurfaceWithFormatFrom failed: "} + SDL_GetError());
+        throw std::runtime_error(std::string{"texrender: SDL_CreateRGBSurfaceWithFormatFrom failed: "} + SDL_GetError());
 
     auto* const texture = SDL_CreateTextureFromSurface(renderer_, surface);
     SDL_FreeSurface(surface);
     if (!texture)
-        throw std::runtime_error(std::string{"texgui: SDL_CreateTextureFromSurface failed: "} + SDL_GetError());
+        throw std::runtime_error(std::string{"texrender: SDL_CreateTextureFromSurface failed: "} + SDL_GetError());
 
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 

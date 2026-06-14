@@ -1,23 +1,23 @@
 // Minimal custom backend: count MicroTeX draw calls without drawing pixels.
 //
-// This is useful as a starting point for integrating texgui with an engine that
+// This is useful as a starting point for integrating texrender with an engine that
 // has its own command buffer or renderer. Real backends translate these methods
 // to their graphics API; the parser, layout, transforms, and glyph rasterization
-// stay inside texgui.
+// stay inside TeXRender.
 #include <cstdint>
 #include <cstdio>
 #include <memory>
-#include <texgui/draw_surface.hpp>
-#include <texgui/glyph_bitmap.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/draw_surface.hpp>
+#include <texrender/glyph_bitmap.hpp>
+#include <texrender/latex_document.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
 {
-    class CountingSurface final : public TexGui::IDrawSurface
+    class CountingSurface final : public TeXRender::IDrawSurface
     {
     public:
         void set_color(uint32_t argb) override
@@ -51,7 +51,7 @@ namespace
             ++rects;
         }
 
-        void draw_glyph(const TexGui::GlyphBitmap& glyph, float, float, float) override
+        void draw_glyph(const TeXRender::GlyphBitmap& glyph, float, float, float) override
         {
             ++glyphs;
             covered_pixels += static_cast<int>(glyph.width) * static_cast<int>(glyph.height);
@@ -70,7 +70,7 @@ int main()
 {
     auto owned = std::make_unique<CountingSurface>();
     auto* const stats = owned.get();
-    const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
     const auto formula = document.render(R"(\frac{a^2+b^2}{c})", 48.f, 0xff223344);
 
     formula.draw(0, 0);

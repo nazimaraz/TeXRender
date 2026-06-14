@@ -1,10 +1,10 @@
-// Compiled only when TEXGUI_BACKEND=raylib: documents draw into a
+// Compiled only when TEXRENDER_BACKEND=raylib: documents draw into a
 // RaylibSurface unless the caller injects a surface of their own.
 #include <memory>
 #include "render/surface_factory.hpp"
-#include "texgui/raylib_surface.hpp"
+#include "texrender/raylib_surface.hpp"
 
-std::unique_ptr<TexGui::IDrawSurface> TexGui::make_surface()
+std::unique_ptr<TeXRender::IDrawSurface> TeXRender::make_surface()
 {
     return std::make_unique<RaylibSurface>();
 }

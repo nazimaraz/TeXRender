@@ -14,13 +14,13 @@ SNAPSHOT = ROOT / "docs/public-api-snapshot.txt"
 
 
 def public_paths() -> list[Path]:
-    paths = sorted((ROOT / "include/texgui").glob("*.hpp"))
+    paths = sorted((ROOT / "include/texrender").glob("*.hpp"))
     paths.extend(
         [
-            ROOT / "cmake/texguiConfig.hpp.in",
-            ROOT / "cmake/texguiConfig.cmake.in",
-            ROOT / "cmake/texguiHelpers.cmake",
-            ROOT / "cmake/texgui.pc.in",
+            ROOT / "cmake/texrenderConfig.hpp.in",
+            ROOT / "cmake/texrenderConfig.cmake.in",
+            ROOT / "cmake/texrenderHelpers.cmake",
+            ROOT / "cmake/texrender.pc.in",
         ]
     )
     return sorted(paths, key=lambda path: path.relative_to(ROOT).as_posix())

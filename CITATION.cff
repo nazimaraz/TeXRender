@@ -1,13 +1,13 @@
 cff-version: 1.2.0
-message: "If you use latex-renderer in a project, please cite it as below."
+message: "If you use TeXRender in a project, please cite it as below."
 type: software
-title: "latex-renderer"
+title: "TeXRender"
 abstract: "A C++ LaTeX math renderer with raylib, SDL2, headless RGBA, SVG, and WebAssembly backends."
 authors:
   - family-names: "Can"
     given-names: "Nazim"
-repository-code: "https://github.com/nazimaraz/latex-renderer"
-url: "https://nazimaraz.github.io/latex-renderer/"
+repository-code: "https://github.com/nazimaraz/TeXRender"
+url: "https://nazimaraz.github.io/TeXRender/"
 license: MIT
 version: "0.1.0"
 date-released: "2026-06-13"

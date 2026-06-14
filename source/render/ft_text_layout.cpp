@@ -3,7 +3,7 @@
 #include "render/glyph_cache.hpp"
 #include <mutex>
 
-using namespace TexGui;
+using namespace TeXRender;
 
 FtTextLayout::FtTextLayout(std::wstring text, tex::sptr<FtFont> font)
     : text_{std::move(text)}

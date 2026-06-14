@@ -1,5 +1,5 @@
 # ===========================================================================
-# Dependencies for latex-renderer
+# Dependencies for TeXRender
 #
 #  * MicroTeX  -> source-only fetch; we compile just its platform-agnostic
 #                 core into `microtex::core` and supply our own Graphics2D.
@@ -47,8 +47,8 @@ if(NOT Freetype_FOUND)
 endif()
 
 # --- raylib (only when its backend is selected) ----------------------------
-set(TEXGUI_RAYLIB_FETCHED FALSE CACHE INTERNAL "Whether texgui fetched raylib instead of using find_package" FORCE)
-if(TEXGUI_BACKEND STREQUAL "raylib")
+set(TEXRENDER_RAYLIB_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched raylib instead of using find_package" FORCE)
+if(TEXRENDER_BACKEND STREQUAL "raylib")
     find_package(raylib QUIET)
     if(NOT raylib_FOUND)
         if(EMSCRIPTEN)
@@ -63,15 +63,15 @@ if(TEXGUI_BACKEND STREQUAL "raylib")
         )
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(raylib)
-        set(TEXGUI_RAYLIB_FETCHED TRUE CACHE INTERNAL "Whether texgui fetched raylib instead of using find_package" FORCE)
+        set(TEXRENDER_RAYLIB_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched raylib instead of using find_package" FORCE)
     endif()
 endif()
 
 # --- SDL2 (only when its backend is selected) ------------------------------
-set(TEXGUI_SDL2_FETCHED FALSE CACHE INTERNAL "Whether texgui fetched SDL2 instead of using find_package" FORCE)
-set(TEXGUI_SDL2_TARGET "" CACHE INTERNAL "SDL2 target used by texgui" FORCE)
-set(TEXGUI_SDL2MAIN_TARGET "" CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
-if(TEXGUI_BACKEND STREQUAL "sdl2")
+set(TEXRENDER_SDL2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched SDL2 instead of using find_package" FORCE)
+set(TEXRENDER_SDL2_TARGET "" CACHE INTERNAL "SDL2 target used by texrender" FORCE)
+set(TEXRENDER_SDL2MAIN_TARGET "" CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
+if(TEXRENDER_BACKEND STREQUAL "sdl2")
     find_package(SDL2 CONFIG QUIET)
     if(NOT TARGET SDL2::SDL2)
         find_package(SDL2 QUIET)
@@ -88,21 +88,21 @@ if(TEXGUI_BACKEND STREQUAL "sdl2")
         set(SDL_TESTS OFF CACHE BOOL "" FORCE)
         set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
         FetchContent_MakeAvailable(SDL2)
-        set(TEXGUI_SDL2_FETCHED TRUE CACHE INTERNAL "Whether texgui fetched SDL2 instead of using find_package" FORCE)
+        set(TEXRENDER_SDL2_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched SDL2 instead of using find_package" FORCE)
     endif()
 
     if(TARGET SDL2::SDL2)
-        set(TEXGUI_SDL2_TARGET SDL2::SDL2 CACHE INTERNAL "SDL2 target used by texgui" FORCE)
+        set(TEXRENDER_SDL2_TARGET SDL2::SDL2 CACHE INTERNAL "SDL2 target used by texrender" FORCE)
     elseif(TARGET SDL2::SDL2-static)
-        set(TEXGUI_SDL2_TARGET SDL2::SDL2-static CACHE INTERNAL "SDL2 target used by texgui" FORCE)
+        set(TEXRENDER_SDL2_TARGET SDL2::SDL2-static CACHE INTERNAL "SDL2 target used by texrender" FORCE)
     elseif(TARGET SDL2)
-        set(TEXGUI_SDL2_TARGET SDL2 CACHE INTERNAL "SDL2 target used by texgui" FORCE)
+        set(TEXRENDER_SDL2_TARGET SDL2 CACHE INTERNAL "SDL2 target used by texrender" FORCE)
     else()
-        message(FATAL_ERROR "TEXGUI_BACKEND=sdl2 requires an SDL2 CMake target")
+        message(FATAL_ERROR "TEXRENDER_BACKEND=sdl2 requires an SDL2 CMake target")
     endif()
 
     if(TARGET SDL2::SDL2main)
-        set(TEXGUI_SDL2MAIN_TARGET SDL2::SDL2main CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
+        set(TEXRENDER_SDL2MAIN_TARGET SDL2::SDL2main CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
     endif()
 endif()
 
@@ -126,24 +126,24 @@ set(MICROTEX_RES_DIR "${microtex_SOURCE_DIR}/res" CACHE INTERNAL "MicroTeX resou
 # instead of the last valid row. Misses can read one row past static font tables
 # under ASan (for example accent next-larger lookups). Patch the fetched source
 # in the build tree before compiling the pinned core.
-set(_texgui_microtex_indexed_arr "${MICROTEX_SRC}/utils/indexed_arr.h")
-file(READ "${_texgui_microtex_indexed_arr}" _texgui_microtex_indexed_arr_text)
-set(_texgui_microtex_indexed_arr_before "int     l = 0, h = _rows;")
-set(_texgui_microtex_indexed_arr_after "int     l = 0, h = static_cast<int>(_rows) - 1;")
-if(_texgui_microtex_indexed_arr_text MATCHES "int     l = 0, h = _rows;")
+set(_texrender_microtex_indexed_arr "${MICROTEX_SRC}/utils/indexed_arr.h")
+file(READ "${_texrender_microtex_indexed_arr}" _texrender_microtex_indexed_arr_text)
+set(_texrender_microtex_indexed_arr_before "int     l = 0, h = _rows;")
+set(_texrender_microtex_indexed_arr_after "int     l = 0, h = static_cast<int>(_rows) - 1;")
+if(_texrender_microtex_indexed_arr_text MATCHES "int     l = 0, h = _rows;")
     string(REPLACE
-        "${_texgui_microtex_indexed_arr_before}"
-        "${_texgui_microtex_indexed_arr_after}"
-        _texgui_microtex_indexed_arr_text
-        "${_texgui_microtex_indexed_arr_text}")
-    file(WRITE "${_texgui_microtex_indexed_arr}" "${_texgui_microtex_indexed_arr_text}")
-elseif(NOT _texgui_microtex_indexed_arr_text MATCHES "int     l = 0, h = static_cast<int>\\(_rows\\) - 1;")
-    message(FATAL_ERROR "MicroTeX IndexedArray patch did not match ${_texgui_microtex_indexed_arr}")
+        "${_texrender_microtex_indexed_arr_before}"
+        "${_texrender_microtex_indexed_arr_after}"
+        _texrender_microtex_indexed_arr_text
+        "${_texrender_microtex_indexed_arr_text}")
+    file(WRITE "${_texrender_microtex_indexed_arr}" "${_texrender_microtex_indexed_arr_text}")
+elseif(NOT _texrender_microtex_indexed_arr_text MATCHES "int     l = 0, h = static_cast<int>\\(_rows\\) - 1;")
+    message(FATAL_ERROR "MicroTeX IndexedArray patch did not match ${_texrender_microtex_indexed_arr}")
 endif()
-unset(_texgui_microtex_indexed_arr)
-unset(_texgui_microtex_indexed_arr_text)
-unset(_texgui_microtex_indexed_arr_before)
-unset(_texgui_microtex_indexed_arr_after)
+unset(_texrender_microtex_indexed_arr)
+unset(_texrender_microtex_indexed_arr_text)
+unset(_texrender_microtex_indexed_arr_before)
+unset(_texrender_microtex_indexed_arr_after)
 
 # Authoritative core source list (mirrors MicroTeX's own target_sources, minus
 # every src/platform/** backend -- we provide Graphics2D/Font/TextLayout).

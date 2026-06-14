@@ -2,9 +2,9 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-BUILD_ROOT="${BUILD_ROOT:-/tmp/texgui path smoke}"
+BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender path smoke}"
 GENERATOR="${GENERATOR:-Ninja}"
-SOURCE_REF="${TEXGUI_ARCHIVE_REF:-HEAD}"
+SOURCE_REF="${TEXRENDER_ARCHIVE_REF:-HEAD}"
 SOURCE_ARCHIVE="${BUILD_ROOT}/source.tar"
 SOURCE_DIR="${BUILD_ROOT}/source tree"
 BUILD_DIR="${BUILD_ROOT}/build tree"
@@ -29,11 +29,11 @@ run tar -xf "$SOURCE_ARCHIVE" -C "$SOURCE_DIR"
 
 run cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXGUI_BACKEND=headless \
-    -DTEXGUI_WARNINGS_AS_ERRORS=ON
+    -DTEXRENDER_BACKEND=headless \
+    -DTEXRENDER_WARNINGS_AS_ERRORS=ON
 run cmake --build "$BUILD_DIR" -j
 run ctest --test-dir "$BUILD_DIR" --output-on-failure
-run "$BUILD_DIR/texgui_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula output.png"
+run "$BUILD_DIR/texrender_offscreen" 'e^{i\pi} + 1 = 0' "${BUILD_ROOT}/formula output.png"
 
 run cmake --install "$BUILD_DIR" --prefix "$INSTALL_PREFIX"
 run cmake -S "$SOURCE_DIR/tests/package_consumer" -B "$CONSUMER_BUILD" -G "$GENERATOR" \

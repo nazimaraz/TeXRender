@@ -2,10 +2,10 @@
 #include <cstdlib>
 #include <optional>
 #include <raylib.h>
-#include "texgui/latex_document.hpp"
+#include "texrender/latex_document.hpp"
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -23,13 +23,13 @@ namespace
 
 int main()
 {
-    InitWindow(900, 500, "latex-renderer (MicroTeX + raylib)");
+    InitWindow(900, 500, "TeXRender (MicroTeX + raylib)");
     SetTargetFPS(60);
 
     {
-        const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR};
+        const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
         auto index = std::size_t{0};
-        if (const auto* const start = std::getenv("TEXGUI_SAMPLE"))
+        if (const auto* const start = std::getenv("TEXRENDER_SAMPLE"))
         {
             char* end{};
             if (const auto value = std::strtol(start, &end, 10); end != start && value >= 0)
@@ -37,7 +37,7 @@ int main()
         }
 
         auto text_size = 50.f;
-        auto formula = std::optional<TexGui::RenderHandle>{};
+        auto formula = std::optional<TeXRender::RenderHandle>{};
         const auto rebuild = [&] {
             formula = document.render(k_samples[index], text_size, k_foreground);
         };
@@ -49,7 +49,7 @@ int main()
             formula->draw(x, y);
             DrawText("SPACE/<- ->: cycle    UP/DOWN: size    ESC: quit", 16, 16, 18, Color{120, 120, 130, 255});
         };
-        if (const auto* const shot = std::getenv("TEXGUI_SCREENSHOT"))
+        if (const auto* const shot = std::getenv("TEXRENDER_SCREENSHOT"))
         {
             const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
             BeginTextureMode(target);

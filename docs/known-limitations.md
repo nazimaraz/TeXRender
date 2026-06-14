@@ -1,6 +1,6 @@
 # Known Limitations
 
-texgui is intentionally small. These constraints are part of the current design
+TeXRender is intentionally small. These constraints are part of the current design
 and are worth knowing before embedding it.
 
 ## Not A Full TeX Engine
@@ -13,7 +13,7 @@ layout.
 
 MicroTeX initializes its resource directory once. The first `LatexDocument`
 chooses the process-wide resource root; later documents should use the same path.
-Different paths are ignored and can be reported with `TEXGUI_DEBUG=1`.
+Different paths are ignored and can be reported with `TEXRENDER_DEBUG=1`.
 
 ## Threading Boundary
 
@@ -29,7 +29,7 @@ objects before `CloseWindow()`.
 
 ## SDL2 Lifetime And Rounded Rectangles
 
-`Sdl2Surface` borrows an `SDL_Renderer`. Destroy texgui documents and handles
+`Sdl2Surface` borrows an `SDL_Renderer`. Destroy TeXRender documents and handles
 before destroying the renderer so cached SDL textures can be released safely.
 SDL2 does not provide rounded rectangle primitives, so `Sdl2Surface` currently
 falls back to regular rectangles for rounded rectangle draw calls.
@@ -45,7 +45,7 @@ high-risk workloads.
 
 Installed CMake package export works for the headless and SVG backends, and for
 raylib when raylib was found with `find_package(raylib)`. If raylib is pulled in
-through `FetchContent`, `TEXGUI_INSTALL` defaults off because exporting another
+through `FetchContent`, `TEXRENDER_INSTALL` defaults off because exporting another
 project's build-tree target would make a fragile package.
 
 ## Headless Rendering Fidelity

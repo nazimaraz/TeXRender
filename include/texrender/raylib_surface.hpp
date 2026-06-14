@@ -4,19 +4,19 @@
 #include <cstddef>
 #include <raylib.h>
 #include <unordered_map>
-#include "texgui/draw_surface.hpp"
-#include "texgui/export.hpp"
+#include "texrender/draw_surface.hpp"
+#include "texrender/export.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     /// raylib-backed drawing surface for rendering formulas inside a raylib frame.
     ///
     /// Use this directly when injecting a surface, or let LatexDocument create
-    /// one by default when texgui is built with `TEXGUI_BACKEND=raylib`.
+    /// one by default when texrender is built with `TEXRENDER_BACKEND=raylib`.
     /// Destroy or unload it before `CloseWindow()` so GPU glyph textures are
     /// released while the raylib context is still alive. Drawing must happen
     /// inside the caller's active raylib frame.
-    class TEXGUI_EXPORT RaylibSurface final : public IDrawSurface
+    class TEXRENDER_EXPORT RaylibSurface final : public IDrawSurface
     {
     public:
         RaylibSurface();
@@ -61,4 +61,4 @@ namespace TexGui
         std::size_t max_textures_ = 1024;
         Color color_{0, 0, 0, 255};
     };
-} // namespace TexGui
+} // namespace TeXRender

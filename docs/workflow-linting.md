@@ -1,7 +1,7 @@
 # Workflow Linting
 
 GitHub Actions YAML can be syntactically valid while still referencing invalid
-contexts, misspelled fields, or impossible expressions. texgui uses
+contexts, misspelled fields, or impossible expressions. TeXRender uses
 [`actionlint`](https://github.com/rhysd/actionlint) to catch those issues.
 
 ## GitHub Workflow

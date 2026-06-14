@@ -22,9 +22,9 @@ class TexguiTestPackageConan(ConanFile):
         dependency = self.dependencies[self.tested_reference_str]
         backend = str(dependency.options.backend)
         tc = CMakeToolchain(self)
-        tc.variables["TEXGUI_EXPECT_BACKEND"] = backend
-        tc.variables["TEXGUI_EXPECT_HAS_RAYLIB"] = backend == "raylib"
-        tc.variables["TEXGUI_EXPECT_HAS_SDL2"] = backend == "sdl2"
+        tc.variables["TEXRENDER_EXPECT_BACKEND"] = backend
+        tc.variables["TEXRENDER_EXPECT_HAS_RAYLIB"] = backend == "raylib"
+        tc.variables["TEXRENDER_EXPECT_HAS_SDL2"] = backend == "sdl2"
         tc.generate()
 
     def build(self):
@@ -34,5 +34,5 @@ class TexguiTestPackageConan(ConanFile):
 
     def test(self):
         if can_run(self):
-            cmd = os.path.join(self.cpp.build.bindirs[0], "texgui_conan_test_package")
+            cmd = os.path.join(self.cpp.build.bindirs[0], "texrender_conan_test_package")
             self.run(cmd, env="conanrun")

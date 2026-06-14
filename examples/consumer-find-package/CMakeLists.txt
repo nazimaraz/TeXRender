@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.21)
 
-project(texgui_find_package_example LANGUAGES CXX)
+project(texrender_find_package_example LANGUAGES CXX)
 
-find_package(texgui CONFIG REQUIRED)
+find_package(texrender CONFIG REQUIRED)
 
-add_executable(texgui_find_package_example main.cpp)
-target_compile_features(texgui_find_package_example PRIVATE cxx_std_17)
-target_link_libraries(texgui_find_package_example PRIVATE texgui::texgui)
-texgui_copy_resources(texgui_find_package_example)
+add_executable(texrender_find_package_example main.cpp)
+target_compile_features(texrender_find_package_example PRIVATE cxx_std_17)
+target_link_libraries(texrender_find_package_example PRIVATE texrender::texrender)
+texrender_copy_resources(texrender_find_package_example)

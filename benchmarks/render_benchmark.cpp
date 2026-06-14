@@ -6,11 +6,11 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -52,18 +52,18 @@ int main()
         {"long", R"(\sum_{i=1}^{n} \frac{\alpha_i}{1 + \beta_i^2} = \int_0^\infty e^{-x^2}\,dx)", 44.f},
     };
 
-    auto owned = std::make_unique<TexGui::HeadlessSurface>();
+    auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     auto* const canvas = owned.get();
-    const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
 
-    std::cout << "texgui render benchmark\n";
+    std::cout << "texrender render benchmark\n";
     std::cout << std::left << std::setw(18) << "case" << std::setw(18) << "metric" << "time\n";
 
     for (const auto& item : cases)
     {
         constexpr auto iterations = 200;
-        TexGui::RenderHandle* first = nullptr;
-        auto cold = std::optional<TexGui::RenderHandle>{};
+        TeXRender::RenderHandle* first = nullptr;
+        auto cold = std::optional<TeXRender::RenderHandle>{};
         const auto cold_ms = time_ms([&] {
             cold = document.render(std::string{item.latex}, item.text_size, 0xff000000);
             first = &*cold;

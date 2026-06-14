@@ -1,6 +1,6 @@
 # Support
 
-Thanks for trying latex-renderer. This project is maintained as an open-source
+Thanks for trying TeXRender. This project is maintained as an open-source
 library and portfolio project, so support is best-effort.
 
 ## Questions

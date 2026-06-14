@@ -1,6 +1,6 @@
 # Performance Baseline
 
-`texgui_render_benchmark` reports cold render, repeated render, and headless
+`texrender_render_benchmark` reports cold render, repeated render, and headless
 draw timings for a few representative formulas. Treat the numbers as a local
 baseline, not a universal promise: fonts, CPU, compiler, sanitizer settings, and
 build type all matter.
@@ -10,7 +10,7 @@ Reference run:
 - Date: 2026-06-14
 - Platform: macOS, Apple Silicon
 - Compiler: Apple Clang
-- Build: Release, `TEXGUI_BACKEND=headless`
+- Build: Release, `TEXRENDER_BACKEND=headless`
 
 | Case | Metric | Time |
 | --- | --- | ---: |
@@ -27,9 +27,9 @@ Reference run:
 Refresh the table with:
 
 ```sh
-cmake -S . -B build-bench -DTEXGUI_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
-cmake --build build-bench --target texgui_render_benchmark -j
-./build-bench/texgui_render_benchmark
+cmake -S . -B build-bench -DTEXRENDER_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
+cmake --build build-bench --target texrender_render_benchmark -j
+./build-bench/texrender_render_benchmark
 ```
 
 The machine-readable baseline used by

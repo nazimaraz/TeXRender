@@ -1,13 +1,13 @@
 # Backend Authoring Guide
 
-Custom renderers implement `TexGui::IDrawSurface`. texgui handles LaTeX parsing,
+Custom renderers implement `TeXRender::IDrawSurface`. TeXRender handles LaTeX parsing,
 box layout, transforms, color state, and FreeType glyph rasterization before
 calling your surface.
 
 For the backend-neutral API, consumers can include:
 
 ```cpp
-#include <texgui/texgui.hpp>
+#include <texrender/texrender.hpp>
 ```
 
 Backend headers are opt-in. Installed packages expose `raylib_surface.hpp` only
@@ -16,7 +16,7 @@ do not need GUI headers for headless/SVG installs.
 
 ## Draw Contract
 
-- Coordinates are target pixels after texgui has applied MicroTeX transforms.
+- Coordinates are target pixels after texrender has applied MicroTeX transforms.
 - Colors arrive through `set_color()` as `0xAARRGGBB`.
 - Shape calls are synchronous and should draw immediately unless your graphics
   API requires command recording.
@@ -46,7 +46,7 @@ application's main cleanup constraint.
 ## Minimal Shape
 
 ```cpp
-class MySurface final : public TexGui::IDrawSurface
+class MySurface final : public TeXRender::IDrawSurface
 {
 public:
     void set_color(uint32_t argb) override;
@@ -55,7 +55,7 @@ public:
     void fill_rect(float x, float y, float w, float h) override;
     void draw_round_rect(float x, float y, float w, float h, float rx, float ry, float width) override;
     void fill_round_rect(float x, float y, float w, float h, float rx, float ry) override;
-    void draw_glyph(const TexGui::GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
+    void draw_glyph(const TeXRender::GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
 };
 ```
 
@@ -63,16 +63,16 @@ Inject it when constructing a document:
 
 ```cpp
 auto surface = std::make_unique<MySurface>();
-TexGui::LatexDocument document(res_root, std::move(surface));
+TeXRender::LatexDocument document(res_root, std::move(surface));
 ```
 
 ## In-Tree Backend Checklist
 
 For a backend maintained in this repository:
 
-- add the public header under `include/texgui/`
+- add the public header under `include/texrender/`
 - add implementation files under `source/backend/<name>/`
-- add a factory file selected by `TEXGUI_BACKEND`
+- add a factory file selected by `TEXRENDER_BACKEND`
 - update the install header list so the backend header is packaged only when its
   dependencies are exported
 - add a public-header C++17 smoke test
@@ -81,4 +81,4 @@ For a backend maintained in this repository:
   `docs/support-matrix.md`
 
 Out-of-tree backends usually need only the first code block and a dependency on
-`texgui::texgui`.
+`texrender::texrender`.

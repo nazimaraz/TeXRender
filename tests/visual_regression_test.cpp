@@ -10,18 +10,18 @@
 #include <string>
 #include <string_view>
 #include <vector>
-#include "texgui/headless_surface.hpp"
-#include "texgui/latex_document.hpp"
+#include "texrender/headless_surface.hpp"
+#include "texrender/latex_document.hpp"
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
-#ifndef TEXGUI_VISUAL_BASELINE_DIR
-#define TEXGUI_VISUAL_BASELINE_DIR "."
+#ifndef TEXRENDER_VISUAL_BASELINE_DIR
+#define TEXRENDER_VISUAL_BASELINE_DIR "."
 #endif
 
-using namespace TexGui;
+using namespace TeXRender;
 
 namespace
 {
@@ -208,7 +208,7 @@ namespace
         if (!std::filesystem::exists(expected))
             return;
 
-        const auto actual = std::filesystem::temp_directory_path() / ("texgui-" + std::string{name} + "-visual-snapshot.png");
+        const auto actual = std::filesystem::temp_directory_path() / ("texrender-" + std::string{name} + "-visual-snapshot.png");
         check(canvas.write_png(actual.string()), "canvas.write_png(actual.string())");
         check(read_binary_file(actual) == read_binary_file(expected), "read_binary_file(actual) == read_binary_file(expected)");
         std::filesystem::remove(actual);
@@ -220,7 +220,7 @@ namespace
 int main()
 {
     auto baseline_paths = std::vector<std::filesystem::path>{};
-    for (const auto& entry : std::filesystem::directory_iterator{TEXGUI_VISUAL_BASELINE_DIR})
+    for (const auto& entry : std::filesystem::directory_iterator{TEXRENDER_VISUAL_BASELINE_DIR})
     {
         if (entry.path().extension() == ".baseline")
             baseline_paths.push_back(entry.path());
@@ -239,7 +239,7 @@ int main()
 
         auto owned = std::make_unique<HeadlessSurface>();
         auto* const canvas = owned.get();
-        const auto document = LatexDocument{TEXGUI_RES_DIR, std::move(owned)};
+        const auto document = LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
         const auto formula = document.render(baseline->formula, baseline->text_size, 0xff000000);
 
         const auto margin = baseline->margin;
@@ -249,11 +249,11 @@ int main()
 
         const auto bounds = ink_bounds(*canvas);
         const auto name = path.stem().string();
-        const auto* const output_dir = std::getenv("TEXGUI_VISUAL_OUTPUT_DIR");
+        const auto* const output_dir = std::getenv("TEXRENDER_VISUAL_OUTPUT_DIR");
         write_artifacts(output_dir != nullptr ? output_dir : "", name, *canvas, bounds);
 
-        const auto* const snapshot_dir = std::getenv("TEXGUI_VISUAL_SNAPSHOT_DIR");
-        verify_snapshot(snapshot_dir != nullptr ? snapshot_dir : "", env_flag("TEXGUI_VISUAL_UPDATE_SNAPSHOTS"), name, *canvas);
+        const auto* const snapshot_dir = std::getenv("TEXRENDER_VISUAL_SNAPSHOT_DIR");
+        verify_snapshot(snapshot_dir != nullptr ? snapshot_dir : "", env_flag("TEXRENDER_VISUAL_UPDATE_SNAPSHOTS"), name, *canvas);
 
         CHECK(canvas->covered_pixels() > baseline->min_covered_pixels);
         CHECK(bounds.min_x >= margin - 4);

@@ -12,7 +12,7 @@ Run:
 scripts/verify-fresh-clone.sh
 ```
 
-The script clones the current repository into `/tmp/texgui-fresh-clone`, checks
+The script clones the current repository into `/tmp/texrender-fresh-clone`, checks
 out the current commit, verifies docs/package/API metadata, builds the headless
 backend, runs tests, smoke-renders a PNG, installs the package, builds an
 installed package consumer, compiles the installed public headers, and builds
@@ -21,7 +21,7 @@ the FetchContent consumer example.
 For a longer rehearsal that also validates CPack and source release archives:
 
 ```sh
-TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
+TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
 ```
 
 By default, the script requires a clean worktree so it cannot accidentally prove
@@ -29,7 +29,7 @@ an old commit while local edits are still unstaged. To intentionally test
 committed `HEAD` while local edits exist:
 
 ```sh
-TEXGUI_FRESH_CLONE_ALLOW_DIRTY=1 scripts/verify-fresh-clone.sh
+TEXRENDER_FRESH_CLONE_ALLOW_DIRTY=1 scripts/verify-fresh-clone.sh
 ```
 
 ## Local Artifact Cleanup
@@ -66,7 +66,7 @@ scripts/check-doc-links.py
 scripts/check-registry-readiness.py
 scripts/check-public-api.py
 scripts/verify-fresh-clone.sh
-TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
+TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
 scripts/verify-installed-headers.sh
 scripts/verify-backend-packages.sh
 scripts/verify-pkg-config.sh

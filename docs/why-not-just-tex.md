@@ -1,6 +1,6 @@
 # Why Not Just TeX?
 
-latex-renderer exists for applications that need LaTeX-style math inside an
+TeXRender exists for applications that need LaTeX-style math inside an
 existing C++ render loop. It is not trying to replace TeX, KaTeX, MathJax, or a
 document renderer.
 
@@ -15,12 +15,12 @@ typesetting, but it is awkward for interactive applications:
 - the output usually arrives as an image or PDF rather than draw calls for your
   renderer
 
-latex-renderer keeps parsed formulas as `RenderHandle` objects and draws them
+TeXRender keeps parsed formulas as `RenderHandle` objects and draws them
 into the current frame through `IDrawSurface`.
 
 ## Why not KaTeX or MathJax?
 
-KaTeX and MathJax are excellent choices for browser HTML. latex-renderer is for
+KaTeX and MathJax are excellent choices for browser HTML. TeXRender is for
 C++ applications that want native rendering backends, CMake packaging, and direct
 integration with raylib, SDL2, custom engines, offscreen RGBA output, or SVG
 export.

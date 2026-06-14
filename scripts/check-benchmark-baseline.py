@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare texgui_render_benchmark output against a loose local baseline."""
+"""Compare texrender_render_benchmark output against a loose local baseline."""
 
 from __future__ import annotations
 

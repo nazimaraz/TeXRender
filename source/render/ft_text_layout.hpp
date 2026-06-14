@@ -4,7 +4,7 @@
 #include "graphic/graphic.h"
 #include "render/ft_font.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     class FtTextLayout final : public tex::TextLayout
     {
@@ -18,4 +18,4 @@ namespace TexGui
         std::wstring text_;
         tex::sptr<FtFont> font_;
     };
-} // namespace TexGui
+} // namespace TeXRender

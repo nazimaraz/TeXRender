@@ -1,8 +1,8 @@
-if(NOT DEFINED ENV{TEXGUI_VCPKG_SOURCE_DIR})
-    message(FATAL_ERROR "TEXGUI_VCPKG_SOURCE_DIR must point at the latex-renderer checkout for this overlay smoke test")
+if(NOT DEFINED ENV{TEXRENDER_VCPKG_SOURCE_DIR})
+    message(FATAL_ERROR "TEXRENDER_VCPKG_SOURCE_DIR must point at the TeXRender checkout for this overlay smoke test")
 endif()
 
-set(SOURCE_PATH "$ENV{TEXGUI_VCPKG_SOURCE_DIR}")
+set(SOURCE_PATH "$ENV{TEXRENDER_VCPKG_SOURCE_DIR}")
 vcpkg_from_github(
     OUT_SOURCE_PATH MICROTEX_SOURCE_PATH
     REPO NanoMichael/MicroTeX
@@ -11,26 +11,26 @@ vcpkg_from_github(
     HEAD_REF main
 )
 
-set(TEXGUI_BACKEND "headless")
+set(TEXRENDER_BACKEND "headless")
 if("raylib" IN_LIST FEATURES)
-    set(TEXGUI_BACKEND "raylib")
+    set(TEXRENDER_BACKEND "raylib")
 elseif("sdl2" IN_LIST FEATURES)
-    set(TEXGUI_BACKEND "sdl2")
+    set(TEXRENDER_BACKEND "sdl2")
 endif()
 
 vcpkg_cmake_configure(
     SOURCE_PATH "${SOURCE_PATH}"
     OPTIONS
-        -DTEXGUI_BACKEND=${TEXGUI_BACKEND}
-        -DTEXGUI_BUILD_EXAMPLES=OFF
-        -DTEXGUI_BUILD_TESTS=OFF
-        -DTEXGUI_BUILD_BENCHMARKS=OFF
-        -DTEXGUI_BUILD_FUZZERS=OFF
-        -DTEXGUI_INSTALL=ON
+        -DTEXRENDER_BACKEND=${TEXRENDER_BACKEND}
+        -DTEXRENDER_BUILD_EXAMPLES=OFF
+        -DTEXRENDER_BUILD_TESTS=OFF
+        -DTEXRENDER_BUILD_BENCHMARKS=OFF
+        -DTEXRENDER_BUILD_FUZZERS=OFF
+        -DTEXRENDER_INSTALL=ON
         -DFETCHCONTENT_SOURCE_DIR_MICROTEX=${MICROTEX_SOURCE_PATH}
 )
 vcpkg_cmake_install()
-vcpkg_cmake_config_fixup(PACKAGE_NAME texgui CONFIG_PATH lib/cmake/texgui)
+vcpkg_cmake_config_fixup(PACKAGE_NAME texrender CONFIG_PATH lib/cmake/texrender)
 vcpkg_copy_pdbs()
 
 file(REMOVE_RECURSE "${CURRENT_PACKAGES_DIR}/debug/include")

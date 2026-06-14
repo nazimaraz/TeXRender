@@ -1,23 +1,23 @@
-# texgui API Reference
+# TeXRender API Reference
 
-texgui renders LaTeX math formulas into a caller-owned rendering loop. The
+TeXRender renders LaTeX math formulas into a caller-owned rendering loop. The
 primary public types are small:
 
-- `TexGui::LatexDocument` owns renderer state and one `IDrawSurface`.
-- `TexGui::RenderHandle` owns one parsed and laid-out formula.
-- `TexGui::RenderOptions` bounds untrusted input before it reaches MicroTeX.
-- `TexGui::RenderResult` and `TexGui::RenderError` preserve diagnostics for
+- `TeXRender::LatexDocument` owns renderer state and one `IDrawSurface`.
+- `TeXRender::RenderHandle` owns one parsed and laid-out formula.
+- `TeXRender::RenderOptions` bounds untrusted input before it reaches MicroTeX.
+- `TeXRender::RenderResult` and `TeXRender::RenderError` preserve diagnostics for
   non-throwing caller-input rendering.
-- `TexGui::IDrawSurface` is the backend interface for custom render targets.
-- `TexGui::HeadlessSurface` is the software RGBA backend for tests, servers, and
+- `TeXRender::IDrawSurface` is the backend interface for custom render targets.
+- `TeXRender::HeadlessSurface` is the software RGBA backend for tests, servers, and
   PNG/PPM offscreen output.
-- `TexGui::RaylibSurface` is the raylib-backed GPU surface.
-- `TexGui::Sdl2Surface` is the SDL2-backed GPU surface.
-- `TexGui::SvgSurface` is the self-contained SVG output surface.
-- `TexGui::CacheLimits` controls CPU glyph and backend texture cache sizes.
-- `texgui/formula_layout.hpp` provides baseline and anchor helpers.
+- `TeXRender::RaylibSurface` is the raylib-backed GPU surface.
+- `TeXRender::Sdl2Surface` is the SDL2-backed GPU surface.
+- `TeXRender::SvgSurface` is the self-contained SVG output surface.
+- `TeXRender::CacheLimits` controls CPU glyph and backend texture cache sizes.
+- `texrender/formula_layout.hpp` provides baseline and anchor helpers.
 
-Start with `TexGui::LatexDocument`, then follow the surface type that matches
+Start with `TeXRender::LatexDocument`, then follow the surface type that matches
 your embedding mode.
 
 See also:

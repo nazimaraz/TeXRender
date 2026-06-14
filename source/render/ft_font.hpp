@@ -3,7 +3,7 @@
 #include <string>
 #include "graphic/graphic.h"
 
-namespace TexGui
+namespace TeXRender
 {
     class FtFont final : public tex::Font
     {
@@ -23,4 +23,4 @@ namespace TexGui
         float size_;
         int style_;
     };
-} // namespace TexGui
+} // namespace TeXRender

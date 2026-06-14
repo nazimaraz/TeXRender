@@ -1,30 +1,30 @@
-# latex-renderer
+# TeXRender
 
-[![CI](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/ci.yml)
-[![Package managers](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/package-managers.yml)
-[![Registry readiness](https://github.com/nazimaraz/latex-renderer/actions/workflows/registry-readiness.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/registry-readiness.yml)
-[![Static analysis](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/static-analysis.yml)
-[![CodeQL](https://github.com/nazimaraz/latex-renderer/actions/workflows/codeql.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/codeql.yml)
-[![Thread sanitizer](https://github.com/nazimaraz/latex-renderer/actions/workflows/thread-sanitizer.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/thread-sanitizer.yml)
-[![Nightly fuzz](https://github.com/nazimaraz/latex-renderer/actions/workflows/nightly-fuzz.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/nightly-fuzz.yml)
-[![Coverage](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/coverage.yml)
-[![Workflow lint](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/workflow-lint.yml)
-[![Web demo](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/web.yml)
-[![Release smoke](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml/badge.svg)](https://github.com/nazimaraz/latex-renderer/actions/workflows/release-smoke.yml)
+[![CI](https://github.com/nazimaraz/TeXRender/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/ci.yml)
+[![Package managers](https://github.com/nazimaraz/TeXRender/actions/workflows/package-managers.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/package-managers.yml)
+[![Registry readiness](https://github.com/nazimaraz/TeXRender/actions/workflows/registry-readiness.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/registry-readiness.yml)
+[![Static analysis](https://github.com/nazimaraz/TeXRender/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/static-analysis.yml)
+[![CodeQL](https://github.com/nazimaraz/TeXRender/actions/workflows/codeql.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/codeql.yml)
+[![Thread sanitizer](https://github.com/nazimaraz/TeXRender/actions/workflows/thread-sanitizer.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/thread-sanitizer.yml)
+[![Nightly fuzz](https://github.com/nazimaraz/TeXRender/actions/workflows/nightly-fuzz.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/nightly-fuzz.yml)
+[![Coverage](https://github.com/nazimaraz/TeXRender/actions/workflows/coverage.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/coverage.yml)
+[![Workflow lint](https://github.com/nazimaraz/TeXRender/actions/workflows/workflow-lint.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/workflow-lint.yml)
+[![Web demo](https://github.com/nazimaraz/TeXRender/actions/workflows/web.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/web.yml)
+[![Release smoke](https://github.com/nazimaraz/TeXRender/actions/workflows/release-smoke.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/release-smoke.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-brightgreen.svg)](docs/api-compatibility.md)
 [![CMake package](https://img.shields.io/badge/CMake-package-064f8c.svg)](docs/integration-examples.md#installed-find_package)
-[![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/latex-renderer/api/)
+[![API docs](https://img.shields.io/badge/API-docs-2b6cb0.svg)](https://nazimaraz.github.io/TeXRender/api/)
 
 Render LaTeX math from C++ into raylib/SDL2 windows, offscreen RGBA buffers, or SVG files.
 
-**[▶ Try the live editor in your browser](https://nazimaraz.github.io/latex-renderer/)** —
+**[▶ Try the live editor in your browser](https://nazimaraz.github.io/TeXRender/)** —
 the same C++ engine compiled to WebAssembly.
 
 [MicroTeX](https://github.com/NanoMichael/MicroTeX) does the hard part — parsing
 LaTeX and laying out the boxes — but ships only Cairo / GDI+ / Qt / Skia
 backends. Tools like [latexpp](https://github.com/goldsborough/latexpp) only
-render to image files. **latex-renderer** drives MicroTeX through a small,
+render to image files. **TeXRender** drives MicroTeX through a small,
 pluggable rendering layer so a formula can be drawn live into a window.
 
 The default GUI backend is [raylib](https://www.raylib.com/), and an optional
@@ -39,7 +39,7 @@ changes.
 
 ![formula preview](docs/live-preview.gif)
 
-## Why use latex-renderer?
+## Why use TeXRender?
 
 * **No temporary images or subprocesses.** Parse a formula once, keep a
   `RenderHandle`, and draw it inside your normal frame loop.
@@ -54,7 +54,7 @@ changes.
 See the [gallery](docs/gallery.md), [examples index](docs/examples-index.md),
 [integration examples](docs/integration-examples.md),
 [copyable recipes](docs/recipes.md),
-hosted [API reference](https://nazimaraz.github.io/latex-renderer/api/),
+hosted [API reference](https://nazimaraz.github.io/TeXRender/api/),
 [why-not-just-TeX FAQ](docs/why-not-just-tex.md),
 [backend authoring guide](docs/backend-authoring.md), and
 [case study](docs/case-study.md).
@@ -109,8 +109,8 @@ For public API and lifetime details, see [`docs/api.md`](docs/api.md).
 
 ## Build
 
-Requirements: a C++17 toolchain and CMake ≥ 3.21. texgui itself and its public
-headers compile as C++17, and `texgui::texgui` propagates only `cxx_std_17` to
+Requirements: a C++17 toolchain and CMake ≥ 3.21. TeXRender itself and its public
+headers compile as C++17, and `texrender::texrender` propagates only `cxx_std_17` to
 consumers. tinyxml2, FreeType, raylib and SDL2 are resolved with `find_package`,
 falling back to `FetchContent`; MicroTeX's core is always fetched and compiled
 from source. On macOS `brew install freetype raylib sdl2 tinyxml2` makes
@@ -119,10 +119,10 @@ configuration instant.
 ```sh
 cmake -S . -B build
 cmake --build build -j
-./build/texgui_minimal      # draws a single formula in a window
-./build/texgui_demo         # cycle samples (SPACE/arrows), resize text (UP/DOWN)
-./build/texgui_offscreen    # render to formula.png — no window needed
-./build/texgui_svg_export   # render to formula.svg
+./build/texrender_minimal      # draws a single formula in a window
+./build/texrender_demo         # cycle samples (SPACE/arrows), resize text (UP/DOWN)
+./build/texrender_offscreen    # render to formula.png — no window needed
+./build/texrender_svg_export   # render to formula.svg
 ctest --test-dir build      # run the unit tests
 ```
 
@@ -134,10 +134,10 @@ More copyable consumer examples live in
 [`docs/integration-examples.md`](docs/integration-examples.md).
 For a dependency-shaped wrapper around a parsed formula, see
 [`examples/formula_label_widget.cpp`](examples/formula_label_widget.cpp).
-For the stable backend-neutral API surface, include `texgui/texgui.hpp`.
+For the stable backend-neutral API surface, include `texrender/texrender.hpp`.
 Backend-specific headers are opt-in and installed only with packages that export
-their matching GUI dependency. Use `texgui/config.hpp` or CMake package
-variables such as `texgui_BACKEND` and `texgui_HAS_SDL2` when portable consumer
+their matching GUI dependency. Use `texrender/config.hpp` or CMake package
+variables such as `texrender_BACKEND` and `texrender_HAS_SDL2` when portable consumer
 code needs to inspect package features.
 
 Common contributor builds are also available as CMake presets:
@@ -149,13 +149,13 @@ ctest --preset headless-debug
 ```
 
 See [`docs/build-options.md`](docs/build-options.md) for backend presets,
-shared-library builds, SDL2 notes, and the `TEXGUI_WARNINGS_AS_ERRORS` policy.
+shared-library builds, SDL2 notes, and the `TEXRENDER_WARNINGS_AS_ERRORS` policy.
 
-## Using texgui in your project
+## Using TeXRender in your project
 
 ### FetchContent / add_subdirectory
 
-texgui can build its dependencies (MicroTeX, FreeType, tinyxml2, raylib, SDL2) via
+TeXRender can build its dependencies (MicroTeX, FreeType, tinyxml2, raylib, SDL2) via
 CMake `FetchContent`, so the simplest way to consume it is to fetch the project
 the same way — no system packages required:
 
@@ -165,50 +165,50 @@ include(FetchContent)
 # Pick the default surface before fetching. `headless` is the smallest
 # dependency path; use `raylib`, `sdl2`, or `svg` when that is what your app
 # wants LatexDocument to create by default.
-set(TEXGUI_BACKEND headless CACHE STRING "" FORCE)
-set(TEXGUI_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(TEXGUI_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(TEXRENDER_BACKEND headless CACHE STRING "" FORCE)
+set(TEXRENDER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(TEXRENDER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
-    texgui
-    GIT_REPOSITORY https://github.com/nazimaraz/latex-renderer.git
+    texrender
+    GIT_REPOSITORY https://github.com/nazimaraz/TeXRender.git
     GIT_TAG        v0.1.0        # pin a tag or commit for reproducible builds
 )
-FetchContent_MakeAvailable(texgui)
+FetchContent_MakeAvailable(texrender)
 
-target_link_libraries(my_app PRIVATE texgui::texgui)
-texgui_copy_resources(my_app)
+target_link_libraries(my_app PRIVATE texrender::texrender)
+texrender_copy_resources(my_app)
 ```
 
-Or, if you vendor the source, `add_subdirectory(path/to/latex-renderer)` and link
-`texgui::texgui` the same way. Either path skips texgui's own examples and tests
+Or, if you vendor the source, `add_subdirectory(path/to/TeXRender)` and link
+`texrender::texrender` the same way. Either path skips TeXRender's own examples and tests
 automatically when it is built as a subproject. You still drive raylib yourself
 or provide your own SDL/custom surface — see [Usage](#usage).
 
-The repository and package-manager name is `latex-renderer`; the C++ namespace,
-headers, CMake package, and exported target use the shorter `texgui`/`TexGui`
-name (`find_package(texgui CONFIG REQUIRED)`, `texgui::texgui`,
-`#include <texgui/...>`).
+The repository name is `TeXRender`; package-manager IDs, headers, CMake package,
+exported target, and pkg-config file use the lowercase `texrender` name
+(`find_package(texrender CONFIG REQUIRED)`, `texrender::texrender`,
+`#include <texrender/...>`). The C++ namespace is `TeXRender`.
 
 ### find_package install
 
 You can also install and consume the exported CMake package:
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEXGUI_BACKEND=headless
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=headless
 cmake --build build -j
 cmake --install build --prefix /path/to/prefix
 ```
 
 ```cmake
-find_package(texgui CONFIG REQUIRED COMPONENTS headless svg)
+find_package(texrender CONFIG REQUIRED COMPONENTS headless svg)
 
-target_link_libraries(my_app PRIVATE texgui::texgui)
-texgui_copy_resources(my_app)
+target_link_libraries(my_app PRIVATE texrender::texrender)
+texrender_copy_resources(my_app)
 ```
 
 The installed package uses `find_dependency` for FreeType, tinyxml2 and, when
-installed with `TEXGUI_BACKEND=raylib` or `TEXGUI_BACKEND=sdl2`, the selected GUI
+installed with `TEXRENDER_BACKEND=raylib` or `TEXRENDER_BACKEND=sdl2`, the selected GUI
 dependency. GUI package export is enabled only when raylib/SDL2 was found with
 `find_package`; if a GUI dependency is fetched from source, prefer
 `FetchContent` / `add_subdirectory`, or install the headless backend as shown
@@ -224,8 +224,8 @@ Shared-library packages are supported with `BUILD_SHARED_LIBS=ON`; run
 [`scripts/verify-shared-library.sh`](scripts/verify-shared-library.sh) to build,
 install, and consume a dynamic package from a temporary prefix.
 
-Installed builds also generate `texgui.pc` for pkg-config consumers. For static
-linking, use `pkg-config --cflags --libs --static texgui`; the generated
+Installed builds also generate `texrender.pc` for pkg-config consumers. For static
+linking, use `pkg-config --cflags --libs --static texrender`; the generated
 `resdir` variable points at the installed MicroTeX resources for simple
 non-CMake tools. A complete Makefile consumer lives in
 [`examples/consumer-pkg-config`](examples/consumer-pkg-config).
@@ -237,20 +237,20 @@ compatibility promise.
 ### Shipping the resource directory
 
 MicroTeX needs its `res/` directory (fonts + metrics) **at runtime**; you pass its
-path to `LatexDocument`. The CMake helper `texgui_copy_resources(my_app)` copies
+path to `LatexDocument`. The CMake helper `texrender_copy_resources(my_app)` copies
 that directory to a target-specific folder next to your executable and defines
-`TEXGUI_RES_DIR` for that target:
+`TEXRENDER_RES_DIR` for that target:
 
 ```cmake
-target_link_libraries(my_app PRIVATE texgui::texgui)
-texgui_copy_resources(my_app)
+target_link_libraries(my_app PRIVATE texrender::texrender)
+texrender_copy_resources(my_app)
 ```
 
 ```cpp
-TexGui::LatexDocument document(TEXGUI_RES_DIR);
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR);
 ```
 
-If you need custom packaging, copy `TEXGUI_RESOURCE_DIR` yourself and define your
+If you need custom packaging, copy `TEXRENDER_RESOURCE_DIR` yourself and define your
 own resource path macro or configuration value.
 
 ## Usage
@@ -259,14 +259,14 @@ Pure raylib — you own the window and the loop:
 
 ```cpp
 #include <raylib.h>
-#include <texgui/latex_document.hpp>
+#include <texrender/latex_document.hpp>
 
 InitWindow(640, 360, "LaTeX");
 
 // Scope the document/handle so they are destroyed (freeing GPU glyph textures)
 // while the window is still alive — see the lifetime note below.
 {
-    TexGui::LatexDocument document("/path/to/MicroTeX/res");
+    TeXRender::LatexDocument document("/path/to/MicroTeX/res");
     auto formula = document.render(R"(\sqrt{\frac{a^2+b^2}{c}})", /*size*/ 50.f, /*argb*/ 0xff000000);
 
     while (!WindowShouldClose())
@@ -286,7 +286,7 @@ CloseWindow();
 shares ownership of its document's runtime state, so it stays valid to draw and to
 destroy even if the `LatexDocument` is released first.
 
-For UI rows, `texgui/formula_layout.hpp` provides small helpers such as
+For UI rows, `texrender/formula_layout.hpp` provides small helpers such as
 `top_for_baseline()`, `draw_at_baseline()` and `draw_aligned()` so formulas can
 line up by baseline, center, top, or bottom without redoing metric math.
 
@@ -308,7 +308,7 @@ calling MicroTeX: 64 KiB maximum input, text size up to 512 px, and wrap width u
 to 32768 px. Tune those limits with `RenderOptions`:
 
 ```cpp
-TexGui::RenderOptions options;
+TeXRender::RenderOptions options;
 options.text_size = 50.f;
 options.argb = 0xff000000;
 options.max_input_bytes = 256u * 1024u;
@@ -349,12 +349,12 @@ surface, but you can inject any `IDrawSurface` instead. Inject the dependency-fr
 into an in-memory RGBA canvas and read the pixels back:
 
 ```cpp
-#include <texgui/headless_surface.hpp>
-#include <texgui/latex_document.hpp>
+#include <texrender/headless_surface.hpp>
+#include <texrender/latex_document.hpp>
 
-auto owned = std::make_unique<TexGui::HeadlessSurface>();
+auto owned = std::make_unique<TeXRender::HeadlessSurface>();
 auto& canvas = *owned;                          // keep a handle; the document takes ownership
-TexGui::LatexDocument document("/path/to/MicroTeX/res", std::move(owned));
+TeXRender::LatexDocument document("/path/to/MicroTeX/res", std::move(owned));
 
 auto formula = document.render(R"(\int_0^1 x^2\,dx)", 48.f, 0xff000000);
 canvas.resize(formula.width() + 20, formula.height() + 20);
@@ -367,11 +367,11 @@ canvas.write_png("formula.png");                // PNG, PPM, or raw RGBA8 pixels
 For vector-friendly output, inject `SvgSurface` instead:
 
 ```cpp
-#include <texgui/svg_surface.hpp>
+#include <texrender/svg_surface.hpp>
 
-auto owned = std::make_unique<TexGui::SvgSurface>();
+auto owned = std::make_unique<TeXRender::SvgSurface>();
 auto& svg = *owned;
-TexGui::LatexDocument document(TEXGUI_RES_DIR, std::move(owned));
+TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
 
 auto formula = document.render(R"(\sqrt{x+1})", 48.f, 0xff000000);
 svg.resize(formula.width() + 20, formula.height() + 20);
@@ -384,11 +384,11 @@ svg.write_svg("formula.svg");
 injected one, or the built backend's default). A runnable version of the above
 is [`examples/offscreen.cpp`](examples/offscreen.cpp); SVG export lives in
 [`examples/svg_export.cpp`](examples/svg_export.cpp). Both build under every
-backend, including `TEXGUI_BACKEND=headless` and `TEXGUI_BACKEND=svg`.
+backend, including `TEXRENDER_BACKEND=headless` and `TEXRENDER_BACKEND=svg`.
 
 ## Threading and multiple documents
 
-* **Prefer one rendering thread.** texgui serialises shared MicroTeX/glyph-cache
+* **Prefer one rendering thread.** TeXRender serialises shared MicroTeX/glyph-cache
   render paths, and threaded construction/render smoke tests run in CI. GPU
   backends still inherit their toolkit's thread rules, so raylib/SDL2 drawing
   should happen on the render thread.
@@ -398,7 +398,7 @@ backend, including `TEXGUI_BACKEND=headless` and `TEXGUI_BACKEND=svg`.
   a later document built from a *different* `res_root` reuses the first. Use the
   same `res_root` everywhere. Creating and destroying documents repeatedly is safe.
 
-Set `TEXGUI_DEBUG=1` to print diagnostics — failed font loads and resource-root
+Set `TEXRENDER_DEBUG=1` to print diagnostics — failed font loads and resource-root
 conflicts — to stderr; output is silent otherwise.
 
 Known constraints and tradeoffs are collected in
@@ -407,12 +407,12 @@ Known constraints and tradeoffs are collected in
 ## Adding a backend
 
 Implement `IDrawSurface` from
-[`include/texgui/draw_surface.hpp`](include/texgui/draw_surface.hpp) — a handful
+[`include/texrender/draw_surface.hpp`](include/texrender/draw_surface.hpp) — a handful
 of paint primitives plus `draw_glyph` — and inject it into the document. **No
 fork required:**
 
 ```cpp
-TexGui::LatexDocument document(res_root, std::make_unique<MySurface>());
+TeXRender::LatexDocument document(res_root, std::make_unique<MySurface>());
 ```
 
 The compact [`HeadlessSurface`](source/backend/headless/headless_surface.cpp) is a
@@ -421,7 +421,7 @@ shows the same contract targeting serialized vector output. You keep using your
 toolkit's own windowing; only the paint primitives are abstracted. The core,
 `Graphics2DAdapter`, and the FreeType glyph cache are reused unchanged.
 
-To ship a backend in-tree instead (selected by `TEXGUI_BACKEND` as the default
+To ship a backend in-tree instead (selected by `TEXRENDER_BACKEND` as the default
 surface), add its sources plus a small `make_surface` factory file under
 `source/backend/<name>/` and a branch in `CMakeLists.txt`, the way the raylib
 and SDL2 backends do.
@@ -429,7 +429,7 @@ and SDL2 backends do.
 ## WebAssembly
 
 The raylib backend compiles to WebAssembly, so the live editor runs in the
-browser: **<https://nazimaraz.github.io/latex-renderer/>**. With the
+browser: **<https://nazimaraz.github.io/TeXRender/>**. With the
 [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
 activated:
 
@@ -454,7 +454,7 @@ while-loop or the browser's requestAnimationFrame
 ## Tests
 
 ```sh
-cmake -S . -B build -DTEXGUI_BACKEND=headless   # no GPU/display needed
+cmake -S . -B build -DTEXRENDER_BACKEND=headless   # no GPU/display needed
 cmake --build build -j
 ctest --test-dir build --output-on-failure
 ```
@@ -464,7 +464,7 @@ input-limit/error-diagnostic checks, baseline layout helpers, end-to-end formula
 rendering into injected headless and SVG surfaces, PNG/SVG writing, threaded
 handle lifetime stress, C++17 public header compatibility, multi-formula visual
 regression, and a separate CMake consumer smoke test — needs no window or GPU
-and runs under the non-GUI backends; `TEXGUI_BACKEND=headless` additionally drops
+and runs under the non-GUI backends; `TEXRENDER_BACKEND=headless` additionally drops
 GUI dependencies entirely. CI exercises this on Linux, macOS and Windows, the
 raylib backend + examples on Linux and macOS, the SDL2 backend on Linux, runs the
 suite under ASan + UBSan, runs PR/scheduled TSan and fuzzing smoke, checks
@@ -476,8 +476,8 @@ coverage artifacts.
 Additional developer tools:
 
 ```sh
-cmake --build build --target texgui_render_benchmark -j
-./build/texgui_render_benchmark
+cmake --build build --target texrender_render_benchmark -j
+./build/texrender_render_benchmark
 ```
 
 Fuzzing instructions live in [`docs/fuzzing.md`](docs/fuzzing.md); benchmark
@@ -496,7 +496,7 @@ explained in [`docs/release-assets.md`](docs/release-assets.md).
 
 ## License
 
-latex-renderer is released under the [MIT License](LICENSE). It builds on
+TeXRender is released under the [MIT License](LICENSE). It builds on
 MicroTeX, raylib, SDL2, FreeType, tinyxml2 and the bundled TeX fonts, each under
 its own permissive license or permissive license option. See
 [THIRD_PARTY.md](THIRD_PARTY.md) and

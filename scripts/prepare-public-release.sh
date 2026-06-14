@@ -22,7 +22,7 @@ fi
 
 if ! git remote get-url "$REMOTE" >/dev/null 2>&1; then
     printf "remote '%s' is not configured. Add it first, for example:\n" "$REMOTE" >&2
-    printf '  git remote add origin git@github.com:nazimaraz/latex-renderer.git\n' >&2
+    printf '  git remote add origin git@github.com:nazimaraz/TeXRender.git\n' >&2
     exit 1
 fi
 

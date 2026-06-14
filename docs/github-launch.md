@@ -9,7 +9,7 @@ For the condensed final pass immediately before publishing, see
 1. Create the GitHub repository, then add the remote:
 
    ```sh
-   git remote add origin git@github.com:nazimaraz/latex-renderer.git
+   git remote add origin git@github.com:nazimaraz/TeXRender.git
    git remote -v
    ```
 
@@ -17,7 +17,7 @@ For the condensed final pass immediately before publishing, see
 
    ```sh
    scripts/verify-release.sh
-   TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
+   TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
    scripts/prepare-public-release.sh
    git push -u origin main
    ```

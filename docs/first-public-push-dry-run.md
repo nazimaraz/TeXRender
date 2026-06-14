@@ -14,7 +14,7 @@ scripts/check-registry-readiness.py
 scripts/check-public-api.py
 scripts/lint-workflows.sh
 scripts/verify-installed-headers.sh
-TEXGUI_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
+TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
 scripts/prepare-public-release.sh
 ```
 

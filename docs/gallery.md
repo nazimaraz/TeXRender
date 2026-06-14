@@ -2,14 +2,14 @@
 
 ## Live Editor
 
-![texgui live editor](demo.png)
+![texrender live editor](demo.png)
 
 The live editor uses the raylib backend and runs as either a native executable or
-WebAssembly. After building `texgui_live`, refresh the README demo GIF from real
+WebAssembly. After building `texrender_live`, refresh the README demo GIF from real
 live-editor screenshots with:
 
 ```sh
-TEXGUI_BUILD_DIR=build scripts/record-live-editor-demo.sh
+TEXRENDER_BUILD_DIR=build scripts/record-live-editor-demo.sh
 ```
 
 ## Headless Output
@@ -18,11 +18,11 @@ TEXGUI_BUILD_DIR=build scripts/record-live-editor-demo.sh
 
 The headless backend renders into an RGBA buffer and can write PNG/PPM snapshots for
 tests, services, and command-line tooling. The PNG above is generated from
-`texgui_headless_batch`.
+`texrender_headless_batch`.
 
 ## SVG Export
 
-`texgui_svg_export` writes a self-contained SVG. Shape primitives stay as SVG
+`texrender_svg_export` writes a self-contained SVG. Shape primitives stay as SVG
 elements; glyphs are embedded as small PNG data URIs so the file has no runtime
 font dependency.
 
@@ -41,11 +41,11 @@ The committed gallery sample set is listed in
 | Matrix | ![Matrix formula](gallery/matrix.png) | [SVG](gallery/matrix.svg) |
 | Colored | ![Colored formula](gallery/colored.png) | [SVG](gallery/colored.svg) |
 
-After building a backend that includes `texgui_offscreen` and
-`texgui_svg_export`, refresh the committed PNG/SVG artifacts with:
+After building a backend that includes `texrender_offscreen` and
+`texrender_svg_export`, refresh the committed PNG/SVG artifacts with:
 
 ```sh
-TEXGUI_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery
+TEXRENDER_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery
 scripts/generate-preview-gif.sh
 ```
 

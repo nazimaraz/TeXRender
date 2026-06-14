@@ -1,6 +1,6 @@
 # Fuzzing
 
-texgui includes a libFuzzer harness for caller-supplied LaTeX input:
+TeXRender includes a libFuzzer harness for caller-supplied LaTeX input:
 `tests/fuzz/try_render_fuzzer.cpp`.
 
 ## Build
@@ -11,12 +11,12 @@ Use Clang with the headless backend:
 cmake -S . -B build-fuzz -G Ninja \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   -DCMAKE_CXX_COMPILER=clang++ \
-  -DTEXGUI_BACKEND=headless \
-  -DTEXGUI_BUILD_EXAMPLES=OFF \
-  -DTEXGUI_BUILD_TESTS=OFF \
-  -DTEXGUI_BUILD_BENCHMARKS=OFF \
-  -DTEXGUI_BUILD_FUZZERS=ON
-cmake --build build-fuzz --target texgui_try_render_fuzzer -j
+  -DTEXRENDER_BACKEND=headless \
+  -DTEXRENDER_BUILD_EXAMPLES=OFF \
+  -DTEXRENDER_BUILD_TESTS=OFF \
+  -DTEXRENDER_BUILD_BENCHMARKS=OFF \
+  -DTEXRENDER_BUILD_FUZZERS=ON
+cmake --build build-fuzz --target texrender_try_render_fuzzer -j
 ```
 
 On macOS, use upstream LLVM Clang, for example Homebrew's
@@ -28,7 +28,7 @@ runtime and is rejected at configure time.
 Short smoke:
 
 ```sh
-./build-fuzz/texgui_try_render_fuzzer -runs=1000 -max_len=256
+./build-fuzz/texrender_try_render_fuzzer -runs=1000 -max_len=256
 ```
 
 Longer local campaign:
@@ -37,7 +37,7 @@ Longer local campaign:
 rm -rf fuzz-corpus
 mkdir -p fuzz-corpus
 cp tests/fuzz/corpus/* fuzz-corpus/
-./build-fuzz/texgui_try_render_fuzzer fuzz-corpus -max_len=4096 -jobs=4 -workers=4
+./build-fuzz/texrender_try_render_fuzzer fuzz-corpus -max_len=4096 -jobs=4 -workers=4
 ```
 
 Run against a copied corpus, as above. libFuzzer writes newly discovered inputs
@@ -48,10 +48,10 @@ Useful sanitizer settings:
 
 ```sh
 ASAN_OPTIONS=detect_leaks=0 UBSAN_OPTIONS=print_stacktrace=1 \
-  ./build-fuzz/texgui_try_render_fuzzer fuzz-corpus -max_len=4096
+  ./build-fuzz/texrender_try_render_fuzzer fuzz-corpus -max_len=4096
 ```
 
-Leak detection is usually disabled because texgui and MicroTeX keep
+Leak detection is usually disabled because texrender and MicroTeX keep
 process-lifetime singletons.
 
 ## GitHub Nightly Run

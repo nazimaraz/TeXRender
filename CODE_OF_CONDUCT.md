@@ -1,6 +1,6 @@
 # Code of Conduct
 
-latex-renderer is a small technical project. The goal is to keep discussion
+TeXRender is a small technical project. The goal is to keep discussion
 clear, useful, and welcoming for people who want to learn from it, depend on it,
 or improve it.
 

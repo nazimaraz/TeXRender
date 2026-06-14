@@ -1,6 +1,6 @@
 # Security Threat Model
 
-texgui accepts LaTeX-like formula strings and passes them to MicroTeX for parse
+TeXRender accepts LaTeX-like formula strings and passes them to MicroTeX for parse
 and layout. Treat caller-supplied formulas as untrusted input and prefer
 `LatexDocument::try_render()` or `try_render_detailed()` at application
 boundaries.
@@ -27,11 +27,11 @@ Report these privately through GitHub vulnerability reporting; see
   operating-system font stacks.
 - Protecting secrets in formulas that the application itself logs, stores or
   publishes.
-- Running arbitrary user workloads with no request limits around texgui.
+- Running arbitrary user workloads with no request limits around texrender.
 
 ## Existing Mitigations
 
-- `try_render()` is `noexcept` and catches parser failures at the texgui API
+- `try_render()` is `noexcept` and catches parser failures at the TeXRender API
   boundary.
 - The simple `try_render()` overload applies default limits for input size,
   text size and wrap width.
@@ -47,7 +47,7 @@ Report these privately through GitHub vulnerability reporting; see
 - Use `try_render()` or `try_render_detailed()` for user-controlled formulas.
 - Set stricter `RenderOptions` for public web forms, chat input, multiplayer
   content, or batch preview services.
-- Keep request body limits and rate limits outside texgui.
+- Keep request body limits and rate limits outside texrender.
 - Prefer a worker process for hostile internet-scale workloads. If the worker
   crashes or exceeds CPU/memory/time limits, kill and restart it.
 - Log `RenderErrorCode` values, but avoid logging raw private user formulas

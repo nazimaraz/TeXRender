@@ -3,7 +3,7 @@
   "date": "2026-06-14",
   "platform": "macOS Apple Silicon",
   "compiler": "Apple Clang",
-  "build": "Release, TEXGUI_BACKEND=headless",
+  "build": "Release, TEXRENDER_BACKEND=headless",
   "threshold_ratio": 1.4,
   "metrics": {
     "short": {

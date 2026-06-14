@@ -4,17 +4,17 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FORMULAS_FILE="${1:-$ROOT_DIR/docs/gallery-formulas.txt}"
 OUTPUT_DIR="${2:-$ROOT_DIR/build/gallery}"
-BUILD_DIR="${TEXGUI_BUILD_DIR:-$ROOT_DIR/build}"
-OFFSCREEN_EXE="${TEXGUI_OFFSCREEN_EXE:-$BUILD_DIR/texgui_offscreen}"
-SVG_EXE="${TEXGUI_SVG_EXPORT_EXE:-$BUILD_DIR/texgui_svg_export}"
+BUILD_DIR="${TEXRENDER_BUILD_DIR:-$ROOT_DIR/build}"
+OFFSCREEN_EXE="${TEXRENDER_OFFSCREEN_EXE:-$BUILD_DIR/texrender_offscreen}"
+SVG_EXE="${TEXRENDER_SVG_EXPORT_EXE:-$BUILD_DIR/texrender_svg_export}"
 
 if [[ ! -x "$OFFSCREEN_EXE" ]]; then
-    printf 'missing texgui_offscreen executable: %s\n' "$OFFSCREEN_EXE" >&2
+    printf 'missing texrender_offscreen executable: %s\n' "$OFFSCREEN_EXE" >&2
     exit 1
 fi
 
 if [[ ! -x "$SVG_EXE" ]]; then
-    printf 'missing texgui_svg_export executable: %s\n' "$SVG_EXE" >&2
+    printf 'missing texrender_svg_export executable: %s\n' "$SVG_EXE" >&2
     exit 1
 fi
 

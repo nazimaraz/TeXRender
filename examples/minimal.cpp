@@ -1,18 +1,18 @@
 #include <raylib.h>
-#include "texgui/latex_document.hpp"
+#include "texrender/latex_document.hpp"
 
-#ifndef TEXGUI_RES_DIR
-#define TEXGUI_RES_DIR "res"
+#ifndef TEXRENDER_RES_DIR
+#define TEXRENDER_RES_DIR "res"
 #endif
 
 int main()
 {
-    InitWindow(640, 360, "latex-renderer");
+    InitWindow(640, 360, "TeXRender");
     SetTargetFPS(60);
     // Scope the document/handle so they are destroyed (freeing GPU glyph textures)
     // while the window is still alive, before CloseWindow().
     {
-        const auto document = TexGui::LatexDocument{TEXGUI_RES_DIR};
+        const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
         const auto formula = document.render(R"(e^{i\pi} + 1 = 0)", 60.f, 0xff000000);
         while (!WindowShouldClose())
         {

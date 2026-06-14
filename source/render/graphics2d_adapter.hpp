@@ -3,9 +3,9 @@
 #include "graphic/graphic.h"
 #include "render/glyph_cache.hpp"
 #include "render/transform2d.hpp"
-#include "texgui/draw_surface.hpp"
+#include "texrender/draw_surface.hpp"
 
-namespace TexGui
+namespace TeXRender
 {
     class Graphics2DAdapter final : public tex::Graphics2D
     {
@@ -46,4 +46,4 @@ namespace TexGui
         tex::Stroke stroke_;
         const tex::Font* font_{};
     };
-} // namespace TexGui
+} // namespace TeXRender
