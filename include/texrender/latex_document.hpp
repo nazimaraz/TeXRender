@@ -198,4 +198,18 @@ namespace TeXRender
     private:
         std::shared_ptr<detail::DocumentState> state_;
     };
+
+    /// Release the process-wide MicroTeX state initialized by the first document.
+    ///
+    /// Optional and idempotent. Call it only after every LatexDocument and
+    /// RenderHandle has been destroyed and no render is in progress: it tears
+    /// down MicroTeX's global parser and font tables, so using a surviving handle
+    /// afterward is undefined. After shutdown(), constructing a new LatexDocument
+    /// re-initializes MicroTeX and may select a different resource root.
+    ///
+    /// This exists for embedders that load and unload texrender inside a plugin
+    /// or shared library, or that run leak detectors expecting deterministic
+    /// teardown. The shared FreeType glyph cache is released automatically at
+    /// process exit and is unaffected by this call.
+    TEXRENDER_EXPORT void shutdown() noexcept;
 } // namespace TeXRender

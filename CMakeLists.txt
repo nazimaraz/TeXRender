@@ -1,5 +1,28 @@
 cmake_minimum_required(VERSION 3.21)
 
+# Top-level macOS builds should target the host by default so locally installed
+# dependencies, especially Homebrew dylibs, do not link against a newer macOS
+# than this project requests. Package managers and consumers can still set
+# CMAKE_OSX_DEPLOYMENT_TARGET explicitly.
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR
+   AND CMAKE_HOST_SYSTEM_NAME STREQUAL "Darwin"
+   AND NOT CMAKE_OSX_DEPLOYMENT_TARGET
+   AND "$ENV{MACOSX_DEPLOYMENT_TARGET}" STREQUAL "")
+    execute_process(
+        COMMAND sw_vers -productVersion
+        OUTPUT_VARIABLE _texrender_host_macos_version
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+    string(REGEX MATCH "^[0-9]+\\.[0-9]+" _texrender_host_macos_target "${_texrender_host_macos_version}")
+    if(_texrender_host_macos_target)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "${_texrender_host_macos_target}" CACHE STRING
+            "Minimum macOS version to target" FORCE)
+    endif()
+    unset(_texrender_host_macos_target)
+    unset(_texrender_host_macos_version)
+endif()
+
 project(
     texrender
     VERSION 0.1.0
@@ -201,6 +224,42 @@ endif()
 # texrender's own sources and public headers compile as C++17.
 target_compile_features(texrender PRIVATE cxx_std_17)
 target_compile_features(texrender INTERFACE cxx_std_17)
+
+set(TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG "")
+if(APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG "-mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+    target_link_options(texrender INTERFACE "${TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG}")
+endif()
+
+# Non-Apple Clang on macOS (e.g. Homebrew's llvm / llvm@NN) compiles against its
+# own libc++ headers but does not add that libc++ to the link line. Linking
+# MicroTeX then fails with undefined std::__1::...[abi:...] symbols and missing
+# stringstream / bad_function_call vtables. Apple Clang ships a matched libc++
+# and is unaffected (its compiler id is "AppleClang"). Derive the toolchain's
+# own libc++ directory from the compiler location and link it. BUILD_INTERFACE
+# keeps this machine-specific path out of the installed/exported package, and
+# PRIVATE covers texrender's own link in BUILD_SHARED_LIBS builds.
+if(APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    get_filename_component(_texrender_clang_bin "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    get_filename_component(_texrender_toolchain_root "${_texrender_clang_bin}" DIRECTORY)
+    set(_texrender_libcxx_dir "")
+    foreach(_candidate "${_texrender_toolchain_root}/lib/c++" "${_texrender_toolchain_root}/lib")
+        if(EXISTS "${_candidate}/libc++.dylib" OR EXISTS "${_candidate}/libc++.1.dylib")
+            set(_texrender_libcxx_dir "${_candidate}")
+            break()
+        endif()
+    endforeach()
+    if(_texrender_libcxx_dir)
+        message(STATUS "texrender: linking non-Apple Clang libc++ from ${_texrender_libcxx_dir}")
+        target_link_options(texrender PRIVATE "-L${_texrender_libcxx_dir}" "-Wl,-rpath,${_texrender_libcxx_dir}")
+        target_link_options(texrender INTERFACE
+            "$<BUILD_INTERFACE:-L${_texrender_libcxx_dir}>"
+            "$<BUILD_INTERFACE:-Wl,-rpath,${_texrender_libcxx_dir}>")
+    endif()
+    unset(_texrender_clang_bin)
+    unset(_texrender_toolchain_root)
+    unset(_texrender_libcxx_dir)
+endif()
 
 # ---------------------------------------------------------------------------
 # Example applications
@@ -416,6 +475,12 @@ endif()
 # Install / find_package support
 # ---------------------------------------------------------------------------
 set(_texrender_install_default ${PROJECT_IS_TOP_LEVEL})
+if(TEXRENDER_TINYXML2_FETCHED)
+    set(_texrender_install_default OFF)
+endif()
+if(TEXRENDER_FREETYPE_FETCHED)
+    set(_texrender_install_default OFF)
+endif()
 if(TEXRENDER_RAYLIB_FETCHED)
     set(_texrender_install_default OFF)
 endif()
@@ -423,6 +488,20 @@ if(TEXRENDER_SDL2_FETCHED)
     set(_texrender_install_default OFF)
 endif()
 option(TEXRENDER_INSTALL "Generate install and find_package(texrender) support" ${_texrender_install_default})
+
+if(TEXRENDER_INSTALL AND TEXRENDER_TINYXML2_FETCHED)
+    message(FATAL_ERROR
+        "TEXRENDER_INSTALL=ON with a FetchContent-built tinyxml2 cannot be exported cleanly. "
+        "Install tinyxml2 so find_package(tinyxml2 CONFIG) succeeds, or consume texrender with "
+        "FetchContent/add_subdirectory instead of installing it.")
+endif()
+
+if(TEXRENDER_INSTALL AND TEXRENDER_FREETYPE_FETCHED)
+    message(FATAL_ERROR
+        "TEXRENDER_INSTALL=ON with a FetchContent-built FreeType cannot be exported cleanly. "
+        "Install FreeType so find_package(Freetype) succeeds, or consume texrender with "
+        "FetchContent/add_subdirectory instead of installing it.")
+endif()
 
 if(TEXRENDER_INSTALL AND TEXRENDER_RAYLIB_FETCHED)
     message(FATAL_ERROR
@@ -485,6 +564,10 @@ if(TEXRENDER_INSTALL)
         string(APPEND TEXRENDER_PKG_CONFIG_REQUIRES_PRIVATE " raylib")
     elseif(TEXRENDER_BACKEND STREQUAL "sdl2")
         string(APPEND TEXRENDER_PKG_CONFIG_REQUIRES_PRIVATE " sdl2")
+    endif()
+    set(TEXRENDER_PKG_CONFIG_LINK_FLAGS "")
+    if(TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG)
+        set(TEXRENDER_PKG_CONFIG_LINK_FLAGS " ${TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG}")
     endif()
     configure_file(
         cmake/texrender.pc.in

@@ -5,6 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_ROOT="${BUILD_ROOT:-/tmp/texrender-external-consumers}"
 GENERATOR="${GENERATOR:-Ninja}"
 SOURCE_REF="${TEXRENDER_ARCHIVE_REF:-HEAD}"
+ALLOW_DIRTY_ARCHIVE="${TEXRENDER_ALLOW_DIRTY_ARCHIVE:-0}"
 SOURCE_ARCHIVE="${BUILD_ROOT}/source.tar"
 SOURCE_DIR="${BUILD_ROOT}/archived-source"
 FETCH_PROJECT="${BUILD_ROOT}/fetch-consumer"
@@ -73,6 +74,15 @@ EOF
 
 rm -rf "$BUILD_ROOT"
 mkdir -p "$SOURCE_DIR"
+if [[ "$SOURCE_REF" == "HEAD" && "$ALLOW_DIRTY_ARCHIVE" != "1" ]]; then
+    if [[ -n "$(git -C "$ROOT_DIR" status --short)" ]]; then
+        printf 'working tree has uncommitted changes; %s archives HEAD only and would ignore them\n' "$0" >&2
+        printf 'commit/stash the changes, set TEXRENDER_ARCHIVE_REF to a different ref, or rerun with TEXRENDER_ALLOW_DIRTY_ARCHIVE=1.\n' >&2
+        exit 1
+    fi
+elif [[ "$SOURCE_REF" == "HEAD" ]]; then
+    printf '\n==> warning: archiving HEAD while ignoring uncommitted working-tree changes\n'
+fi
 run git -C "$ROOT_DIR" archive --format=tar "$SOURCE_REF" -o "$SOURCE_ARCHIVE"
 run tar -xf "$SOURCE_ARCHIVE" -C "$SOURCE_DIR"
 

@@ -4,7 +4,10 @@
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
+#include <limits>
+#include <locale>
 #include <numeric>
+#include <optional>
 #include <sstream>
 #include <string_view>
 #include "backend/glyph_bitmap_validation.hpp"
@@ -34,6 +37,7 @@ namespace
     [[nodiscard]] std::string number(const float value)
     {
         auto output = std::ostringstream{};
+        output.imbue(std::locale::classic()); // SVG numbers must use '.' regardless of the host locale
         output << std::fixed << std::setprecision(3) << value;
         return output.str();
     }
@@ -42,6 +46,7 @@ namespace
     {
         const auto c = color_from_argb(argb);
         auto attrs = std::ostringstream{};
+        attrs.imbue(std::locale::classic()); // keep hex color digits ungrouped under any host locale
         attrs << paint_kind << "=\"#" << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(c.r) << std::setw(2)
               << static_cast<int>(c.g) << std::setw(2) << static_cast<int>(c.b) << std::dec << '"';
         if (c.a != 255)
@@ -98,18 +103,48 @@ namespace
         return (b << 16u) | a;
     }
 
-    void append_png_chunk(std::vector<unsigned char>& output, const std::string_view type, const std::vector<unsigned char>& data)
+    [[nodiscard]] bool append_png_chunk(std::vector<unsigned char>& output, const std::string_view type,
+        const std::vector<unsigned char>& data)
     {
+        if (type.size() != 4 || data.size() > std::numeric_limits<uint32_t>::max())
+            return false;
+
         append_u32_be(output, static_cast<uint32_t>(data.size()));
         output.insert(output.end(), type.begin(), type.end());
         output.insert(output.end(), data.begin(), data.end());
         append_u32_be(output, png_crc(type, data));
+        return true;
     }
 
-    [[nodiscard]] std::vector<unsigned char> zlib_store(const std::vector<unsigned char>& data)
+    [[nodiscard]] bool byte_count_for_rgba(const int width, const int height, const std::size_t max_size, std::size_t& byte_count)
     {
+        if (width <= 0 || height <= 0)
+            return false;
+
+        const auto max_pixels = max_size / 4u;
+        const auto glyph_width = static_cast<std::size_t>(width);
+        const auto glyph_height = static_cast<std::size_t>(height);
+        if (glyph_height > max_pixels / glyph_width)
+            return false;
+
+        byte_count = glyph_width * glyph_height * 4u;
+        return true;
+    }
+
+    [[nodiscard]] std::optional<std::vector<unsigned char>> zlib_store(const std::vector<unsigned char>& data)
+    {
+        const auto blocks = data.empty() ? std::size_t{0} : 1u + (data.size() - 1u) / 65535u;
+        constexpr auto zlib_overhead = std::size_t{8};
+        const auto max_size = std::numeric_limits<std::size_t>::max();
+        if (data.size() > max_size - zlib_overhead || blocks > (max_size - data.size() - zlib_overhead) / 5u)
+            return std::nullopt;
+
+        const auto output_size = data.size() + blocks * 5u + zlib_overhead;
+        if (output_size > static_cast<std::size_t>(std::numeric_limits<uint32_t>::max()))
+            return std::nullopt;
+
         auto output = std::vector<unsigned char>{};
-        output.reserve(data.size() + data.size() / 65535u * 5u + 8u);
+        output.reserve(output_size);
         output.push_back(0x78u);
         output.push_back(0x01u);
 
@@ -131,8 +166,13 @@ namespace
         return output;
     }
 
-    [[nodiscard]] std::vector<unsigned char> png_rgba(const int width, const int height, const std::vector<unsigned char>& rgba)
+    [[nodiscard]] std::optional<std::vector<unsigned char>> png_rgba(const int width, const int height,
+        const std::vector<unsigned char>& rgba)
     {
+        auto expected_bytes = std::size_t{0};
+        if (!byte_count_for_rgba(width, height, rgba.max_size(), expected_bytes) || rgba.size() != expected_bytes)
+            return std::nullopt;
+
         auto png = std::vector<unsigned char>{0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
 
         auto ihdr = std::vector<unsigned char>{};
@@ -143,19 +183,29 @@ namespace
         ihdr.push_back(0u);
         ihdr.push_back(0u);
         ihdr.push_back(0u);
-        append_png_chunk(png, "IHDR", ihdr);
+        if (!append_png_chunk(png, "IHDR", ihdr))
+            return std::nullopt;
 
         auto scanlines = std::vector<unsigned char>{};
         const auto stride = static_cast<std::size_t>(width) * 4u;
-        scanlines.reserve((stride + 1u) * static_cast<std::size_t>(height));
+        if (stride == std::numeric_limits<std::size_t>::max())
+            return std::nullopt;
+
+        const auto row_size = stride + 1u;
+        if (static_cast<std::size_t>(height) > scanlines.max_size() / row_size)
+            return std::nullopt;
+
+        scanlines.reserve(row_size * static_cast<std::size_t>(height));
         for (auto y = 0; y < height; ++y)
         {
             scanlines.push_back(0u);
             const auto begin = rgba.begin() + static_cast<std::ptrdiff_t>(static_cast<std::size_t>(y) * stride);
             scanlines.insert(scanlines.end(), begin, begin + static_cast<std::ptrdiff_t>(stride));
         }
-        append_png_chunk(png, "IDAT", zlib_store(scanlines));
-        append_png_chunk(png, "IEND", {});
+        const auto idat = zlib_store(scanlines);
+        if (!idat || !append_png_chunk(png, "IDAT", *idat) || !append_png_chunk(png, "IEND", {}))
+            return std::nullopt;
+
         return png;
     }
 
@@ -175,10 +225,12 @@ namespace
 
             output.push_back(table[(triple >> 18u) & 0x3fu]);
             output.push_back(table[(triple >> 12u) & 0x3fu]);
-            output.push_back(i - 1u <= input.size() ? table[(triple >> 6u) & 0x3fu] : '=');
-            output.push_back(i <= input.size() ? table[triple & 0x3fu] : '=');
+            output.push_back(table[(triple >> 6u) & 0x3fu]);
+            output.push_back(table[triple & 0x3fu]);
         }
 
+        // Each 3-byte group always emits 4 characters above (missing bytes encode
+        // as zero); convert the trailing characters of the final group to padding.
         const auto remainder = input.size() % 3u;
         if (remainder != 0u)
         {
@@ -303,7 +355,11 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
         return;
 
     const auto c = color_from_argb(color_);
-    auto rgba = std::vector<unsigned char>(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
+    auto rgba_size = std::size_t{0};
+    auto rgba = std::vector<unsigned char>{};
+    if (!byte_count_for_rgba(glyph.width, glyph.height, rgba.max_size(), rgba_size))
+        return;
+    rgba.resize(rgba_size);
     for (auto row = 0; row < glyph.height; ++row)
     {
         for (auto col = 0; col < glyph.width; ++col)
@@ -325,14 +381,19 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
     if (std::fabs(angle) > 0.0001f)
         transform = " transform=\"rotate(" + number(to_degrees(angle)) + ' ' + number(pen_x) + ' ' + number(pen_y) + ")\"";
 
+    const auto png = png_rgba(glyph.width, glyph.height, rgba);
+    if (!png)
+        return;
+
     elements_.push_back("<image x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + std::to_string(glyph.width) +
-                        "\" height=\"" + std::to_string(glyph.height) + "\" href=\"data:image/png;base64," +
-                        base64(png_rgba(glyph.width, glyph.height, rgba)) + "\"" + transform + "/>");
+                        "\" height=\"" + std::to_string(glyph.height) + "\" href=\"data:image/png;base64," + base64(*png) + "\"" +
+                        transform + "/>");
 }
 
 std::string SvgSurface::svg() const
 {
     auto out = std::ostringstream{};
+    out.imbue(std::locale::classic()); // integer dimensions must not pick up locale digit grouping
     out << "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"" << width_ << "\" height=\"" << height_ << "\" viewBox=\"0 0 "
         << width_ << ' ' << height_ << "\">";
     out << '\n';

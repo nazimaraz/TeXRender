@@ -208,10 +208,10 @@ texrender_copy_resources(my_app)
 
 The installed package uses `find_dependency` for FreeType, tinyxml2 and, when
 installed with `TEXRENDER_BACKEND=raylib` or `TEXRENDER_BACKEND=sdl2`, the selected GUI
-dependency. GUI package export is enabled only when raylib/SDL2 was found with
-`find_package`; if a GUI dependency is fetched from source, prefer
-`FetchContent` / `add_subdirectory`, or install the headless backend as shown
-above.
+dependency. Package export is enabled only when those dependencies were found
+with `find_package`; if FreeType, tinyxml2, or a GUI dependency is fetched from
+source, prefer `FetchContent` / `add_subdirectory` instead of installing that
+build tree.
 
 Starter metadata is included for package-manager workflows: [`vcpkg.json`](vcpkg.json)
 and [`conanfile.py`](conanfile.py). They are intended as project-local manifests

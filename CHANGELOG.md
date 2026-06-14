@@ -19,12 +19,16 @@ follow [Semantic Versioning](https://semver.org/).
   need non-throwing diagnostics instead of only `std::optional`.
 - `RenderOptions` for bounded untrusted-input rendering; the simple
   `try_render()` overload applies default input, text-size and wrap-width limits.
+- `TeXRender::shutdown()` to release process-wide MicroTeX state for embedders
+  that load/unload the library or want deterministic teardown under leak
+  detectors; a later document can then re-initialize with a different resource root.
 - Three `IDrawSurface` backends: raylib (windowed, GPU glyph textures), SDL2
   (`SDL_Renderer` integration), and a dependency-free headless RGBA canvas; any
   custom surface can be injected per document —
   `LatexDocument(res_root, std::move(surface))`.
 - `SvgSurface` and `TEXRENDER_BACKEND=svg` for self-contained SVG output with
-  vector shape primitives and embedded glyph PNGs.
+  vector shape primitives and embedded glyph PNGs; numeric output is
+  locale-independent regardless of the host's global C++ locale.
 - `HeadlessSurface::write_png()` for dependency-free PNG output alongside PPM
   and raw RGBA pixels.
 - `CacheLimits`, `cache_limits()` and `set_cache_limits()` for CPU glyph and

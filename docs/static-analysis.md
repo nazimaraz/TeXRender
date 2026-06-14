@@ -21,6 +21,9 @@ C/C++ analysis on pushes, pull requests, weekly schedule, and manual dispatch.
 It uses a manual headless CMake build so CodeQL observes the same project sources
 that normal CI compiles.
 
+The regular CI workflow also runs the test suite under AddressSanitizer and
+UndefinedBehaviorSanitizer.
+
 The [`Thread sanitizer`](../.github/workflows/thread-sanitizer.yml) workflow
 runs on schedule, manual dispatch, and pull requests that touch shared rendering
 or threading-sensitive files. It builds focused headless tests with
@@ -43,6 +46,18 @@ clang-tidy -p build-tidy source/core/latex_document.cpp
 
 For a full local run, generate a file list from `build-tidy/compile_commands.json`
 the same way the workflow does.
+
+## Local AddressSanitizer Smoke
+
+Use the wrapper script to verify the compiler's ASan runtime before building the
+project:
+
+```sh
+scripts/verify-address-sanitizer.sh
+```
+
+On macOS, the script probes the default compiler and common Homebrew LLVM paths.
+Set `CXX` if you want to force a specific Clang.
 
 ## Local ThreadSanitizer Smoke
 

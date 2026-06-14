@@ -87,7 +87,8 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
 
     const auto lookup = GlyphLookup{face_id, codepoint, pixel_size};
     auto id_it = glyph_ids_.find(lookup);
-    if (id_it == glyph_ids_.end())
+    const auto new_id = id_it == glyph_ids_.end();
+    if (new_id)
         id_it = glyph_ids_.emplace(lookup, next_glyph_key_++).first;
 
     const auto key = id_it->second;
@@ -101,6 +102,10 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     if (FT_Set_Pixel_Sizes(face, 0, static_cast<FT_UInt>(pixel_size)) != 0)
     {
         detail::debug_log("failed to set FreeType pixel size");
+        // Drop the id we just minted: it has no entry in glyphs_, so eviction
+        // (which prunes glyph_ids_ via committed glyphs) would never reclaim it.
+        if (new_id)
+            glyph_ids_.erase(lookup);
         return nullptr;
     }
 

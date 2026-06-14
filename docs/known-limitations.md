@@ -15,6 +15,10 @@ MicroTeX initializes its resource directory once. The first `LatexDocument`
 chooses the process-wide resource root; later documents should use the same path.
 Different paths are ignored and can be reported with `TEXRENDER_DEBUG=1`.
 
+Call `TeXRender::shutdown()` once every `LatexDocument` and `RenderHandle` has
+been destroyed to release that process-wide MicroTeX state; a later document can
+then re-initialize, optionally with a different resource root.
+
 ## Threading Boundary
 
 Shared MicroTeX/glyph-cache render paths are serialized, and repeated threaded
@@ -41,12 +45,13 @@ does not sandbox MicroTeX. Applications that accept internet-scale arbitrary
 input should keep their own request limits and consider process isolation for
 high-risk workloads.
 
-## Package Export With Fetched Raylib
+## Package Export With Fetched Dependencies
 
-Installed CMake package export works for the headless and SVG backends, and for
-raylib when raylib was found with `find_package(raylib)`. If raylib is pulled in
-through `FetchContent`, `TEXRENDER_INSTALL` defaults off because exporting another
-project's build-tree target would make a fragile package.
+Installed CMake package export works when FreeType, tinyxml2, and any selected
+GUI backend were found with `find_package()`. If one of those dependencies is
+pulled in through `FetchContent`, `TEXRENDER_INSTALL` defaults off because the
+installed package would otherwise reference build-tree targets that consumers
+cannot recreate reliably.
 
 ## Headless Rendering Fidelity
 

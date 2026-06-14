@@ -38,10 +38,26 @@ Useful presets:
 - `TEXRENDER_BUILD_BENCHMARKS`: build benchmark executables. Defaults on only when
   this project is top-level.
 - `TEXRENDER_BUILD_FUZZERS`: build libFuzzer targets. Defaults off.
-- `TEXRENDER_INSTALL`: generate install/export support. Defaults off when raylib or
-  SDL2 is fetched from source because those targets are not cleanly exportable.
+- `TEXRENDER_INSTALL`: generate install/export support. Defaults off when FreeType,
+  tinyxml2, raylib, or SDL2 is fetched from source because the installed package
+  relies on `find_dependency()` to recreate those targets for consumers.
 - `TEXRENDER_WARNINGS_AS_ERRORS`: treat first-party warnings as errors. This never
   applies to MicroTeX or other third-party sources.
+
+On macOS top-level builds, `CMAKE_OSX_DEPLOYMENT_TARGET` defaults to the host
+major.minor version when neither CMake nor `MACOSX_DEPLOYMENT_TARGET` has set
+one. Set it explicitly when you need to target older macOS releases.
+
+For local ASan/UBSan runs, prefer the wrapper script because it first verifies
+that the selected compiler can run its sanitizer runtime:
+
+```sh
+scripts/verify-address-sanitizer.sh
+```
+
+On macOS with Apple CommandLineTools, the script will try common Homebrew LLVM
+paths after the default `clang++`. Set `CXX` explicitly to force a particular
+compiler.
 
 Runtime cache limits are controlled from C++ with `TeXRender::set_cache_limits()`.
 The CPU glyph limit is process-wide; the GPU texture limit is used by newly

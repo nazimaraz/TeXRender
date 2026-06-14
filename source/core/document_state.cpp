@@ -3,6 +3,7 @@
 #include "latex.h"
 #include "render/glyph_cache.hpp"
 #include "render/surface_factory.hpp"
+#include "texrender/latex_document.hpp"
 
 namespace TeXRender::detail
 {
@@ -44,3 +45,18 @@ namespace TeXRender::detail
         return mutex;
     }
 } // namespace TeXRender::detail
+
+void TeXRender::shutdown() noexcept
+{
+    using namespace TeXRender::detail;
+    // Serialize against in-flight renders (render_mutex) and initialization
+    // (g_mutex). std::scoped_lock acquires both without a fixed order, and no
+    // other path locks these two together, so this cannot deadlock.
+    const auto lock = std::scoped_lock{render_mutex(), g_mutex};
+    if (!g_initialised)
+        return;
+
+    tex::LaTeX::release();
+    g_initialised = false;
+    g_res_root.clear();
+}

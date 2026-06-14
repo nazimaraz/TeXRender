@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <fstream>
 #include <limits>
+#include <locale>
 #include <memory>
 #include <optional>
 #include <string>
@@ -297,8 +298,16 @@ int main()
     // 8) SvgSurface can capture a formula as a self-contained SVG document.
     {
         auto direct_svg = SvgSurface{8, 8};
+        const unsigned char tiny_glyph_buffer[1] = {0};
         direct_svg.fill_rect(std::numeric_limits<float>::quiet_NaN(), 0.f, 2.f, 2.f);
         direct_svg.draw_glyph(GlyphBitmap{nullptr, 2, 2, 2, 0, 0, 0}, 0.f, 0.f, 0.f);
+        direct_svg.draw_glyph(
+            GlyphBitmap{
+                tiny_glyph_buffer, std::numeric_limits<int>::max(), std::numeric_limits<int>::max(),
+                std::numeric_limits<int>::max(), 0, 0, 1
+            },
+            0.f, 0.f, 0.f
+        );
         CHECK(direct_svg.element_count() == 0);
 
         auto owned = std::make_unique<SvgSurface>();
@@ -322,6 +331,42 @@ int main()
         std::getline(file, first_line);
         CHECK(first_line.find("<svg") != std::string::npos);
         std::filesystem::remove(path);
+    }
+
+    // 9) SVG output stays locale-independent: a host that installs a global
+    //    locale with comma decimals and digit grouping must not corrupt SVG
+    //    numbers ("1,500") or dimensions ("1.024"). Uses a custom facet so the
+    //    test needs no OS locale data and runs the same everywhere.
+    {
+        struct CommaGrouping final : std::numpunct<char>
+        {
+            char do_decimal_point() const override
+            {
+                return ',';
+            }
+            char do_thousands_sep() const override
+            {
+                return '.';
+            }
+            std::string do_grouping() const override
+            {
+                return "\3";
+            }
+        };
+
+        const auto previous = std::locale::global(std::locale(std::locale::classic(), new CommaGrouping));
+
+        auto canvas = SvgSurface{1024, 2048};
+        canvas.fill_rect(1.5f, 2.5f, 4.f, 4.f);
+        const auto svg = canvas.svg();
+
+        CHECK(svg.find(R"(width="1024")") != std::string::npos);
+        CHECK(svg.find(R"(height="2048")") != std::string::npos);
+        CHECK(svg.find("1.024") == std::string::npos); // grouped dimension would look like this
+        CHECK(svg.find(R"(x="1.500")") != std::string::npos);
+        CHECK(svg.find("1,500") == std::string::npos); // comma decimal would look like this
+
+        std::locale::global(previous);
     }
 
     if (g_failures == 0)

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <limits>
 #include <numeric>
+#include <optional>
 #include <string_view>
 #include <vector>
 #include "backend/glyph_bitmap_validation.hpp"
@@ -160,10 +161,20 @@ namespace
         return (b << 16u) | a;
     }
 
-    [[nodiscard]] std::vector<unsigned char> zlib_store(const std::vector<unsigned char>& data)
+    [[nodiscard]] std::optional<std::vector<unsigned char>> zlib_store(const std::vector<unsigned char>& data)
     {
+        const auto blocks = data.empty() ? size_t{0} : 1u + (data.size() - 1u) / 65535u;
+        constexpr auto zlib_overhead = size_t{8};
+        const auto max_size = std::numeric_limits<size_t>::max();
+        if (data.size() > max_size - zlib_overhead || blocks > (max_size - data.size() - zlib_overhead) / 5u)
+            return std::nullopt;
+
+        const auto output_size = data.size() + blocks * 5u + zlib_overhead;
+        if (output_size > static_cast<size_t>(std::numeric_limits<uint32_t>::max()))
+            return std::nullopt;
+
         auto output = std::vector<unsigned char>{};
-        output.reserve(data.size() + data.size() / 65535u * 5u + 8u);
+        output.reserve(output_size);
         output.push_back(0x78u);
         output.push_back(0x01u);
 
@@ -391,14 +402,15 @@ bool HeadlessSurface::write_ppm(const std::string& path) const
     if (!file)
         return false;
 
-    std::fprintf(file, "P6\n%d %d\n255\n", width_, height_);
-    for (auto i = size_t{0}; i + 3 < pixels_.size(); i += 4)
+    auto ok = std::fprintf(file, "P6\n%d %d\n255\n", width_, height_) > 0;
+    for (auto i = size_t{0}; ok && i + 3 < pixels_.size(); i += 4)
     {
         const unsigned char rgb[3] = {pixels_[i + 0], pixels_[i + 1], pixels_[i + 2]};
-        std::fwrite(rgb, 1, 3, file);
+        ok = std::fwrite(rgb, 1, sizeof(rgb), file) == sizeof(rgb);
     }
 
-    return std::fclose(file) == 0;
+    // Always close (no leaked FILE*), but report header/pixel write failures too.
+    return std::fclose(file) == 0 && ok;
 }
 
 bool HeadlessSurface::write_png(const std::string& path) const
@@ -442,7 +454,8 @@ bool HeadlessSurface::write_png(const std::string& path) const
         scanlines.insert(scanlines.end(), row_begin, row_begin + static_cast<std::ptrdiff_t>(stride));
     }
 
-    if (!write_png_chunk(file, "IDAT", zlib_store(scanlines)))
+    const auto idat = zlib_store(scanlines);
+    if (!idat || !write_png_chunk(file, "IDAT", *idat))
         return false;
 
     return write_png_chunk(file, "IEND", {});
