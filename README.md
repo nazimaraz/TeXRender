@@ -35,9 +35,7 @@ proven by raylib, SDL2, software RGBA, and SVG implementations; adding another G
 engine backend means implementing one small interface — nothing in the core
 changes.
 
-![demo](docs/demo.png)
-
-![formula preview](docs/live-preview.gif)
+![realtime signal demo](docs/realtime-signal.gif)
 
 ## Why use TeXRender?
 
@@ -121,6 +119,7 @@ cmake -S . -B build
 cmake --build build -j
 ./build/texrender_minimal      # draws a single formula in a window
 ./build/texrender_demo         # cycle samples (SPACE/arrows), resize text (UP/DOWN)
+./build/texrender_realtime_values # show signal variables, formulas, and live TeX values
 ./build/texrender_offscreen    # render to formula.png — no window needed
 ./build/texrender_svg_export   # render to formula.svg
 ctest --test-dir build      # run the unit tests

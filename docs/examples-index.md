@@ -7,6 +7,7 @@ embed texrender.
 | --- | --- | --- |
 | [`examples/minimal.cpp`](../examples/minimal.cpp) | default raylib | The shortest windowed formula render loop. |
 | [`examples/demo_main.cpp`](../examples/demo_main.cpp) | default raylib | Interactive sample browser with text-size and formula changes. |
+| [`examples/realtime_values.cpp`](../examples/realtime_values.cpp) | default raylib | Showing signal variables and symbolic formulas, then substituting live values into TeX. |
 | [`examples/live_edit.cpp`](../examples/live_edit.cpp) | raylib or WebAssembly | Live formula editing, including the browser demo build. |
 | [`examples/raylib_overlay.cpp`](../examples/raylib_overlay.cpp) | default raylib | Drawing formulas as one layer inside an existing raylib scene. |
 | [`examples/sdl2_minimal.cpp`](../examples/sdl2_minimal.cpp) | `TEXRENDER_BACKEND=sdl2` | Injecting texrender into a caller-owned `SDL_Renderer`. |
@@ -22,7 +23,7 @@ embed texrender.
 ## Picking A Starting Point
 
 - Building a game or GUI overlay: start with `minimal.cpp`, then compare
-  `raylib_overlay.cpp` or `sdl2_minimal.cpp`.
+  `realtime_values.cpp`, `raylib_overlay.cpp`, or `sdl2_minimal.cpp`.
 - Generating images on a server or in CI: start with `offscreen.cpp` or
   `headless_batch.cpp`.
 - Exporting documents or reports: start with `svg_export.cpp`.
