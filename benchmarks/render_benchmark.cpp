@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 #include <texrender/headless_surface.hpp>
 #include <texrender/latex_document.hpp>
@@ -28,7 +29,7 @@ namespace
     [[nodiscard]] double time_ms(Fn&& fn)
     {
         const auto start = Clock::now();
-        fn();
+        std::forward<Fn>(fn)();
         const auto end = Clock::now();
         return std::chrono::duration<double, std::milli>(end - start).count();
     }

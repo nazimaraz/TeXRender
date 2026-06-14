@@ -134,6 +134,10 @@ RenderResult LatexDocument::try_render_detailed(const std::string& latex, const 
     return try_render_detailed(latex, untrusted_options(text_size, argb, wrap_width));
 }
 
+// The noexcept is the non-throwing contract for untrusted input. The only way an
+// exception could escape is OOM while constructing an error message in a catch
+// handler, where std::terminate is an acceptable outcome rather than a leak.
+// NOLINTNEXTLINE(bugprone-exception-escape)
 RenderResult LatexDocument::try_render_detailed(const std::string& latex, const RenderOptions& options) const noexcept
 {
     try

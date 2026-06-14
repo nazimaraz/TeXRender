@@ -36,12 +36,15 @@ namespace
 
         [[nodiscard]] TeXRender::FormulaBox box() const
         {
+            if (!formula_)
+                return {};
             return TeXRender::formula_box(*formula_);
         }
 
         void draw_baseline_aligned(const int x, const int baseline_y) const
         {
-            TeXRender::draw_at_baseline(*formula_, x, baseline_y);
+            if (formula_)
+                TeXRender::draw_at_baseline(*formula_, x, baseline_y);
         }
 
     private:

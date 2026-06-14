@@ -27,6 +27,44 @@ namespace
         static auto mutex = std::mutex{};
         return mutex;
     }
+
+    // Copy a freshly rendered FreeType slot into a cache Glyph. Always records the
+    // advance/bearings; only fills pixels for a sane, non-empty, in-range bitmap.
+    void decode_glyph_bitmap(GlyphCache::Glyph& g, const FT_GlyphSlotRec_& slot)
+    {
+        const auto& bmp = slot.bitmap;
+        if (bmp.width > static_cast<unsigned int>(std::numeric_limits<int>::max()) ||
+            bmp.rows > static_cast<unsigned int>(std::numeric_limits<int>::max()) || bmp.pitch == std::numeric_limits<int>::min())
+        {
+            detail::debug_log("FreeType returned an unsupported glyph bitmap size");
+            return;
+        }
+
+        g.width = static_cast<int>(bmp.width);
+        g.height = static_cast<int>(bmp.rows);
+        g.pitch = bmp.pitch < 0 ? -bmp.pitch : bmp.pitch;
+        g.left = slot.bitmap_left;
+        g.top = slot.bitmap_top;
+        g.advance = static_cast<float>(slot.advance.x) / 64.f;
+        if (g.width <= 0 || g.height <= 0 || g.pitch < g.width || !bmp.buffer)
+            return;
+
+        const auto pitch = static_cast<size_t>(g.pitch);
+        const auto height = static_cast<size_t>(g.height);
+        if (height > g.pixels.max_size() / pitch)
+            return;
+
+        g.pixels.resize(pitch * height);
+        // FT_LOAD_RENDER produces down-flow bitmaps (pitch > 0) today, but handle
+        // up-flow too: there the top image row sits at the end of the buffer and the
+        // negative bmp.pitch walks backwards from it.
+        const auto* const top_row = bmp.pitch < 0 ? bmp.buffer + static_cast<std::ptrdiff_t>(g.height - 1) * g.pitch : bmp.buffer;
+        for (auto row = 0; row < g.height; ++row)
+        {
+            const auto* const src = top_row + static_cast<std::ptrdiff_t>(row) * bmp.pitch;
+            std::copy_n(src, g.pitch, g.pixels.begin() + static_cast<std::ptrdiff_t>(row) * g.pitch);
+        }
+    }
 } // namespace
 
 GlyphCache::GlyphCache()
@@ -114,46 +152,12 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     if (FT_Load_Char(face, codepoint, FT_LOAD_RENDER) != 0)
     {
         auto message = std::array<char, 64>{};
-        std::snprintf(message.data(), message.size(), "failed to render glyph U+%04X", static_cast<uint32_t>(codepoint));
+        (void) std::snprintf(message.data(), message.size(), "failed to render glyph U+%04X", static_cast<uint32_t>(codepoint));
         detail::debug_log(message.data());
     }
     else
     {
-        const auto slot = face->glyph;
-        const auto& bmp = slot->bitmap;
-        if (bmp.width > static_cast<unsigned int>(std::numeric_limits<int>::max()) ||
-            bmp.rows > static_cast<unsigned int>(std::numeric_limits<int>::max()) || bmp.pitch == std::numeric_limits<int>::min())
-        {
-            detail::debug_log("FreeType returned an unsupported glyph bitmap size");
-        }
-        else
-        {
-            g.width = static_cast<int>(bmp.width);
-            g.height = static_cast<int>(bmp.rows);
-            g.pitch = bmp.pitch < 0 ? -bmp.pitch : bmp.pitch;
-            g.left = slot->bitmap_left;
-            g.top = slot->bitmap_top;
-            g.advance = static_cast<float>(slot->advance.x) / 64.f;
-            if (g.width > 0 && g.height > 0 && g.pitch >= g.width && bmp.buffer)
-            {
-                const auto pitch = static_cast<size_t>(g.pitch);
-                const auto height = static_cast<size_t>(g.height);
-                if (height <= g.pixels.max_size() / pitch)
-                {
-                    g.pixels.resize(pitch * height);
-                    // FT_LOAD_RENDER produces down-flow bitmaps (pitch > 0) today, but
-                    // handle up-flow too: there the top image row sits at the end of
-                    // the buffer and the negative bmp.pitch walks backwards from it.
-                    const auto* const top_row =
-                        bmp.pitch < 0 ? bmp.buffer + static_cast<std::ptrdiff_t>(g.height - 1) * g.pitch : bmp.buffer;
-                    for (auto row = 0; row < g.height; ++row)
-                    {
-                        const auto* const src = top_row + static_cast<std::ptrdiff_t>(row) * bmp.pitch;
-                        std::copy_n(src, g.pitch, g.pixels.begin() + static_cast<std::ptrdiff_t>(row) * g.pitch);
-                    }
-                }
-            }
-        }
+        decode_glyph_bitmap(g, *face->glyph);
     }
 
     lru_.push_front(key);
@@ -202,5 +206,5 @@ bool detail::debug_enabled()
 void detail::debug_log(const std::string& message)
 {
     if (debug_enabled())
-        std::fprintf(stderr, "[texrender] %s\n", message.c_str());
+        (void) std::fprintf(stderr, "[texrender] %s\n", message.c_str());
 }

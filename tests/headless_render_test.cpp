@@ -340,6 +340,7 @@ int main()
     {
         struct CommaGrouping final : std::numpunct<char>
         {
+        protected:
             char do_decimal_point() const override
             {
                 return ',';

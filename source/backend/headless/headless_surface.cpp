@@ -1,9 +1,10 @@
 #include "texrender/headless_surface.hpp"
 #include <algorithm>
+#include <array>
 #include <cmath>
-#include <cstdio>
 #include <fstream>
 #include <limits>
+#include <locale>
 #include <numeric>
 #include <optional>
 #include <string_view>
@@ -71,15 +72,13 @@ namespace
             {
                 if (r > t1)
                     return false;
-                if (r > t0)
-                    t0 = r;
+                t0 = std::max(r, t0);
             }
             else
             {
                 if (r < t0)
                     return false;
-                if (r < t1)
-                    t1 = r;
+                t1 = std::min(r, t1);
             }
             return true;
         };
@@ -117,13 +116,13 @@ namespace
 
     void write_u32_be(std::ofstream& output, const uint32_t value)
     {
-        const unsigned char bytes[4] = {
-            static_cast<unsigned char>((value >> 24u) & 0xffu),
-            static_cast<unsigned char>((value >> 16u) & 0xffu),
-            static_cast<unsigned char>((value >> 8u) & 0xffu),
-            static_cast<unsigned char>(value & 0xffu),
+        const auto bytes = std::array<char, 4>{
+            static_cast<char>((value >> 24u) & 0xffu),
+            static_cast<char>((value >> 16u) & 0xffu),
+            static_cast<char>((value >> 8u) & 0xffu),
+            static_cast<char>(value & 0xffu),
         };
-        output.write(reinterpret_cast<const char*>(bytes), sizeof(bytes));
+        output.write(bytes.data(), static_cast<std::streamsize>(bytes.size()));
     }
 
     [[nodiscard]] uint32_t crc32_update(uint32_t crc, const unsigned char byte)
@@ -204,6 +203,8 @@ namespace
         write_u32_be(file, static_cast<uint32_t>(data.size()));
         file.write(type.data(), static_cast<std::streamsize>(type.size()));
         if (!data.empty())
+            // ofstream::write needs char*; data holds raw PNG bytes (unsigned char) with no clean alternative.
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             file.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
         write_u32_be(file, png_crc(type, data));
         return static_cast<bool>(file);
@@ -398,19 +399,23 @@ bool HeadlessSurface::write_ppm(const std::string& path) const
     if (!valid_canvas(width_, height_, pixels_))
         return false;
 
-    auto* const file = std::fopen(path.c_str(), "wb");
+    auto file = std::ofstream{path, std::ios::binary};
     if (!file)
         return false;
 
-    auto ok = std::fprintf(file, "P6\n%d %d\n255\n", width_, height_) > 0;
-    for (auto i = size_t{0}; ok && i + 3 < pixels_.size(); i += 4)
+    file.imbue(std::locale::classic()); // ASCII header dimensions must not pick up locale digit grouping
+    file << "P6\n" << width_ << ' ' << height_ << "\n255\n";
+    for (auto i = size_t{0}; i + 3 < pixels_.size(); i += 4)
     {
-        const unsigned char rgb[3] = {pixels_[i + 0], pixels_[i + 1], pixels_[i + 2]};
-        ok = std::fwrite(rgb, 1, sizeof(rgb), file) == sizeof(rgb);
+        const auto rgb = std::array<char, 3>{
+            static_cast<char>(pixels_[i + 0]),
+            static_cast<char>(pixels_[i + 1]),
+            static_cast<char>(pixels_[i + 2]),
+        };
+        file.write(rgb.data(), static_cast<std::streamsize>(rgb.size()));
     }
 
-    // Always close (no leaked FILE*), but report header/pixel write failures too.
-    return std::fclose(file) == 0 && ok;
+    return static_cast<bool>(file);
 }
 
 bool HeadlessSurface::write_png(const std::string& path) const
@@ -422,8 +427,17 @@ bool HeadlessSurface::write_png(const std::string& path) const
     if (!file)
         return false;
 
-    constexpr unsigned char signature[8] = {0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
-    file.write(reinterpret_cast<const char*>(signature), sizeof(signature));
+    constexpr auto signature = std::array<char, 8>{
+        static_cast<char>(0x89u),
+        static_cast<char>(0x50u),
+        static_cast<char>(0x4eu),
+        static_cast<char>(0x47u),
+        static_cast<char>(0x0du),
+        static_cast<char>(0x0au),
+        static_cast<char>(0x1au),
+        static_cast<char>(0x0au),
+    };
+    file.write(signature.data(), static_cast<std::streamsize>(signature.size()));
 
     auto ihdr = std::vector<unsigned char>{};
     ihdr.reserve(13);

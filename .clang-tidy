@@ -25,6 +25,7 @@ Checks: >
   -misc-non-private-member-variables-in-classes,
   -misc-use-anonymous-namespace,
   -misc-use-internal-linkage,
+  -modernize-raw-string-literal,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
   -readability-identifier-length,

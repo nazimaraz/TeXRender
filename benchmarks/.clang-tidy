@@ -1,0 +1,13 @@
+---
+# Benchmarks are standalone executables, not reusable library code. They inherit
+# the root .clang-tidy but relax a few checks that target library APIs: the
+# benchmark main() may throw. The shipped library under source/ keeps all of
+# these enabled.
+InheritParentConfig: true
+Checks: >
+  -bugprone-exception-escape,
+  -cert-err33-c,
+  -cppcoreguidelines-avoid-c-arrays,
+  -modernize-avoid-c-arrays,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-type-reinterpret-cast
