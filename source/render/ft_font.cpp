@@ -73,12 +73,12 @@ float FtFont::getSize() const
     return size_;
 }
 
-tex::sptr<tex::Font> FtFont::deriveFont(const int style) const
+tex::sptr<tex::Font> FtFont::deriveFont(const int font_style) const
 {
     if (family_.empty())
-        return tex::sptrOf<FtFont>(family_, path_, size_, style);
+        return tex::sptrOf<FtFont>(family_, path_, size_, font_style);
 
-    return tex::sptrOf<FtFont>(family_, resolve_font(family_, style), size_, style);
+    return tex::sptrOf<FtFont>(family_, resolve_font(family_, font_style), size_, font_style);
 }
 
 bool FtFont::operator==(const Font& f) const

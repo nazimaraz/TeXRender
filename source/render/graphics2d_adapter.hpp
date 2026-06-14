@@ -21,7 +21,7 @@ namespace TeXRender
         void setFont(const tex::Font* font) override;
 
         void translate(float dx, float dy) override;
-        void scale(float sx, float sy) override;
+        void scale(float scale_x, float scale_y) override;
         void rotate(float angle) override;
         void rotate(float angle, float px, float py) override;
         void reset() override;

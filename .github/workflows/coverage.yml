@@ -26,10 +26,10 @@ jobs:
           cmake -S . -B build-coverage -G Ninja
           -DCMAKE_BUILD_TYPE=Debug
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXGUI_BACKEND=headless
-          -DTEXGUI_BUILD_EXAMPLES=OFF
-          -DTEXGUI_BUILD_TESTS=ON
-          -DTEXGUI_BUILD_BENCHMARKS=OFF
+          -DTEXRENDER_BACKEND=headless
+          -DTEXRENDER_BUILD_EXAMPLES=OFF
+          -DTEXRENDER_BUILD_TESTS=ON
+          -DTEXRENDER_BUILD_BENCHMARKS=OFF
           -DCMAKE_CXX_FLAGS="--coverage -O0 -g"
           -DCMAKE_EXE_LINKER_FLAGS="--coverage"
       - name: Build

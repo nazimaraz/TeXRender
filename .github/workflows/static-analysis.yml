@@ -28,10 +28,10 @@ jobs:
           -DCMAKE_BUILD_TYPE=Debug
           -DCMAKE_CXX_COMPILER=g++-14
           -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-          -DTEXGUI_BACKEND=headless
-          -DTEXGUI_BUILD_EXAMPLES=ON
-          -DTEXGUI_BUILD_TESTS=ON
-          -DTEXGUI_BUILD_BENCHMARKS=ON
+          -DTEXRENDER_BACKEND=headless
+          -DTEXRENDER_BUILD_EXAMPLES=ON
+          -DTEXRENDER_BUILD_TESTS=ON
+          -DTEXRENDER_BUILD_BENCHMARKS=ON
       - name: Select project translation units
         run: |
           python3 - <<'PY' > tidy-files.txt

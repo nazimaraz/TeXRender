@@ -62,7 +62,7 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXGUI_BACKEND=headless
+          -DTEXRENDER_BACKEND=headless
       - name: Build
         run: cmake --build build -j
       - name: Test
@@ -75,12 +75,12 @@ jobs:
           path: build/visual-regression
           if-no-files-found: ignore
       - name: Smoke-run the offscreen example
-        run: ./build/texgui_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png
+        run: ./build/texrender_offscreen 'e^{i\pi} + 1 = 0' /tmp/formula.png
       - name: Smoke-run the custom surface example
-        run: ./build/texgui_custom_surface
+        run: ./build/texrender_custom_surface
       - name: Generate gallery artifacts
         env:
-          TEXGUI_BUILD_DIR: build
+          TEXRENDER_BUILD_DIR: build
         run: scripts/generate-gallery.sh docs/gallery-formulas.txt build/gallery
       - name: Upload gallery artifacts
         uses: actions/upload-artifact@v4
@@ -88,12 +88,12 @@ jobs:
           name: generated-gallery-linux-headless
           path: build/gallery
       - name: Install package
-        run: cmake --install build --prefix /tmp/texgui-prefix
+        run: cmake --install build --prefix /tmp/texrender-prefix
       - name: Configure installed package consumer
         run: >
           cmake -S tests/package_consumer -B package-consumer -G Ninja
           -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH=/tmp/texgui-prefix
+          -DCMAKE_PREFIX_PATH=/tmp/texrender-prefix
       - name: Build installed package consumer
         run: cmake --build package-consumer -j
       - name: Test installed package consumer
@@ -103,7 +103,7 @@ jobs:
           CXX: g++-14
         run: scripts/verify-pkg-config.sh
 
-  # Compile texgui itself, examples, tests and benchmarks with a strict warning
+  # Compile texrender itself, examples, tests and benchmarks with a strict warning
   # profile. MicroTeX headers are included as SYSTEM headers so third-party
   # warnings do not become consumer build failures.
   strict-warnings:
@@ -120,8 +120,8 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Debug
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXGUI_BACKEND=headless
-          -DTEXGUI_WARNINGS_AS_ERRORS=ON
+          -DTEXRENDER_BACKEND=headless
+          -DTEXRENDER_WARNINGS_AS_ERRORS=ON
       - name: Build
         run: cmake --build build -j
 
@@ -139,13 +139,13 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXGUI_BACKEND=svg
+          -DTEXRENDER_BACKEND=svg
       - name: Build
         run: cmake --build build -j
       - name: Test
         run: ctest --test-dir build --output-on-failure
       - name: Smoke-run SVG export
-        run: ./build/texgui_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg
+        run: ./build/texrender_svg_export 'e^{i\pi} + 1 = 0' /tmp/formula.svg
 
   sdl2:
     name: Linux · GCC 14 · SDL2 backend
@@ -161,7 +161,7 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXGUI_BACKEND=sdl2
+          -DTEXRENDER_BACKEND=sdl2
       - name: Build
         run: cmake --build build -j
       - name: Test
@@ -186,18 +186,18 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=RelWithDebInfo
           -DCMAKE_CXX_COMPILER=clang++-22
-          -DTEXGUI_BACKEND=headless
-          -DTEXGUI_BUILD_EXAMPLES=OFF
-          -DTEXGUI_BUILD_TESTS=OFF
-          -DTEXGUI_BUILD_BENCHMARKS=OFF
-          -DTEXGUI_BUILD_FUZZERS=ON
+          -DTEXRENDER_BACKEND=headless
+          -DTEXRENDER_BUILD_EXAMPLES=OFF
+          -DTEXRENDER_BUILD_TESTS=OFF
+          -DTEXRENDER_BUILD_BENCHMARKS=OFF
+          -DTEXRENDER_BUILD_FUZZERS=ON
       - name: Build fuzz target
-        run: cmake --build build --target texgui_try_render_fuzzer -j
+        run: cmake --build build --target texrender_try_render_fuzzer -j
       - name: Run fuzz smoke
         env:
           ASAN_OPTIONS: detect_leaks=0
           UBSAN_OPTIONS: print_stacktrace=1
-        run: ./build/texgui_try_render_fuzzer -runs=500 -max_len=256
+        run: ./build/texrender_try_render_fuzzer -runs=500 -max_len=256
 
   # Address + UndefinedBehavior sanitizers over the full headless suite, with
   # findings fatal (-fno-sanitize-recover). Leak detection stays off: the
@@ -217,7 +217,7 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=RelWithDebInfo
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXGUI_BACKEND=headless
+          -DTEXRENDER_BACKEND=headless
           -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer"
           -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
       - name: Build
@@ -278,30 +278,30 @@ jobs:
       - name: Test
         run: ctest --test-dir build --output-on-failure
       - name: Configure (headless backend)
-        run: cmake -S . -B build-headless -G Ninja -DCMAKE_BUILD_TYPE=Release -DTEXGUI_BACKEND=headless
+        run: cmake -S . -B build-headless -G Ninja -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=headless
       - name: Build (headless)
         run: cmake --build build-headless -j
       - name: Test (headless)
         run: ctest --test-dir build-headless --output-on-failure
       - name: Smoke-run offscreen example (headless)
-        run: ./build-headless/texgui_offscreen 'e^{i\pi} + 1 = 0' "$RUNNER_TEMP/formula.png"
+        run: ./build-headless/texrender_offscreen 'e^{i\pi} + 1 = 0' "$RUNNER_TEMP/formula.png"
       - name: Smoke-run custom surface example (headless)
-        run: ./build-headless/texgui_custom_surface
+        run: ./build-headless/texrender_custom_surface
       - name: Install headless package
-        run: cmake --install build-headless --prefix "$RUNNER_TEMP/texgui-prefix"
+        run: cmake --install build-headless --prefix "$RUNNER_TEMP/texrender-prefix"
       - name: Configure installed package consumer (headless)
         run: >
           cmake -S tests/package_consumer -B package-consumer -G Ninja
           -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/texgui-prefix"
+          -DCMAKE_PREFIX_PATH="$RUNNER_TEMP/texrender-prefix"
       - name: Build installed package consumer (headless)
         run: cmake --build package-consumer -j
       - name: Test installed package consumer (headless)
         run: ctest --test-dir package-consumer --output-on-failure
       - name: Verify installed raylib package
         env:
-          TEXGUI_BACKEND_PACKAGE_BACKENDS: raylib
-          TEXGUI_BACKEND_PACKAGE_REQUIRE: "1"
+          TEXRENDER_BACKEND_PACKAGE_BACKENDS: raylib
+          TEXRENDER_BACKEND_PACKAGE_REQUIRE: "1"
         run: scripts/verify-backend-packages.sh
 
   # Windows / MSVC: build the headless backend (FreeType + tinyxml2 come from
@@ -312,32 +312,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Configure
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEXGUI_BACKEND=headless
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=headless
       - name: Build
         run: cmake --build build --config Release -j
       - name: Test
         run: ctest --test-dir build -C Release --output-on-failure
       - name: Smoke-run offscreen example
-        run: .\build\Release\texgui_offscreen.exe 'e^{i\pi} + 1 = 0' "$env:RUNNER_TEMP\formula.png"
+        run: .\build\Release\texrender_offscreen.exe 'e^{i\pi} + 1 = 0' "$env:RUNNER_TEMP\formula.png"
       - name: Smoke-run custom surface example
-        run: .\build\Release\texgui_custom_surface.exe
+        run: .\build\Release\texrender_custom_surface.exe
       - name: Configure shared library
         run: >
           cmake -S . -B build-shared
           -DBUILD_SHARED_LIBS=ON
-          -DTEXGUI_BACKEND=headless
-          -DTEXGUI_BUILD_EXAMPLES=OFF
-          -DTEXGUI_BUILD_BENCHMARKS=OFF
+          -DTEXRENDER_BACKEND=headless
+          -DTEXRENDER_BUILD_EXAMPLES=OFF
+          -DTEXRENDER_BUILD_BENCHMARKS=OFF
       - name: Build shared library
         run: cmake --build build-shared --config Release -j
       - name: Test shared library
         run: ctest --test-dir build-shared -C Release --output-on-failure
       - name: Install shared package
-        run: cmake --install build-shared --config Release --prefix "$env:RUNNER_TEMP/texgui-prefix"
+        run: cmake --install build-shared --config Release --prefix "$env:RUNNER_TEMP/texrender-prefix"
       - name: Configure shared package consumer
         run: >
           cmake -S tests/package_consumer -B package-consumer-shared
-          -DCMAKE_PREFIX_PATH="$env:RUNNER_TEMP/texgui-prefix"
+          -DCMAKE_PREFIX_PATH="$env:RUNNER_TEMP/texrender-prefix"
       - name: Build shared package consumer
         run: cmake --build package-consumer-shared --config Release -j
       - name: Test shared package consumer

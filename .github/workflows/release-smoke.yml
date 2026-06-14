@@ -45,13 +45,13 @@ jobs:
       - name: Verify release archive
         env:
           CXX: g++-14
-          TEXGUI_ARCHIVE_VERSION: ${{ github.ref_name }}
+          TEXRENDER_ARCHIVE_VERSION: ${{ github.ref_name }}
         run: scripts/verify-release-archive.sh
       - name: Upload archive artifacts
         uses: actions/upload-artifact@v4
         with:
           name: release-archive-${{ github.run_id }}
-          path: /tmp/texgui-release-archive/artifacts
+          path: /tmp/texrender-release-archive/artifacts
 
   cpack:
     name: CPack archive smoke
@@ -71,7 +71,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cpack-smoke-${{ github.run_id }}
-          path: /tmp/texgui-cpack/artifacts
+          path: /tmp/texrender-cpack/artifacts
 
   external-consumers:
     name: External consumer smoke

@@ -9,7 +9,7 @@ on:
       - "CMakeLists.txt"
       - "conanfile.py"
       - "vcpkg.json"
-      - "packaging/vcpkg-overlay/ports/latex-renderer/**"
+      - "packaging/vcpkg-overlay/ports/texrender/**"
       - "scripts/check-registry-readiness.py"
       - "scripts/check-third-party-notices.py"
       - "docs/package-publishing.md"

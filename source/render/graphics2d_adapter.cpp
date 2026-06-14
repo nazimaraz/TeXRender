@@ -51,9 +51,9 @@ void Graphics2DAdapter::translate(const float dx, const float dy)
     transform_.translate(dx, dy);
 }
 
-void Graphics2DAdapter::scale(const float sx, const float sy)
+void Graphics2DAdapter::scale(const float scale_x, const float scale_y)
 {
-    transform_.scale(sx, sy);
+    transform_.scale(scale_x, scale_y);
 }
 
 void Graphics2DAdapter::rotate(const float angle)

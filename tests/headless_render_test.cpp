@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <memory>
 #include <optional>
 #include <string>
@@ -204,7 +205,8 @@ int main()
 
     // 5) Direct HeadlessSurface compositing: pixels are stored as straight RGBA,
     //    so transparent colors keep their source RGB and compose correctly over
-    //    opaque destinations.
+    //    opaque destinations. Non-finite or extreme direct draw inputs are
+    //    ignored or clipped instead of reaching undefined float-to-int casts.
     {
         auto canvas = HeadlessSurface{};
         canvas.resize(1, 1);
@@ -225,6 +227,22 @@ int main()
         CHECK(opaque[1] == 127);
         CHECK(opaque[2] == 255);
         CHECK(opaque[3] == 255);
+
+        canvas.resize(8, 8);
+        canvas.clear(0x00000000);
+        canvas.set_color(0xff00ff00);
+        canvas.fill_rect(std::numeric_limits<float>::quiet_NaN(), 0.f, 2.f, 2.f);
+        canvas.fill_rect(0.f, std::numeric_limits<float>::infinity(), 2.f, 2.f);
+        CHECK(canvas.covered_pixels() == 0);
+
+        canvas.draw_line(-1.0e20f, 4.f, 1.0e20f, 4.f, 1.f);
+        CHECK(canvas.covered_pixels() > 0);
+
+        const unsigned char glyph_pixels[4] = {255, 255, 255, 255};
+        const auto before_invalid_glyph = canvas.covered_pixels();
+        canvas.draw_glyph(GlyphBitmap{glyph_pixels, 2, 2, -2, 0, 0, 1}, 0.f, 0.f, 0.f);
+        canvas.draw_glyph(GlyphBitmap{glyph_pixels, 2, 2, 2, 0, 0, 2}, std::numeric_limits<float>::infinity(), 0.f, 0.f);
+        CHECK(canvas.covered_pixels() == before_invalid_glyph);
     }
 
     // 6) Cache limits are configurable and clamp zero to one.

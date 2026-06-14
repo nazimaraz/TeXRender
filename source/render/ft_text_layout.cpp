@@ -2,6 +2,7 @@
 #include "core/document_state.hpp"
 #include "render/glyph_cache.hpp"
 #include <mutex>
+#include <stdexcept>
 
 using namespace TeXRender;
 
@@ -45,6 +46,9 @@ void FtTextLayout::draw(tex::Graphics2D& g2, const float x, const float y)
 
 tex::sptr<tex::TextLayout> tex::TextLayout::create(const std::wstring& src, const sptr<Font>& font)
 {
-    auto ft = std::static_pointer_cast<FtFont>(font);
+    auto ft = std::dynamic_pointer_cast<FtFont>(font);
+    if (!ft)
+        throw std::invalid_argument("texrender: TextLayout requires a texrender FreeType font");
+
     return sptrOf<FtTextLayout>(src, ft);
 }

@@ -78,7 +78,7 @@ namespace TeXRender
         {
             Glyph glyph;
             GlyphLookup lookup;
-            std::list<uint64_t>::iterator lru_it;
+            std::list<uint64_t>::iterator lru_it{};
         };
 
         FT_LibraryRec_* library_{};

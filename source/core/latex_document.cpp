@@ -140,8 +140,8 @@ RenderResult LatexDocument::try_render_detailed(const std::string& latex, const 
 
         const auto lock = std::scoped_lock{detail::render_mutex()};
         const auto width = effective_wrap_width(options);
-        auto* const render = tex::LaTeX::parse(tex::utf82wide(latex), width, options.text_size, 0.f, options.argb);
-        return RenderResult{RenderHandle{render, state_}};
+        auto* const parsed_render = tex::LaTeX::parse(tex::utf82wide(latex), width, options.text_size, 0.f, options.argb);
+        return RenderResult{RenderHandle{parsed_render, state_}};
     } catch (const tex::ex_tex& error)
     {
         return RenderResult{RenderError{RenderErrorCode::parse_error, error.what()}};

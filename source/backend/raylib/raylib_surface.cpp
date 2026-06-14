@@ -46,9 +46,9 @@ void RaylibSurface::unload()
     lru_.clear();
 }
 
-void RaylibSurface::set_max_textures(const std::size_t max_textures)
+void RaylibSurface::set_max_textures(const std::size_t texture_limit)
 {
-    max_textures_ = std::max<std::size_t>(1, max_textures);
+    max_textures_ = std::max<std::size_t>(1, texture_limit);
     evict_excess_textures();
 }
 

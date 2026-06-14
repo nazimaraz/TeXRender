@@ -26,16 +26,16 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXGUI_BACKEND=headless
-          -DTEXGUI_BUILD_EXAMPLES=OFF
-          -DTEXGUI_BUILD_TESTS=OFF
-          -DTEXGUI_BUILD_BENCHMARKS=ON
+          -DTEXRENDER_BACKEND=headless
+          -DTEXRENDER_BUILD_EXAMPLES=OFF
+          -DTEXRENDER_BUILD_TESTS=OFF
+          -DTEXRENDER_BUILD_BENCHMARKS=ON
       - name: Build benchmark
-        run: cmake --build build --target texgui_render_benchmark -j
+        run: cmake --build build --target texrender_render_benchmark -j
       - name: Run benchmark
         run: |
           set -o pipefail
-          ./build/texgui_render_benchmark | tee benchmark-results.txt
+          ./build/texrender_render_benchmark | tee benchmark-results.txt
       - name: Compare with local baseline
         run: python3 scripts/check-benchmark-baseline.py --input benchmark-results.txt --warn-only
       - name: Upload benchmark output

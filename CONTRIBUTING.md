@@ -108,8 +108,8 @@ Local clean-clone and cleanup rehearsal is documented in
 
 ## Code style
 
-* Implementation files are C++23; the public headers in `include/texrender/` must
-  stay **C++17-compatible** — that is the standard consumers build against.
+* Implementation files and public headers must stay **C++17-compatible** — that
+  is the standard consumers build against.
 * Formatting is enforced in CI with **clang-format 22** and the repo's
   [`.clang-format`](.clang-format). Before committing:
 

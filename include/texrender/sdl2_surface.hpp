@@ -71,7 +71,7 @@ namespace TeXRender
         struct CachedTexture
         {
             SDL_Texture* texture = nullptr;
-            std::list<uint64_t>::iterator lru_it;
+            std::list<uint64_t>::iterator lru_it{};
         };
 
         SDL_Renderer* renderer_ = nullptr;

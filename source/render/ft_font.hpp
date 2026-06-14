@@ -11,7 +11,7 @@ namespace TeXRender
         FtFont(std::string family, std::string path, float size, int style = tex::PLAIN);
 
         [[nodiscard]] float getSize() const override;
-        [[nodiscard]] tex::sptr<Font> deriveFont(int style) const override;
+        [[nodiscard]] tex::sptr<Font> deriveFont(int font_style) const override;
         [[nodiscard]] bool operator==(const Font& f) const override;
         [[nodiscard]] bool operator!=(const Font& f) const override;
         [[nodiscard]] const std::string& path() const;

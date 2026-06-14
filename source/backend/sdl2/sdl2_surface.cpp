@@ -1,5 +1,6 @@
 #include "texrender/sdl2_surface.hpp"
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <stdexcept>
 #include <string>
@@ -11,7 +12,7 @@ using namespace TeXRender;
 
 namespace
 {
-    SDL_Renderer* g_default_renderer = nullptr;
+    std::atomic<SDL_Renderer*> g_default_renderer{nullptr};
 
     [[nodiscard]] constexpr double to_degrees(const float radians)
     {
@@ -23,7 +24,7 @@ namespace
         return static_cast<unsigned char>((argb >> shift) & 0xffu);
     }
 
-    void ensure_renderer(SDL_Renderer* const renderer)
+    void ensure_renderer(const SDL_Renderer* const renderer)
     {
         if (!renderer)
             throw std::invalid_argument("texrender: Sdl2Surface requires an SDL_Renderer");
@@ -37,12 +38,12 @@ namespace
 
 void TeXRender::set_default_sdl_renderer(SDL_Renderer* const renderer) noexcept
 {
-    g_default_renderer = renderer;
+    g_default_renderer.store(renderer, std::memory_order_release);
 }
 
 SDL_Renderer* TeXRender::default_sdl_renderer() noexcept
 {
-    return g_default_renderer;
+    return g_default_renderer.load(std::memory_order_acquire);
 }
 
 Sdl2Surface::Sdl2Surface()
@@ -70,9 +71,9 @@ void Sdl2Surface::unload()
     lru_.clear();
 }
 
-void Sdl2Surface::set_max_textures(const std::size_t max_textures)
+void Sdl2Surface::set_max_textures(const std::size_t texture_limit)
 {
-    max_textures_ = std::max<std::size_t>(1, max_textures);
+    max_textures_ = std::max<std::size_t>(1, texture_limit);
     evict_excess_textures();
 }
 

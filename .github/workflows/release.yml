@@ -23,31 +23,31 @@ jobs:
       matrix:
         include:
           - os: ubuntu-24.04
-            asset: texgui-headless-linux-x64
+            asset: texrender-headless-linux-x64
             archive: tar.gz
             cpack_generator: TGZ
             configure: >-
               -G Ninja
               -DCMAKE_BUILD_TYPE=Release
               -DCMAKE_CXX_COMPILER=g++-14
-              -DTEXGUI_BACKEND=headless
+              -DTEXRENDER_BACKEND=headless
             deps: sudo apt-get update && sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev
           - os: macos-15
-            asset: texgui-headless-macos-arm64
+            asset: texrender-headless-macos-arm64
             archive: tar.gz
             cpack_generator: TGZ
             configure: >-
               -G Ninja
               -DCMAKE_BUILD_TYPE=Release
-              -DTEXGUI_BACKEND=headless
+              -DTEXRENDER_BACKEND=headless
             deps: brew install ninja freetype tinyxml2
           - os: windows-latest
-            asset: texgui-headless-windows-x64
+            asset: texrender-headless-windows-x64
             archive: zip
             cpack_generator: ZIP
             configure: >-
               -DCMAKE_BUILD_TYPE=Release
-              -DTEXGUI_BACKEND=headless
+              -DTEXRENDER_BACKEND=headless
             deps: ""
     steps:
       - uses: actions/checkout@v4

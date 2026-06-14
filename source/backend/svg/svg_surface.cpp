@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <fstream>
 #include <iomanip>
+#include <numeric>
 #include <sstream>
 #include <string_view>
 
@@ -74,11 +75,12 @@ namespace
 
     [[nodiscard]] uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
     {
-        auto crc = 0xffffffffu;
-        for (const auto byte : type)
-            crc = crc32_update(crc, static_cast<unsigned char>(byte));
-        for (const auto byte : data)
-            crc = crc32_update(crc, byte);
+        auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const uint32_t current, const char byte) {
+            return crc32_update(current, static_cast<unsigned char>(byte));
+        });
+        crc = std::accumulate(data.begin(), data.end(), crc, [](const uint32_t current, const unsigned char byte) {
+            return crc32_update(current, byte);
+        });
         return crc ^ 0xffffffffu;
     }
 
@@ -192,9 +194,9 @@ namespace
     }
 } // namespace
 
-SvgSurface::SvgSurface(const int width, const int height)
+SvgSurface::SvgSurface(const int canvas_width, const int canvas_height)
 {
-    resize(width, height);
+    resize(canvas_width, canvas_height);
 }
 
 void SvgSurface::set_color(const uint32_t argb)
@@ -202,10 +204,10 @@ void SvgSurface::set_color(const uint32_t argb)
     color_ = argb;
 }
 
-void SvgSurface::resize(const int width, const int height)
+void SvgSurface::resize(const int canvas_width, const int canvas_height)
 {
-    width_ = std::max(0, width);
-    height_ = std::max(0, height);
+    width_ = std::max(0, canvas_width);
+    height_ = std::max(0, canvas_height);
 }
 
 void SvgSurface::clear(const uint32_t argb)
@@ -236,16 +238,17 @@ std::string SvgSurface::paint_attributes(const char* const paint_kind) const
     return ::paint_attributes(color_, paint_kind);
 }
 
-void SvgSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float width)
+void SvgSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float stroke_width)
 {
     elements_.push_back("<line x1=\"" + number(x1) + "\" y1=\"" + number(y1) + "\" x2=\"" + number(x2) + "\" y2=\"" + number(y2) +
-                        "\" " + paint_attributes("stroke") + " stroke-width=\"" + number(width) + "\" stroke-linecap=\"round\"/>");
+                        "\" " + paint_attributes("stroke") + " stroke-width=\"" + number(stroke_width) +
+                        "\" stroke-linecap=\"round\"/>");
 }
 
-void SvgSurface::draw_rect(const float x, const float y, const float w, const float h, const float width)
+void SvgSurface::draw_rect(const float x, const float y, const float w, const float h, const float stroke_width)
 {
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" fill=\"none\" " + paint_attributes("stroke") + " stroke-width=\"" + number(width) + "\"/>");
+                        "\" fill=\"none\" " + paint_attributes("stroke") + " stroke-width=\"" + number(stroke_width) + "\"/>");
 }
 
 void SvgSurface::fill_rect(const float x, const float y, const float w, const float h)
@@ -255,11 +258,11 @@ void SvgSurface::fill_rect(const float x, const float y, const float w, const fl
 }
 
 void SvgSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry,
-    const float width)
+    const float stroke_width)
 {
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
                         "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" fill=\"none\" " + paint_attributes("stroke") +
-                        " stroke-width=\"" + number(width) + "\"/>");
+                        " stroke-width=\"" + number(stroke_width) + "\"/>");
 }
 
 void SvgSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)

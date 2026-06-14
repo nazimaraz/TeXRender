@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include <fstream>
+#include <numeric>
 #include <string_view>
 #include <vector>
 
@@ -10,6 +11,63 @@ using namespace TeXRender;
 
 namespace
 {
+    [[nodiscard]] bool finite_rect(const float x, const float y, const float w, const float h)
+    {
+        return std::isfinite(x) && std::isfinite(y) && std::isfinite(w) && std::isfinite(h) && w > 0.f && h > 0.f;
+    }
+
+    [[nodiscard]] int clamp_floor_to_canvas(const double value, const int max)
+    {
+        return static_cast<int>(std::clamp(std::floor(value), 0.0, static_cast<double>(max)));
+    }
+
+    [[nodiscard]] int clamp_ceil_to_canvas(const double value, const int max)
+    {
+        return static_cast<int>(std::clamp(std::ceil(value), 0.0, static_cast<double>(max)));
+    }
+
+    [[nodiscard]] bool clip_line_to_rect(double& x1, double& y1, double& x2, double& y2, const double min_x, const double min_y,
+        const double max_x, const double max_y)
+    {
+        auto t0 = 0.0;
+        auto t1 = 1.0;
+        const auto dx = x2 - x1;
+        const auto dy = y2 - y1;
+
+        const auto clip = [&t0, &t1](const double p, const double q) {
+            if (p == 0.0)
+                return q >= 0.0;
+
+            const auto r = q / p;
+            if (p < 0.0)
+            {
+                if (r > t1)
+                    return false;
+                if (r > t0)
+                    t0 = r;
+            }
+            else
+            {
+                if (r < t0)
+                    return false;
+                if (r < t1)
+                    t1 = r;
+            }
+            return true;
+        };
+
+        if (!clip(-dx, x1 - min_x) || !clip(dx, max_x - x1) || !clip(-dy, y1 - min_y) || !clip(dy, max_y - y1))
+            return false;
+
+        const auto old_x1 = x1;
+        const auto old_y1 = y1;
+        x1 = old_x1 + t0 * dx;
+        y1 = old_y1 + t0 * dy;
+        x2 = old_x1 + t1 * dx;
+        y2 = old_y1 + t1 * dy;
+        return true;
+    }
+
     [[nodiscard]] unsigned char channel(const uint32_t argb, const unsigned shift)
     {
         return static_cast<unsigned char>((argb >> shift) & 0xffu);
@@ -53,11 +111,12 @@ namespace
 
     [[nodiscard]] uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
     {
-        auto crc = 0xffffffffu;
-        for (const auto byte : type)
-            crc = crc32_update(crc, static_cast<unsigned char>(byte));
-        for (const auto byte : data)
-            crc = crc32_update(crc, byte);
+        auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const uint32_t current, const char byte) {
+            return crc32_update(current, static_cast<unsigned char>(byte));
+        });
+        crc = std::accumulate(data.begin(), data.end(), crc, [](const uint32_t current, const unsigned char byte) {
+            return crc32_update(current, byte);
+        });
         return crc ^ 0xffffffffu;
     }
 
@@ -121,10 +180,21 @@ void HeadlessSurface::set_color(const uint32_t argb)
     b_ = channel(argb, 0);
 }
 
-void HeadlessSurface::resize(const int width, const int height)
+void HeadlessSurface::resize(const int canvas_width, const int canvas_height)
 {
-    width_ = std::max(0, width);
-    height_ = std::max(0, height);
+    const auto new_width = std::max(0, canvas_width);
+    const auto new_height = std::max(0, canvas_height);
+    const auto max_pixels = pixels_.max_size() / 4u;
+    if (new_width > 0 && static_cast<size_t>(new_height) > max_pixels / static_cast<size_t>(new_width))
+    {
+        width_ = 0;
+        height_ = 0;
+        pixels_.clear();
+        return;
+    }
+
+    width_ = new_width;
+    height_ = new_height;
     pixels_.assign(static_cast<size_t>(width_) * static_cast<size_t>(height_) * 4u, 0);
 }
 
@@ -184,41 +254,65 @@ void HeadlessSurface::blend(const int x, const int y, const float coverage)
 
 void HeadlessSurface::fill_rect(const float x, const float y, const float w, const float h)
 {
-    const auto x0 = static_cast<int>(std::floor(x));
-    const auto y0 = static_cast<int>(std::floor(y));
-    const auto x1 = static_cast<int>(std::ceil(x + w));
-    const auto y1 = static_cast<int>(std::ceil(y + h));
+    if (width_ <= 0 || height_ <= 0 || !finite_rect(x, y, w, h))
+        return;
+
+    const auto x_end = static_cast<double>(x) + static_cast<double>(w);
+    const auto y_end = static_cast<double>(y) + static_cast<double>(h);
+    if (!std::isfinite(x_end) || !std::isfinite(y_end))
+        return;
+
+    const auto x0 = clamp_floor_to_canvas(static_cast<double>(x), width_);
+    const auto y0 = clamp_floor_to_canvas(static_cast<double>(y), height_);
+    const auto x1 = clamp_ceil_to_canvas(x_end, width_);
+    const auto y1 = clamp_ceil_to_canvas(y_end, height_);
     for (auto py = y0; py < y1; ++py)
         for (auto px = x0; px < x1; ++px)
             blend(px, py, 1.f);
 }
 
-void HeadlessSurface::draw_rect(const float x, const float y, const float w, const float h, const float width)
+void HeadlessSurface::draw_rect(const float x, const float y, const float w, const float h, const float stroke_width)
 {
-    const auto t = std::max(1.f, width);
+    const auto t = std::max(1.f, stroke_width);
     fill_rect(x, y, w, t); // top
     fill_rect(x, y + h - t, w, t); // bottom
     fill_rect(x, y, t, h); // left
     fill_rect(x + w - t, y, t, h); // right
 }
 
-void HeadlessSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float width)
+void HeadlessSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float stroke_width)
 {
+    if (width_ <= 0 || height_ <= 0 || !std::isfinite(x1) || !std::isfinite(y1) || !std::isfinite(x2) || !std::isfinite(y2) ||
+        !std::isfinite(stroke_width))
+        return;
+
     // Thin axis-friendly line via dense sampling; adequate for rules/fraction bars.
-    const auto dx = x2 - x1;
-    const auto dy = y2 - y1;
+    const auto max_thickness = static_cast<float>(static_cast<double>(std::max(width_, height_)) * 2.0 + 2.0);
+    const auto thickness = std::clamp(stroke_width, 1.f, max_thickness);
+    const auto half = static_cast<double>(thickness) / 2.0;
+    auto clipped_x1 = static_cast<double>(x1);
+    auto clipped_y1 = static_cast<double>(y1);
+    auto clipped_x2 = static_cast<double>(x2);
+    auto clipped_y2 = static_cast<double>(y2);
+    if (!clip_line_to_rect(clipped_x1, clipped_y1, clipped_x2, clipped_y2, -half, -half, static_cast<double>(width_) + half,
+            static_cast<double>(height_) + half))
+        return;
+
+    const auto dx = clipped_x2 - clipped_x1;
+    const auto dy = clipped_y2 - clipped_y1;
     const auto steps = std::max(1, static_cast<int>(std::ceil(std::max(std::fabs(dx), std::fabs(dy)))));
-    const auto half = std::max(1.f, width) / 2.f;
     for (auto i = 0; i <= steps; ++i)
     {
-        const auto t = static_cast<float>(i) / static_cast<float>(steps);
-        fill_rect(x1 + dx * t - half, y1 + dy * t - half, width, width);
+        const auto t = static_cast<double>(i) / static_cast<double>(steps);
+        fill_rect(static_cast<float>(clipped_x1 + dx * t - half), static_cast<float>(clipped_y1 + dy * t - half), thickness,
+            thickness);
     }
 }
 
-void HeadlessSurface::draw_round_rect(const float x, const float y, const float w, const float h, float, float, const float width)
+void HeadlessSurface::draw_round_rect(const float x, const float y, const float w, const float h, float, float,
+    const float stroke_width)
 {
-    draw_rect(x, y, w, h, width);
+    draw_rect(x, y, w, h, stroke_width);
 }
 
 void HeadlessSurface::fill_round_rect(const float x, const float y, const float w, const float h, float, float)
@@ -228,16 +322,26 @@ void HeadlessSurface::fill_round_rect(const float x, const float y, const float 
 
 void HeadlessSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, float /*angle*/)
 {
-    if (!glyph.buffer || glyph.width <= 0 || glyph.height <= 0)
+    if (!glyph.buffer || glyph.width <= 0 || glyph.height <= 0 || glyph.pitch <= 0 || glyph.width > glyph.pitch ||
+        !std::isfinite(pen_x) || !std::isfinite(pen_y))
         return;
 
-    const auto origin_x = static_cast<int>(std::lround(pen_x)) + glyph.left;
-    const auto origin_y = static_cast<int>(std::lround(pen_y)) - glyph.top;
+    const auto origin_x = std::round(static_cast<double>(pen_x)) + static_cast<double>(glyph.left);
+    const auto origin_y = std::round(static_cast<double>(pen_y)) - static_cast<double>(glyph.top);
+    if (!std::isfinite(origin_x) || !std::isfinite(origin_y))
+        return;
+
     for (auto row = 0; row < glyph.height; ++row)
     {
         const auto* const src = glyph.buffer + static_cast<size_t>(row) * static_cast<size_t>(glyph.pitch);
         for (auto col = 0; col < glyph.width; ++col)
-            blend(origin_x + col, origin_y + row, static_cast<float>(src[col]) / 255.f);
+        {
+            const auto x = origin_x + static_cast<double>(col);
+            const auto y = origin_y + static_cast<double>(row);
+            if (x < 0.0 || y < 0.0 || x >= static_cast<double>(width_) || y >= static_cast<double>(height_))
+                continue;
+            blend(static_cast<int>(x), static_cast<int>(y), static_cast<float>(src[col]) / 255.f);
+        }
     }
 }
 

@@ -31,9 +31,9 @@ jobs:
           -DCMAKE_CXX_COMPILER=g++-14
           -DCMAKE_TOOLCHAIN_FILE="$RUNNER_TEMP/vcpkg/scripts/buildsystems/vcpkg.cmake"
           -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON
-          -DTEXGUI_BACKEND=headless
-          -DTEXGUI_BUILD_EXAMPLES=OFF
-          -DTEXGUI_BUILD_BENCHMARKS=OFF
+          -DTEXRENDER_BACKEND=headless
+          -DTEXRENDER_BUILD_EXAMPLES=OFF
+          -DTEXRENDER_BUILD_BENCHMARKS=OFF
       - name: Build
         run: cmake --build build-vcpkg -j
       - name: Test
@@ -45,7 +45,7 @@ jobs:
         run: scripts/verify-vcpkg-overlay.sh
       - name: Verify overlay port with SDL2 feature
         env:
-          TEXGUI_VCPKG_PACKAGE_SPEC: latex-renderer[sdl2]
+          TEXRENDER_VCPKG_PACKAGE_SPEC: texrender[sdl2]
           VCPKG_ROOT: ${{ runner.temp }}/vcpkg
           VCPKG_DEFAULT_TRIPLET: x64-linux
         run: scripts/verify-vcpkg-overlay.sh
