@@ -115,6 +115,14 @@ forbid_header() {
     fi
 }
 
+require_doc() {
+    local path="$1"
+    if [[ ! -f "${INSTALL_PREFIX}/share/doc/texrender/${path}" ]]; then
+        printf 'expected installed notice/documentation file: share/doc/texrender/%s\n' "$path" >&2
+        exit 1
+    fi
+}
+
 case "$BACKEND" in
     headless | svg | raylib | sdl2) ;;
     *)
@@ -168,6 +176,15 @@ for header in \
     version.hpp
 do
     require_header "$header"
+done
+
+for doc in \
+    LICENSE \
+    THIRD_PARTY.md \
+    dependency-license-audit.md \
+    upstream-microtex-patch.md
+do
+    require_doc "$doc"
 done
 
 case "$BACKEND" in

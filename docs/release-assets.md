@@ -22,7 +22,8 @@ FetchContent_Declare(
 ```
 
 Use the platform install archives when you want a prebuilt headless package with
-headers, libraries, CMake config files, and MicroTeX resources already arranged:
+headers, libraries, CMake config files, TeXRender notice files, and MicroTeX
+resources already arranged:
 
 - `texrender-headless-linux-x64.tar.gz`
 - `texrender-headless-macos-arm64.tar.gz`
@@ -52,7 +53,8 @@ On Linux, `sha256sum -c SHA256SUMS` is equivalent.
 ## Runtime Resources
 
 Every binary/install archive must include the MicroTeX `res/` directory under
-the package prefix. CMake consumers should still call:
+the package prefix and notice files under `share/doc/texrender`. CMake
+consumers should still call:
 
 ```cmake
 texrender_copy_resources(my_app)

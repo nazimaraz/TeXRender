@@ -36,6 +36,7 @@ class TeXRenderConan(ConanFile):
     exports_sources = (
         "CMakeLists.txt",
         "LICENSE",
+        "THIRD_PARTY.md",
         "cmake/*",
         "include/*",
         "source/*",
@@ -87,6 +88,7 @@ class TeXRenderConan(ConanFile):
         cmake = CMake(self)
         cmake.install()
         copy(self, "LICENSE", self.source_folder, os.path.join(self.package_folder, "licenses"))
+        copy(self, "THIRD_PARTY.md", self.source_folder, os.path.join(self.package_folder, "licenses"))
         helper_path = os.path.join(self.package_folder, "lib", "cmake", "texrender", "texrenderConanHelpers.cmake")
         save(
             self,

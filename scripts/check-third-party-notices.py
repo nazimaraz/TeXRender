@@ -85,7 +85,34 @@ def main() -> int:
         "CMakeLists.txt",
         (
             'install(DIRECTORY "${MICROTEX_RES_DIR}/" DESTINATION "${TEXRENDER_INSTALL_RESDIR}")',
+            'DESTINATION "${CMAKE_INSTALL_DOCDIR}"',
             "CPACK_RESOURCE_FILE_LICENSE",
+        ),
+        failures,
+    )
+    require_contains(
+        "scripts/verify-installed-headers.sh",
+        (
+            "share/doc/texrender",
+            "THIRD_PARTY.md",
+            "dependency-license-audit.md",
+            "upstream-microtex-patch.md",
+        ),
+        failures,
+    )
+    require_contains(
+        "conanfile.py",
+        (
+            '"THIRD_PARTY.md"',
+            'copy(self, "THIRD_PARTY.md"',
+        ),
+        failures,
+    )
+    require_contains(
+        "packaging/vcpkg-overlay/ports/texrender/portfile.cmake",
+        (
+            "vcpkg_install_copyright",
+            "THIRD_PARTY.md",
         ),
         failures,
     )

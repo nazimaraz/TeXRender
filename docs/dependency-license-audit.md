@@ -36,7 +36,7 @@ honest before publishing.
 
 The default release archives are headless install archives plus CPack
 source/binary archives. They include texrender headers, texrender and MicroTeX static
-libraries, CMake package files, pkg-config metadata, and the MicroTeX resource
-tree. GUI backends may add raylib or SDL2 linkage depending on the selected
-build option, but the release workflow's hand-named install archives are
-headless.
+libraries, CMake package files, pkg-config metadata, TeXRender notice files
+under `share/doc/texrender`, and the MicroTeX resource tree. GUI backends may
+add raylib or SDL2 linkage depending on the selected build option, but the
+release workflow's hand-named install archives are headless.

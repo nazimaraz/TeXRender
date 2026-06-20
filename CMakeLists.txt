@@ -551,6 +551,13 @@ if(TEXRENDER_INSTALL)
     )
     install(FILES ${TEXRENDER_PUBLIC_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/texrender")
     install(DIRECTORY "${MICROTEX_RES_DIR}/" DESTINATION "${TEXRENDER_INSTALL_RESDIR}")
+    install(FILES
+        LICENSE
+        THIRD_PARTY.md
+        docs/dependency-license-audit.md
+        docs/upstream-microtex-patch.md
+        DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+    )
     install(FILES cmake/texrenderHelpers.cmake DESTINATION "${TEXRENDER_INSTALL_CMAKEDIR}")
 
     configure_package_config_file(
