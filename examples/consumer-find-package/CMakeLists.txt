@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.21)
 
 project(texrender_find_package_example LANGUAGES CXX)
 
-find_package(texrender CONFIG REQUIRED)
+find_package(texrender CONFIG REQUIRED COMPONENTS headless svg)
 
 add_executable(texrender_find_package_example main.cpp)
 target_compile_features(texrender_find_package_example PRIVATE cxx_std_17)

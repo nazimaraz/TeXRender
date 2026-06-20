@@ -39,8 +39,8 @@ cmake --build build-find-example -j
 ```
 
 The example lives in [`examples/consumer-find-package`](../examples/consumer-find-package).
-It uses `find_package(texrender CONFIG REQUIRED)`, links `texrender::texrender`, then calls
-`texrender_copy_resources()`.
+It requests the backend-neutral `headless` and `svg` components, links
+`texrender::texrender`, then calls `texrender_copy_resources()`.
 
 ## Installed `pkg-config`
 

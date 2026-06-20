@@ -55,6 +55,36 @@ is slowed so the math stays readable.*
 * **Small backend contract.** Custom engines only implement `IDrawSurface`; the
   parser, transforms, FreeType glyph rasterization, and caches stay shared.
 
+## Five-minute check
+
+Build the default headless backend and render a PNG without opening a window:
+
+```sh
+cmake -S . -B build
+cmake --build build -j
+./build/texrender_offscreen 'e^{i\pi}+1=0' formula.png
+```
+
+Then try the dependency-shaped consumer examples:
+
+```sh
+cmake -S examples/consumer-fetchcontent -B build-fetch-example \
+  -DTEXRENDER_FETCHCONTENT_SOURCE_DIR="$PWD" \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build-fetch-example -j
+./build-fetch-example/texrender_fetchcontent_example
+```
+
+If TeXRender is installed to a prefix:
+
+```sh
+cmake -S examples/consumer-find-package -B build-find-example \
+  -DCMAKE_PREFIX_PATH=/path/to/texrender-prefix \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build-find-example -j
+./build-find-example/texrender_find_package_example
+```
+
 See the [gallery](docs/gallery.md), [examples index](docs/examples-index.md),
 [integration examples](docs/integration-examples.md),
 [copyable recipes](docs/recipes.md),
@@ -181,6 +211,7 @@ include(FetchContent)
 set(TEXRENDER_BACKEND headless CACHE STRING "" FORCE)
 set(TEXRENDER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(TEXRENDER_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(TEXRENDER_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
     texrender
