@@ -37,6 +37,10 @@ changes.
 
 ![realtime signal demo](docs/realtime-signal.gif)
 
+*Every frame re-parses, re-lays out, and redraws all five formulas; the overlay
+is the measured render rate (rendered offscreen, ~600 FPS here). The GIF itself
+is slowed so the math stays readable.*
+
 ## Why use TeXRender?
 
 * **No temporary images or subprocesses.** Parse a formula once, keep a

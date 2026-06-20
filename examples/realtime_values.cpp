@@ -180,12 +180,52 @@ namespace
         DrawCircle(static_cast<int>(area.x + 134.f), static_cast<int>(area.y + 20.f), 5.f, k_imaginary);
         DrawText("imag / sin", static_cast<int>(area.x + 148.f), static_cast<int>(area.y + 12.f), 16, k_muted);
     }
+
+    [[nodiscard]] int env_int(const char* const name, const int fallback)
+    {
+        if (const auto* const value = std::getenv(name))
+        {
+            char* end{};
+            const auto parsed = std::strtol(value, &end, 10);
+            if (end != value)
+                return static_cast<int>(parsed);
+        }
+        return fallback;
+    }
+
+    [[nodiscard]] double env_double(const char* const name, const double fallback)
+    {
+        if (const auto* const value = std::getenv(name))
+        {
+            char* end{};
+            const auto parsed = std::strtod(value, &end);
+            if (end != value)
+                return parsed;
+        }
+        return fallback;
+    }
+
+    // FPS readout in the top-right corner. The caller supplies the rate: GetFPS()
+    // for the live window, or a measured render rate for the GIF recorder. Drawn
+    // outside draw_frame so single-frame screenshot exports stay clean.
+    void draw_fps_overlay(const int fps)
+    {
+        auto label = std::array<char, 16>{};
+        std::snprintf(label.data(), label.size(), "%d FPS", fps);
+        constexpr auto font_size = 18;
+        constexpr auto box_h = 30.f;
+        const auto box_w = static_cast<float>(MeasureText(label.data(), font_size)) + 24.f;
+        const auto box = Rectangle{static_cast<float>(GetScreenWidth()) - box_w - 32.f, 30.f, box_w, box_h};
+        DrawRectangleRounded(box, 0.35f, 8, k_panel);
+        DrawRectangleRoundedLinesEx(box, 0.35f, 8, 1.f, Color{218, 223, 230, 255});
+        DrawText(label.data(), static_cast<int>(box.x + 12.f), static_cast<int>(box.y + 7.f), font_size, k_muted);
+    }
 } // namespace
 
 int main()
 {
     InitWindow(1180, 650, "TeXRender realtime values");
-    SetTargetFPS(60);
+    SetTargetFPS(0);
 
     {
         const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
@@ -250,7 +290,47 @@ int main()
             UnloadRenderTexture(target);
         };
 
-        if (const auto* const shot = std::getenv("TEXRENDER_SIGNAL_SCREENSHOT"))
+        if (const auto* const gif_dir = std::getenv("TEXRENDER_SIGNAL_GIF_DIR"))
+        {
+            const auto frames = env_int("TEXRENDER_SIGNAL_GIF_FRAMES", 48);
+            const auto start = env_double("TEXRENDER_SIGNAL_GIF_START", 2.0);
+            const auto step = env_double("TEXRENDER_SIGNAL_GIF_STEP", 0.18);
+            const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+
+            // Prime glyph and layout caches so the measured rate reflects steady state.
+            for (auto warmup = 0; warmup < 8; ++warmup)
+            {
+                BeginTextureMode(target);
+                draw_frame(start + step * static_cast<double>(warmup));
+                EndTextureMode();
+            }
+
+            // Each frame re-parses and re-lays out all five formulas. Time that work
+            // (exponential moving average) and overlay it, so the GIF advertises the
+            // library's real render throughput rather than a vsync-capped number.
+            auto ema_ms = 0.0;
+            for (auto i = 0; i < frames; ++i)
+            {
+                const auto clock = start + step * static_cast<double>(i);
+                BeginTextureMode(target);
+                const auto begin = GetTime();
+                draw_frame(clock);
+                const auto frame_ms = (GetTime() - begin) * 1000.0;
+                ema_ms = i == 0 ? frame_ms : ema_ms * 0.8 + frame_ms * 0.2;
+                draw_fps_overlay(ema_ms > 0.0 ? static_cast<int>(1000.0 / ema_ms + 0.5) : 0);
+                EndTextureMode();
+
+                auto image = LoadImageFromTexture(target.texture);
+                ImageFlipVertical(&image);
+                auto path = std::array<char, 1024>{};
+                std::snprintf(path.data(), path.size(), "%s/frame%03d.png", gif_dir, i + 1);
+                ExportImage(image, path.data());
+                UnloadImage(image);
+            }
+
+            UnloadRenderTexture(target);
+        }
+        else if (const auto* const shot = std::getenv("TEXRENDER_SIGNAL_SCREENSHOT"))
         {
             auto capture_clock = 4.0;
             if (const auto* const clock_env = std::getenv("TEXRENDER_SIGNAL_CLOCK"))
@@ -273,6 +353,7 @@ int main()
             {
                 BeginDrawing();
                 draw_frame(GetTime());
+                draw_fps_overlay(GetFPS());
                 EndDrawing();
             }
         }
