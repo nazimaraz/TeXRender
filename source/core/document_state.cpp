@@ -1,4 +1,5 @@
 #include "core/document_state.hpp"
+#include <cstddef>
 #include <mutex>
 #include "latex.h"
 #include "render/glyph_cache.hpp"
@@ -11,6 +12,7 @@ namespace TeXRender::detail
     {
         std::mutex g_mutex;
         bool g_initialised = false;
+        std::size_t g_active_states = 0;
         std::string g_res_root;
     } // namespace
 
@@ -30,9 +32,15 @@ namespace TeXRender::detail
         }
 
         set_default_font_path(g_res_root + "/fonts/latin/cmr10.ttf");
+        ++g_active_states;
     }
 
-    DocumentState::~DocumentState() = default;
+    DocumentState::~DocumentState()
+    {
+        const auto lock = std::scoped_lock{g_mutex};
+        if (g_active_states > 0)
+            --g_active_states;
+    }
 
     IDrawSurface* DocumentState::surface() const
     {
@@ -56,7 +64,15 @@ void TeXRender::shutdown() noexcept
     if (!g_initialised)
         return;
 
-    tex::LaTeX::release();
-    g_initialised = false;
-    g_res_root.clear();
+    if (g_active_states > 0)
+    {
+        debug_log("shutdown ignored while LatexDocument or RenderHandle instances are still alive");
+        return;
+    }
+
+    // MicroTeX's release path is not re-initialization safe in the pinned
+    // upstream version: it deletes process-wide singletons without resetting
+    // every static pointer/container that init() consults later. Keep this API
+    // as a harmless compatibility hook until teardown can be made comprehensive.
+    debug_log("shutdown is currently a no-op; MicroTeX state remains process-lifetime");
 }

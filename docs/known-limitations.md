@@ -15,9 +15,10 @@ MicroTeX initializes its resource directory once. The first `LatexDocument`
 chooses the process-wide resource root; later documents should use the same path.
 Different paths are ignored and can be reported with `TEXRENDER_DEBUG=1`.
 
-Call `TeXRender::shutdown()` once every `LatexDocument` and `RenderHandle` has
-been destroyed to release that process-wide MicroTeX state; a later document can
-then re-initialize, optionally with a different resource root.
+`TeXRender::shutdown()` is currently a safe, idempotent compatibility hook. It
+does not release MicroTeX's process-wide parser/font tables because the pinned
+upstream teardown path is not safe to re-initialize afterward. Calling it too
+early is a no-op, so surviving handles remain usable.
 
 ## Threading Boundary
 

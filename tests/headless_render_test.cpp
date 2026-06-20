@@ -172,7 +172,32 @@ int main()
         surviving.reset();
     }
 
-    // 3) Full pipeline into an injected headless canvas: drawing a non-empty
+    // 3) shutdown() is safe to call too early: it must not release MicroTeX
+    //    while any document state is still owned by a document or handle.
+    {
+        auto surviving = std::optional<RenderHandle>{};
+        auto* canvas = static_cast<HeadlessSurface*>(nullptr);
+        {
+            auto owned = std::make_unique<HeadlessSurface>();
+            canvas = owned.get();
+            const auto document = LatexDocument{res, std::move(owned)};
+            surviving.emplace(document.render(R"(\sum_{k=1}^{n} k)", 36.f, 0xff000000));
+            shutdown();
+        }
+
+        CHECK(surviving.has_value());
+        canvas->resize(surviving->width() + 20, surviving->height() + 20);
+        canvas->clear(0x00000000);
+        surviving->draw(10, 10);
+        CHECK(canvas->covered_pixels() > 0);
+        surviving.reset();
+
+        shutdown();
+        const auto document = LatexDocument{res, std::make_unique<HeadlessSurface>()};
+        CHECK(document.try_render(R"(\sqrt{x})", 32.f, 0xff000000).has_value());
+    }
+
+    // 4) Full pipeline into an injected headless canvas: drawing a non-empty
     //    formula must leave visible pixels; drawing nothing must leave the
     //    canvas blank.
     {
@@ -192,7 +217,7 @@ int main()
         CHECK(canvas->covered_pixels() > 0); // the formula rendered something
     }
 
-    // 4) Repeated render/draw cycles remain valid under intentionally tiny cache
+    // 5) Repeated render/draw cycles remain valid under intentionally tiny cache
     //    limits. This exercises cache eviction without depending on internals.
     {
         const auto old_limits = cache_limits();
@@ -213,7 +238,7 @@ int main()
         set_cache_limits(old_limits);
     }
 
-    // 5) Direct HeadlessSurface compositing: pixels are stored as straight RGBA,
+    // 6) Direct HeadlessSurface compositing: pixels are stored as straight RGBA,
     //    so transparent colors keep their source RGB and compose correctly over
     //    opaque destinations. Non-finite or extreme direct draw inputs are
     //    ignored or clipped instead of reaching undefined float-to-int casts.
@@ -256,7 +281,7 @@ int main()
         CHECK(canvas.covered_pixels() == before_invalid_glyph);
     }
 
-    // 6) Cache limits are configurable and clamp zero to one.
+    // 7) Cache limits are configurable and clamp zero to one.
     {
         const auto old_limits = cache_limits();
         auto limits = old_limits;
@@ -268,7 +293,7 @@ int main()
         set_cache_limits(old_limits);
     }
 
-    // 7) HeadlessSurface can write real PNG files without extra dependencies.
+    // 8) HeadlessSurface can write real PNG files without extra dependencies.
     {
         auto canvas = HeadlessSurface{};
         CHECK(!canvas.write_png((std::filesystem::temp_directory_path() / "texrender-empty.png").string()));
@@ -295,7 +320,7 @@ int main()
         CHECK(canvas.pixels().empty());
     }
 
-    // 8) SvgSurface can capture a formula as a self-contained SVG document.
+    // 9) SvgSurface can capture a formula as a self-contained SVG document.
     {
         auto direct_svg = SvgSurface{8, 8};
         const unsigned char tiny_glyph_buffer[1] = {0};
@@ -333,7 +358,7 @@ int main()
         std::filesystem::remove(path);
     }
 
-    // 9) SVG output stays locale-independent: a host that installs a global
+    // 10) SVG output stays locale-independent: a host that installs a global
     //    locale with comma decimals and digit grouping must not corrupt SVG
     //    numbers ("1,500") or dimensions ("1.024"). Uses a custom facet so the
     //    test needs no OS locale data and runs the same everywhere.
