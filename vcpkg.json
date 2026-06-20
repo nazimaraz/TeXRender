@@ -8,9 +8,6 @@
     "freetype",
     "tinyxml2"
   ],
-  "default-features": [
-    "raylib"
-  ],
   "features": {
     "raylib": {
       "description": "Build the raylib windowed rendering backend",

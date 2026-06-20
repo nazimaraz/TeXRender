@@ -29,8 +29,9 @@ Before submitting to the public registry:
 1. Replace the local `TEXRENDER_VCPKG_SOURCE_DIR` development source path with a
    release archive or GitHub tag source.
 2. Add the registry-required source hash.
-3. Keep features aligned with `vcpkg.json`: default `raylib`, optional `sdl2`.
-4. Validate the default, no-default-feature/headless, `raylib`, and `sdl2`
+3. Keep features aligned with `vcpkg.json`: default headless, optional `raylib`
+   and `sdl2`.
+4. Validate the default/headless, `raylib`, and `sdl2`
    combinations.
 5. Confirm installed CMake config files land under `lib/cmake/texrender` or the
    layout expected by the registry review.

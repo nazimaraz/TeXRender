@@ -5,11 +5,11 @@ embed texrender.
 
 | Example | Build mode | What it shows |
 | --- | --- | --- |
-| [`examples/minimal.cpp`](../examples/minimal.cpp) | default raylib | The shortest windowed formula render loop. |
-| [`examples/demo_main.cpp`](../examples/demo_main.cpp) | default raylib | Interactive sample browser with text-size and formula changes. |
-| [`examples/realtime_values.cpp`](../examples/realtime_values.cpp) | default raylib | Showing signal variables and symbolic formulas, then substituting live values into TeX. |
+| [`examples/minimal.cpp`](../examples/minimal.cpp) | `TEXRENDER_BACKEND=raylib` | The shortest windowed formula render loop. |
+| [`examples/demo_main.cpp`](../examples/demo_main.cpp) | `TEXRENDER_BACKEND=raylib` | Interactive sample browser with text-size and formula changes. |
+| [`examples/realtime_values.cpp`](../examples/realtime_values.cpp) | `TEXRENDER_BACKEND=raylib` | Showing signal variables and symbolic formulas, then substituting live values into TeX. |
 | [`examples/live_edit.cpp`](../examples/live_edit.cpp) | raylib or WebAssembly | Live formula editing, including the browser demo build. |
-| [`examples/raylib_overlay.cpp`](../examples/raylib_overlay.cpp) | default raylib | Drawing formulas as one layer inside an existing raylib scene. |
+| [`examples/raylib_overlay.cpp`](../examples/raylib_overlay.cpp) | `TEXRENDER_BACKEND=raylib` | Drawing formulas as one layer inside an existing raylib scene. |
 | [`examples/sdl2_minimal.cpp`](../examples/sdl2_minimal.cpp) | `TEXRENDER_BACKEND=sdl2` | Injecting texrender into a caller-owned `SDL_Renderer`. |
 | [`examples/offscreen.cpp`](../examples/offscreen.cpp) | any backend | Rendering one formula to PNG/PPM with `HeadlessSurface`. |
 | [`examples/headless_batch.cpp`](../examples/headless_batch.cpp) | any backend | Command-line batch PNG rendering without a window. |

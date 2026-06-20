@@ -56,7 +56,7 @@ text:
 TeXRender::draw_at_baseline(formula, x, row_baseline);
 ```
 
-### From default GUI backend to injected surfaces
+### From default-created surfaces to injected surfaces
 
 Inject a surface when you need deterministic output, server-side rendering, or a
 custom renderer:

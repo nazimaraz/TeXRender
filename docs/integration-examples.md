@@ -134,9 +134,9 @@ dependency being embedded into a larger UI layer.
 a regular layer inside a raylib scene:
 
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --target texrender_raylib_overlay -j
-./build/texrender_raylib_overlay
+cmake -S . -B build-raylib -DTEXRENDER_BACKEND=raylib -DCMAKE_BUILD_TYPE=Release
+cmake --build build-raylib --target texrender_raylib_overlay -j
+./build-raylib/texrender_raylib_overlay
 ```
 
 The example still owns the raylib window and frame loop. TeXRender only draws the

@@ -47,7 +47,7 @@ unset(_texrender_version_header)
 # ---------------------------------------------------------------------------
 # Options
 # ---------------------------------------------------------------------------
-set(TEXRENDER_BACKEND "raylib" CACHE STRING "Rendering backend to build (raylib, headless, svg, sdl2)")
+set(TEXRENDER_BACKEND "headless" CACHE STRING "Rendering backend to build (headless, svg, raylib, sdl2)")
 set_property(CACHE TEXRENDER_BACKEND PROPERTY STRINGS raylib headless svg sdl2)
 option(TEXRENDER_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TOP_LEVEL})
 option(TEXRENDER_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})

@@ -28,7 +28,7 @@ class TeXRenderConan(ConanFile):
     default_options = {
         "shared": False,
         "fPIC": True,
-        "backend": "raylib",
+        "backend": "headless",
         "with_examples": False,
         "with_tests": False,
         "with_benchmarks": False,

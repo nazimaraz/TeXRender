@@ -93,7 +93,7 @@ def main() -> int:
         require("raylib" in features, f"{path} is missing raylib feature", failures)
         require("sdl2" in features, f"{path} is missing sdl2 feature", failures)
 
-    require("raylib" in manifest.get("default-features", []), "vcpkg.json should keep raylib as the default feature", failures)
+    require("default-features" not in manifest, "vcpkg.json should default to the headless backend", failures)
 
     for token in ("vcpkg_from_github", "SHA512", "FETCHCONTENT_SOURCE_DIR_MICROTEX", "TEXRENDER_VCPKG_SOURCE_DIR"):
         require(token in portfile, f"vcpkg overlay portfile is missing {token}", failures)

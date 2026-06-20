@@ -143,7 +143,8 @@ cmake_build "$FETCH_EXAMPLE_BUILD"
 run cmake -E chdir "$FETCH_EXAMPLE_BUILD" "$FETCH_EXAMPLE_BUILD/texrender_fetchcontent_example"
 
 cmake_configure "$ROOT_DIR" "$RAYLIB_BUILD" \
-    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_BUILD_TYPE=Release \
+    -DTEXRENDER_BACKEND=raylib
 cmake_build "$RAYLIB_BUILD"
 run ctest --test-dir "$RAYLIB_BUILD" --output-on-failure
 

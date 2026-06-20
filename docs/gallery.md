@@ -9,7 +9,7 @@ WebAssembly. After building `texrender_live`, refresh the README demo GIF from r
 live-editor screenshots with:
 
 ```sh
-TEXRENDER_BUILD_DIR=build scripts/record-live-editor-demo.sh
+TEXRENDER_BUILD_DIR=build-raylib scripts/record-live-editor-demo.sh
 ```
 
 ## Headless Output

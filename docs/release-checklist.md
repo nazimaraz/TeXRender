@@ -4,10 +4,10 @@ Use this before cutting a public tag.
 
 ## Local Verification
 
-- Configure/build/test default raylib:
+- Configure/build/test default headless:
   `cmake -S . -B build && cmake --build build -j && ctest --test-dir build --output-on-failure`
-- Configure/build/test headless:
-  `cmake -S . -B build-headless -DTEXRENDER_BACKEND=headless && cmake --build build-headless -j && ctest --test-dir build-headless --output-on-failure`
+- Configure/build/test raylib when the dependency is available:
+  `cmake -S . -B build-raylib -DTEXRENDER_BACKEND=raylib && cmake --build build-raylib -j && ctest --test-dir build-raylib --output-on-failure`
 - Configure/build/test SVG:
   `cmake -S . -B build-svg -DTEXRENDER_BACKEND=svg && cmake --build build-svg -j && ctest --test-dir build-svg --output-on-failure`
 - Configure/build/test SDL2:
@@ -27,7 +27,7 @@ Use this before cutting a public tag.
 - Generate gallery artifacts:
   `TEXRENDER_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt /tmp/texrender-gallery`
 - Refresh committed gallery and README preview:
-  `TEXRENDER_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery && TEXRENDER_BUILD_DIR=build scripts/record-live-editor-demo.sh`
+  `TEXRENDER_BUILD_DIR=build-headless scripts/generate-gallery.sh docs/gallery-formulas.txt docs/gallery && TEXRENDER_BUILD_DIR=build-raylib scripts/record-live-editor-demo.sh`
 - Optional exact visual snapshots:
   `TEXRENDER_VISUAL_SNAPSHOT_DIR=/tmp/texrender-snapshots TEXRENDER_VISUAL_UPDATE_SNAPSHOTS=1 ctest --test-dir build-headless --output-on-failure`
   then rerun without `TEXRENDER_VISUAL_UPDATE_SNAPSHOTS`.
@@ -57,7 +57,7 @@ Use this before cutting a public tag.
 - Verify package-manager entry points:
   `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`,
   `conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"`,
-  a vcpkg manifest configure with `-DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON`,
+  a default vcpkg manifest configure,
   `VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`, and
   `TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh`.
 - Regenerate API docs locally if Doxygen is available:

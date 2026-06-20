@@ -5,7 +5,7 @@
 #                 core into `microtex::core` and supply our own Graphics2D.
 #  * tinyxml2  -> required by the MicroTeX core resource parsers.
 #  * FreeType  -> used by our backend-neutral glyph rasteriser.
-#  * raylib    -> the default GUI backend.
+#  * raylib    -> optional GUI backend.
 #  * SDL2      -> optional GUI backend proving the surface seam beyond raylib.
 #
 # Everything is resolved with find_package first, falling back to FetchContent

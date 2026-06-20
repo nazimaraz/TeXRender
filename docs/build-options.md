@@ -18,7 +18,7 @@ Useful presets:
 
 - `headless-debug`: windowless Debug build with warnings as errors.
 - `headless-release`: windowless Release build.
-- `raylib-release`: default GUI backend and examples.
+- `raylib-release`: raylib GUI backend and examples.
 - `sdl2-release`: SDL2 GUI backend and example.
 - `headless-shared`: shared-library build using the headless backend.
 - `svg-release`: SVG backend and export example.

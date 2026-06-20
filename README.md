@@ -25,11 +25,13 @@ the same C++ engine compiled to WebAssembly.
 LaTeX and laying out the boxes — but ships only Cairo / GDI+ / Qt / Skia
 backends. Tools like [latexpp](https://github.com/goldsborough/latexpp) only
 render to image files. **TeXRender** drives MicroTeX through a small,
-pluggable rendering layer so a formula can be drawn live into a window.
+pluggable rendering layer so a formula can be drawn live into a window or
+rendered offscreen without a GUI dependency.
 
-The default GUI backend is [raylib](https://www.raylib.com/), and an optional
-SDL2 backend proves the same API can sit inside another windowing stack.
-Dependency-free **headless** and **SVG** surfaces ship in every build for
+The default backend is dependency-light **headless** rendering. Opt into the
+[raylib](https://www.raylib.com/) or SDL2 backends when you want to draw formulas
+inside a caller-owned windowing stack. Dependency-free **headless** and **SVG**
+surfaces ship in every build for
 offscreen rendering, server output, and tests. The `IDrawSurface` boundary is
 proven by raylib, SDL2, software RGBA, and SVG implementations; adding another GUI or
 engine backend means implementing one small interface — nothing in the core
@@ -113,24 +115,32 @@ For public API and lifetime details, see [`docs/api.md`](docs/api.md).
 
 Requirements: a C++17 toolchain and CMake ≥ 3.21. TeXRender itself and its public
 headers compile as C++17, and `texrender::texrender` propagates only `cxx_std_17` to
-consumers. tinyxml2, FreeType, raylib and SDL2 are resolved with `find_package`,
-falling back to `FetchContent`; MicroTeX's core is always fetched and compiled
-from source. On macOS `brew install freetype raylib sdl2 tinyxml2` makes
-configuration instant.
+consumers. tinyxml2 and FreeType are resolved with `find_package`, falling back
+to `FetchContent`; raylib and SDL2 are resolved only when their backend is
+selected. MicroTeX's core is always fetched and compiled from source. On macOS
+`brew install freetype tinyxml2` makes the default build instant; add `raylib`
+or `sdl2` when building those GUI backends.
 
 ```sh
 cmake -S . -B build
 cmake --build build -j
-./build/texrender_minimal      # draws a single formula in a window
-./build/texrender_demo         # cycle samples (SPACE/arrows), resize text (UP/DOWN)
-./build/texrender_realtime_values # show signal variables, formulas, and live TeX values
 ./build/texrender_offscreen    # render to formula.png — no window needed
 ./build/texrender_svg_export   # render to formula.svg
 ctest --test-dir build      # run the unit tests
 ```
 
+Windowed raylib demos are opt-in:
+
+```sh
+cmake -S . -B build-raylib -DTEXRENDER_BACKEND=raylib
+cmake --build build-raylib -j
+./build-raylib/texrender_minimal
+./build-raylib/texrender_demo
+./build-raylib/texrender_realtime_values
+```
+
 The smallest possible program is [`examples/minimal.cpp`](examples/minimal.cpp):
-parse one formula, draw it in a loop.
+parse one formula, draw it in a raylib loop.
 
 More copyable consumer examples live in
 [`docs/examples-index.md`](docs/examples-index.md) and

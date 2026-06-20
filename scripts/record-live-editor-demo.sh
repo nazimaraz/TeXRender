@@ -10,7 +10,7 @@ FORMULA="${TEXRENDER_LIVE_FORMULA:-\\int_{0}^{\\infty} e^{-x^2}\\,dx = \\frac{\\
 
 if [[ ! -x "$LIVE_EXE" ]]; then
     printf 'missing live editor executable: %s\n' "$LIVE_EXE" >&2
-    printf 'build the raylib backend first, for example: cmake -S . -B build && cmake --build build --target texrender_live -j\n' >&2
+    printf 'build the raylib backend first, for example: cmake -S . -B build-raylib -DTEXRENDER_BACKEND=raylib && cmake --build build-raylib --target texrender_live -j\n' >&2
     exit 1
 fi
 

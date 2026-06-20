@@ -13,7 +13,7 @@ STEP="${TEXRENDER_SIGNAL_GIF_STEP:-0.18}"
 
 if [[ ! -x "$SIGNAL_EXE" ]]; then
     printf 'missing realtime signal executable: %s\n' "$SIGNAL_EXE" >&2
-    printf 'build the raylib backend first, for example: cmake -S . -B build && cmake --build build --target texrender_realtime_values -j\n' >&2
+    printf 'build the raylib backend first, for example: cmake -S . -B build-raylib -DTEXRENDER_BACKEND=raylib && cmake --build build-raylib --target texrender_realtime_values -j\n' >&2
     exit 1
 fi
 

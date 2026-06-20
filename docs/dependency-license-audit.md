@@ -13,7 +13,7 @@ honest before publishing.
 | MicroTeX `res/` tree | Runtime fonts, metrics, maps and parser resources | From the pinned MicroTeX checkout | Yes, installed to `share/texrender/res` | Contains several font/resource licenses. Preserve files under `res/fonts/licences/` and per-language `LICENSE` files. |
 | FreeType | Glyph rasterisation from bundled TeX fonts | `find_package(Freetype)` or `FetchContent` fallback | Not vendored as source in install archives; linked by builds | Dual FTL/GPLv2. Prefer FTL for permissive projects and keep attribution. |
 | tinyxml2 | MicroTeX XML resource parsing | `find_package(tinyxml2)` or `FetchContent` fallback | Not vendored as source in install archives; linked by builds | zlib license. |
-| raylib | Default windowed GPU backend | `find_package(raylib)` or `FetchContent` fallback | Only linked when building the raylib backend | zlib/libpng license. |
+| raylib | Optional windowed GPU backend | `find_package(raylib)` or `FetchContent` fallback | Only linked when building the raylib backend | zlib/libpng license. |
 | SDL2 | Optional windowed GPU backend | `find_package(SDL2)` or `FetchContent` fallback | Only linked when building the SDL2 backend | zlib license. |
 
 ## Release Checks

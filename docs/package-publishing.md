@@ -162,7 +162,7 @@ Before a vcpkg registry submission:
 - replace the local source path with a release archive or GitHub release ref
 - fill in the registry-required source hash
 - verify the installed layout follows vcpkg conventions
-- test default, `raylib`, and `sdl2` feature builds
+- test default/headless, `raylib`, and `sdl2` feature builds
 
 ## CPack Archives
 
