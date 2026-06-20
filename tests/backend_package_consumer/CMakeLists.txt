@@ -9,7 +9,11 @@ if(NOT TEXRENDER_BACKEND_PACKAGE MATCHES "^(raylib|sdl2)$")
     message(FATAL_ERROR "Unsupported TEXRENDER_BACKEND_PACKAGE='${TEXRENDER_BACKEND_PACKAGE}'")
 endif()
 
-find_package(texrender CONFIG REQUIRED)
+find_package(texrender CONFIG REQUIRED COMPONENTS ${TEXRENDER_BACKEND_PACKAGE})
+
+if(NOT texrender_${TEXRENDER_BACKEND_PACKAGE}_FOUND)
+    message(FATAL_ERROR "texrender package did not report ${TEXRENDER_BACKEND_PACKAGE} component support")
+endif()
 
 string(TOUPPER "${TEXRENDER_BACKEND_PACKAGE}" TEXRENDER_BACKEND_PACKAGE_UPPER)
 

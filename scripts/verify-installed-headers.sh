@@ -78,6 +78,35 @@ expect_component_failure() {
     printf '\n==> expected component rejection succeeded: %s package rejected %s\n' "$BACKEND" "$component"
 }
 
+verify_backend_consumer() {
+    local backend="$1"
+    local build_dir="${BUILD_ROOT}/backend-consumer-${BACKEND}-${backend}"
+    rm -rf "$build_dir"
+    run cmake -S "$ROOT_DIR/tests/backend_package_consumer" -B "$build_dir" -G "$GENERATOR" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" \
+        -DTEXRENDER_BACKEND_PACKAGE="$backend"
+    run cmake --build "$build_dir" -j
+    run ctest --test-dir "$build_dir" --output-on-failure
+}
+
+expect_backend_consumer_failure() {
+    local backend="$1"
+    local build_dir="${BUILD_ROOT}/backend-consumer-${BACKEND}-reject-${backend}"
+    rm -rf "$build_dir"
+    mkdir -p "$build_dir"
+    if cmake -S "$ROOT_DIR/tests/backend_package_consumer" -B "$build_dir" -G "$GENERATOR" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" \
+        -DTEXRENDER_BACKEND_PACKAGE="$backend" > "${build_dir}/configure.log" 2>&1
+    then
+        cat "${build_dir}/configure.log" >&2
+        printf 'expected %s package to reject backend consumer for %s\n' "$BACKEND" "$backend" >&2
+        exit 1
+    fi
+    printf '\n==> expected backend consumer rejection succeeded: %s package rejected %s consumer\n' "$BACKEND" "$backend"
+}
+
 forbid_header() {
     local header="$1"
     if [[ -f "${INSTALL_PREFIX}/include/texrender/${header}" ]]; then
@@ -167,15 +196,21 @@ verify_components 'headless;svg'
 case "$BACKEND" in
     raylib)
         verify_components raylib
+        verify_backend_consumer raylib
         expect_component_failure sdl2
+        expect_backend_consumer_failure sdl2
         ;;
     sdl2)
         verify_components sdl2
+        verify_backend_consumer sdl2
         expect_component_failure raylib
+        expect_backend_consumer_failure raylib
         ;;
     *)
         expect_component_failure raylib
         expect_component_failure sdl2
+        expect_backend_consumer_failure raylib
+        expect_backend_consumer_failure sdl2
         ;;
 esac
 
