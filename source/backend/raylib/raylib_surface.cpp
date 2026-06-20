@@ -5,6 +5,7 @@
 #include <rlgl.h>
 #include <vector>
 #include "backend/glyph_bitmap_validation.hpp"
+#include "render/glyph_cache.hpp"
 #include "texrender/cache_options.hpp"
 
 using namespace TeXRender;
@@ -139,12 +140,12 @@ void RaylibSurface::fill_round_rect(const float x, const float y, const float w,
     DrawRectangleRounded(Rectangle{x, y, w, h}, roundness, 8, color_);
 }
 
-const Texture2D& RaylibSurface::texture_for(const GlyphBitmap& glyph)
+const Texture2D* RaylibSurface::texture_for(const GlyphBitmap& glyph)
 {
     if (const auto found = textures_.find(glyph.key); found != textures_.end())
     {
         lru_.splice(lru_.begin(), lru_, found->second.lru_it); // mark most-recently-used
-        return found->second.texture;
+        return &found->second.texture;
     }
 
     auto rgba = std::vector<unsigned char>(static_cast<size_t>(glyph.width) * static_cast<size_t>(glyph.height) * 4u);
@@ -169,13 +170,18 @@ const Texture2D& RaylibSurface::texture_for(const GlyphBitmap& glyph)
     image.mipmaps = 1;
     image.format = PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
     const auto texture = LoadTextureFromImage(image);
+    if (texture.id == 0)
+    {
+        detail::debug_log("RaylibSurface: failed to upload glyph texture");
+        return nullptr;
+    }
 
     lru_.push_front(glyph.key);
     const auto emplaced = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()});
     const auto it = emplaced.first;
     evict_excess_textures();
 
-    return it->second.texture;
+    return &it->second.texture;
 }
 
 void RaylibSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
@@ -186,9 +192,12 @@ void RaylibSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, cons
         !std::isfinite(pen_y) || !std::isfinite(angle))
         return;
 
-    const auto& texture = texture_for(glyph);
+    const auto* const texture = texture_for(glyph);
+    if (!texture)
+        return;
+
     const auto source = Rectangle{0.f, 0.f, static_cast<float>(glyph.width), static_cast<float>(glyph.height)};
     const auto dest = Rectangle{pen_x, pen_y, static_cast<float>(glyph.width), static_cast<float>(glyph.height)};
     const auto origin = Vector2{static_cast<float>(-glyph.left), static_cast<float>(glyph.top)};
-    DrawTexturePro(texture, source, dest, origin, to_degrees(angle), color_);
+    DrawTexturePro(*texture, source, dest, origin, to_degrees(angle), color_);
 }

@@ -47,7 +47,7 @@ namespace TeXRender
         [[nodiscard]] std::size_t max_textures() const;
 
     private:
-        [[nodiscard]] const Texture2D& texture_for(const GlyphBitmap& glyph);
+        [[nodiscard]] const Texture2D* texture_for(const GlyphBitmap& glyph);
         void evict_excess_textures();
 
         struct CachedTexture

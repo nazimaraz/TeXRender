@@ -8,6 +8,7 @@
 #include <vector>
 #include <SDL.h>
 #include "backend/glyph_bitmap_validation.hpp"
+#include "render/glyph_cache.hpp"
 #include "texrender/cache_options.hpp"
 
 using namespace TeXRender;
@@ -210,42 +211,62 @@ SDL_Texture* Sdl2Surface::texture_for(const GlyphBitmap& glyph)
     }
 
     if (glyph.width > std::numeric_limits<int>::max() / 4)
-        throw std::runtime_error("texrender: glyph bitmap is too wide for SDL2 surface upload");
-
-    auto rgba = std::vector<unsigned char>(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
-    for (auto row = 0; row < glyph.height; ++row)
     {
-        for (auto col = 0; col < glyph.width; ++col)
-        {
-            const auto coverage =
-                glyph.buffer[static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch) + static_cast<std::size_t>(col)];
-            const auto dst =
-                (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
-            rgba[dst + 0] = 255;
-            rgba[dst + 1] = 255;
-            rgba[dst + 2] = 255;
-            rgba[dst + 3] = coverage;
-        }
+        detail::debug_log("Sdl2Surface: glyph bitmap is too wide for SDL2 surface upload");
+        return nullptr;
     }
 
-    auto* const surface =
-        SDL_CreateRGBSurfaceWithFormatFrom(rgba.data(), glyph.width, glyph.height, 32, glyph.width * 4, SDL_PIXELFORMAT_RGBA32);
-    if (!surface)
-        throw std::runtime_error(std::string{"texrender: SDL_CreateRGBSurfaceWithFormatFrom failed: "} + SDL_GetError());
+    try
+    {
+        auto rgba = std::vector<unsigned char>(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
+        for (auto row = 0; row < glyph.height; ++row)
+        {
+            for (auto col = 0; col < glyph.width; ++col)
+            {
+                const auto coverage = glyph.buffer[static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch) +
+                                                   static_cast<std::size_t>(col)];
+                const auto dst =
+                    (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
+                rgba[dst + 0] = 255;
+                rgba[dst + 1] = 255;
+                rgba[dst + 2] = 255;
+                rgba[dst + 3] = coverage;
+            }
+        }
 
-    auto* const texture = SDL_CreateTextureFromSurface(renderer_, surface);
-    SDL_FreeSurface(surface);
-    if (!texture)
-        throw std::runtime_error(std::string{"texrender: SDL_CreateTextureFromSurface failed: "} + SDL_GetError());
+        auto* const surface =
+            SDL_CreateRGBSurfaceWithFormatFrom(rgba.data(), glyph.width, glyph.height, 32, glyph.width * 4, SDL_PIXELFORMAT_RGBA32);
+        if (!surface)
+        {
+            detail::debug_log(std::string{"Sdl2Surface: SDL_CreateRGBSurfaceWithFormatFrom failed: "} + SDL_GetError());
+            return nullptr;
+        }
 
-    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+        auto* const texture = SDL_CreateTextureFromSurface(renderer_, surface);
+        SDL_FreeSurface(surface);
+        if (!texture)
+        {
+            detail::debug_log(std::string{"Sdl2Surface: SDL_CreateTextureFromSurface failed: "} + SDL_GetError());
+            return nullptr;
+        }
 
-    lru_.push_front(glyph.key);
-    const auto [it, inserted] = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()});
-    (void) inserted;
-    evict_excess_textures();
+        SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
 
-    return it->second.texture;
+        lru_.push_front(glyph.key);
+        const auto [it, inserted] = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()});
+        (void) inserted;
+        evict_excess_textures();
+
+        return it->second.texture;
+    } catch (const std::exception& error)
+    {
+        detail::debug_log(std::string{"Sdl2Surface: failed to prepare glyph texture: "} + error.what());
+        return nullptr;
+    } catch (...)
+    {
+        detail::debug_log("Sdl2Surface: failed to prepare glyph texture");
+        return nullptr;
+    }
 }
 
 void Sdl2Surface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
@@ -255,6 +276,9 @@ void Sdl2Surface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const 
         return;
 
     auto* const texture = texture_for(glyph);
+    if (!texture)
+        return;
+
     SDL_SetTextureColorMod(texture, r_, g_, b_);
     SDL_SetTextureAlphaMod(texture, a_);
 
