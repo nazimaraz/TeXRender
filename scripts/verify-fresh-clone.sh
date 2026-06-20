@@ -75,6 +75,7 @@ run cmake -S "$CLONE_DIR/tests/package_consumer" -B "$PACKAGE_CONSUMER_BUILD" -G
 run cmake --build "$PACKAGE_CONSUMER_BUILD" -j
 run ctest --test-dir "$PACKAGE_CONSUMER_BUILD" --output-on-failure
 run env \
+    BUILD_ROOT="${BUILD_ROOT}/installed-header-smoke" \
     TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
     TEXRENDER_HEADER_BACKEND=headless \
     TEXRENDER_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \

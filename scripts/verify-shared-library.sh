@@ -96,6 +96,7 @@ run cmake --install "$BUILD_DIR" --prefix "$INSTALL_PREFIX"
 require_shared_library
 
 run env \
+    BUILD_ROOT="${BUILD_ROOT}/installed-header-smoke-${BACKEND}" \
     TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
     TEXRENDER_HEADER_BACKEND="$BACKEND" \
     TEXRENDER_HEADER_INSTALL_PREFIX="$INSTALL_PREFIX" \

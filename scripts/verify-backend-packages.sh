@@ -60,6 +60,7 @@ verify_backend() {
     run cmake --install "$build_dir" --prefix "$prefix"
 
     run env \
+        BUILD_ROOT="${BUILD_ROOT}/${backend}/installed-header-smoke" \
         TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
         TEXRENDER_HEADER_BACKEND="$backend" \
         TEXRENDER_HEADER_INSTALL_PREFIX="$prefix" \

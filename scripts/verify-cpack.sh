@@ -47,6 +47,7 @@ run cmake -S "$ROOT_DIR/tests/package_consumer" -B "$CONSUMER_BUILD" -G "$GENERA
 run cmake --build "$CONSUMER_BUILD" -j
 run ctest --test-dir "$CONSUMER_BUILD" --output-on-failure
 run env \
+    BUILD_ROOT="${BUILD_ROOT}/binary-installed-header-smoke" \
     TEXRENDER_HEADER_USE_EXISTING_INSTALL=1 \
     TEXRENDER_HEADER_BACKEND=headless \
     TEXRENDER_HEADER_INSTALL_PREFIX="$BINARY_PREFIX" \
