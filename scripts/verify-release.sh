@@ -212,8 +212,6 @@ if [[ -n "${VCPKG_ROOT:-}" && -x "${VCPKG_ROOT}/vcpkg" ]]; then
     cmake_configure "$ROOT_DIR" "$VCPKG_BUILD" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE="${VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" \
-        -DVCPKG_MANIFEST_NO_DEFAULT_FEATURES=ON \
-        -DTEXRENDER_BACKEND=headless \
         -DTEXRENDER_BUILD_EXAMPLES=OFF \
         -DTEXRENDER_BUILD_BENCHMARKS=OFF
     cmake_build "$VCPKG_BUILD"

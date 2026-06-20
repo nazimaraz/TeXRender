@@ -46,10 +46,10 @@ jobs:
       - name: Generate API reference
         run: doxygen Doxyfile
 
-  # Linux / GCC 14: build the dependency-free headless backend and run every test.
-  # No GPU, X11 or display required.
+  # Linux / GCC 14: build the default dependency-free headless backend and run
+  # every test. No GPU, X11 or display required.
   linux:
-    name: Linux · GCC 14 · headless
+    name: Linux · GCC 14 · default headless
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +62,6 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_COMPILER=g++-14
-          -DTEXRENDER_BACKEND=headless
       - name: Build
         run: cmake --build build -j
       - name: Test
@@ -247,6 +246,7 @@ jobs:
           cmake -S . -B build -G Ninja
           -DCMAKE_BUILD_TYPE=Release
           -DCMAKE_CXX_COMPILER=g++-14
+          -DTEXRENDER_BACKEND=raylib
       - name: Build
         run: cmake --build build -j
       - name: Test
@@ -272,7 +272,7 @@ jobs:
       - name: Install dependencies
         run: brew install ninja freetype raylib tinyxml2
       - name: Configure (raylib backend + examples + tests)
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=raylib
       - name: Build
         run: cmake --build build -j
       - name: Test

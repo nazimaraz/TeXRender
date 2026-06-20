@@ -447,7 +447,7 @@ browser: **<https://nazimaraz.github.io/TeXRender/>**. With the
 activated:
 
 ```sh
-emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release
+emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=raylib
 cmake --build build-web -j
 python3 -m http.server -d build-web/site    # → http://localhost:8000
 ```

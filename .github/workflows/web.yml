@@ -25,7 +25,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y doxygen
       - name: Configure
-        run: emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release
+        run: emcmake cmake -S . -B build-web -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=raylib
       - name: Build
         run: cmake --build build-web -j
       - name: Generate API reference

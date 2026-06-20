@@ -16,9 +16,9 @@ body:
       label: Reproduction
       description: Minimal code, formula, command, or project setup that reproduces the issue.
       placeholder: |
-        cmake -S . -B build -DTEXGUI_BACKEND=headless
+        cmake -S . -B build -DTEXRENDER_BACKEND=headless
         cmake --build build -j
-        ./build/texgui_offscreen '\sqrt{x+1}' /tmp/formula.png
+        ./build/texrender_offscreen '\sqrt{x+1}' /tmp/formula.png
     validations:
       required: true
   - type: dropdown

@@ -7,7 +7,7 @@ body:
     id: problem
     attributes:
       label: Use case
-      description: What are you trying to build with texgui?
+      description: What are you trying to build with texrender?
     validations:
       required: true
   - type: textarea
