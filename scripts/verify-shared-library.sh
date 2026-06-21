@@ -113,7 +113,7 @@ run cmake -S "$ROOT_DIR/examples/consumer-find-package" -B "$FIND_EXAMPLE_BUILD"
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
 run cmake --build "$FIND_EXAMPLE_BUILD" -j
-run_with_shared_runtime "$FIND_EXAMPLE_BUILD/texrender_find_package_example"
+run_with_shared_runtime cmake -E chdir "$FIND_EXAMPLE_BUILD" "$FIND_EXAMPLE_BUILD/texrender_find_package_example"
 
 printf '\nshared-library package smoke completed successfully\n'
 printf 'backend: %s\n' "$BACKEND"
