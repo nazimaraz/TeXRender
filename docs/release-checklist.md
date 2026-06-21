@@ -40,7 +40,9 @@ Use this before cutting a public tag.
 - Verify installed GUI backend packages when dependencies are available:
   `scripts/verify-backend-packages.sh`
 - Fail on missing GUI package proof when using a prepared release machine:
-  `TEXRENDER_BACKEND_PACKAGE_REQUIRE=1 scripts/verify-backend-packages.sh`
+  `RAYLIB_INSTALL_PREFIX=/tmp/raylib-prefix scripts/provision-raylib-package.sh`
+  followed by
+  `CMAKE_PREFIX_PATH=/tmp/raylib-prefix TEXRENDER_BACKEND_PACKAGE_REQUIRE=1 scripts/verify-backend-packages.sh`
 - Confirm package components and feature metadata are covered by the installed
   header smoke: `headless`, `svg`, selected GUI backend, and rejected GUI
   backend components.

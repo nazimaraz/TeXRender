@@ -61,6 +61,18 @@ is not available, and verifies the package when it is. Set
 prove GUI package exports; the script then fails instead of skipping a missing
 raylib/SDL2 package.
 
+CI release smoke provisions raylib from source first, adds that install prefix
+to `CMAKE_PREFIX_PATH`, and runs the backend package smoke in required mode so
+both raylib and SDL2 installed-package exports are exercised. To reproduce that
+locally on a machine with raylib's native build dependencies:
+
+```sh
+RAYLIB_INSTALL_PREFIX=/tmp/raylib-prefix scripts/provision-raylib-package.sh
+CMAKE_PREFIX_PATH=/tmp/raylib-prefix \
+  TEXRENDER_BACKEND_PACKAGE_REQUIRE=1 \
+  scripts/verify-backend-packages.sh
+```
+
 ## Shared Libraries
 
 Dynamic-linking consumers are covered by a dedicated install smoke:

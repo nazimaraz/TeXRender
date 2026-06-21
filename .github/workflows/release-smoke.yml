@@ -143,9 +143,17 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y g++-14 ninja-build libfreetype-dev libtinyxml2-dev libsdl2-dev
+          sudo apt-get install -y g++-14 git ninja-build libfreetype-dev libtinyxml2-dev libsdl2-dev xorg-dev libgl1-mesa-dev
+      - name: Provision raylib CMake package
+        env:
+          CC: gcc-14
+          CXX: g++-14
+          RAYLIB_INSTALL_PREFIX: ${{ runner.temp }}/raylib-prefix
+        run: scripts/provision-raylib-package.sh
       - name: Verify installed backend packages
         env:
           CC: gcc-14
           CXX: g++-14
+          CMAKE_PREFIX_PATH: ${{ runner.temp }}/raylib-prefix
+          TEXRENDER_BACKEND_PACKAGE_REQUIRE: "1"
         run: scripts/verify-backend-packages.sh
