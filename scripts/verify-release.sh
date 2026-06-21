@@ -9,7 +9,10 @@ RAYLIB_BUILD="${BUILD_ROOT}/raylib"
 SDL2_BUILD="${BUILD_ROOT}/sdl2"
 SHARED_BUILD="${BUILD_ROOT}/headless-shared"
 SVG_BUILD="${BUILD_ROOT}/svg"
-INSTALL_PREFIX="${BUILD_ROOT}/prefix"
+RELEASE_ASSET_DIR="${BUILD_ROOT}/release-assets"
+RELEASE_ASSET_NAME="texrender-headless-local"
+RELEASE_ASSET="${RELEASE_ASSET_DIR}/${RELEASE_ASSET_NAME}.tar.gz"
+INSTALL_PREFIX="${BUILD_ROOT}/${RELEASE_ASSET_NAME}"
 PACKAGE_CONSUMER_BUILD="${BUILD_ROOT}/package-consumer"
 FETCH_EXAMPLE_BUILD="${BUILD_ROOT}/fetch-example"
 FIND_EXAMPLE_BUILD="${BUILD_ROOT}/find-example"
@@ -158,6 +161,11 @@ fi
 
 rm -rf "$INSTALL_PREFIX" "$PACKAGE_CONSUMER_BUILD" "$FIND_EXAMPLE_BUILD"
 run cmake --install "$HEADLESS_BUILD" --prefix "$INSTALL_PREFIX"
+rm -rf "$RELEASE_ASSET_DIR"
+mkdir -p "$RELEASE_ASSET_DIR"
+run cmake -E chdir "$BUILD_ROOT" cmake -E tar czf "$RELEASE_ASSET" "$RELEASE_ASSET_NAME"
+run cmake -DINPUT_FILE="$RELEASE_ASSET" -DOUTPUT_FILE="${RELEASE_ASSET}.sha256" -P "$ROOT_DIR/cmake/WriteSha256.cmake"
+run env BUILD_ROOT="${BUILD_ROOT}/release-asset-smoke" "$ROOT_DIR/scripts/verify-release-asset.sh" "$RELEASE_ASSET"
 cmake_configure "$ROOT_DIR/tests/package_consumer" "$PACKAGE_CONSUMER_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX"
