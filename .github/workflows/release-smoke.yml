@@ -50,7 +50,7 @@ jobs:
           TEXRENDER_ARCHIVE_VERSION: ${{ github.ref_name }}
         run: scripts/verify-release-archive.sh
       - name: Upload archive artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-archive-${{ github.run_id }}
           path: /tmp/texrender-release-archive/artifacts
@@ -70,7 +70,7 @@ jobs:
           CXX: g++-14
         run: scripts/verify-cpack.sh
       - name: Upload CPack artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: cpack-smoke-${{ github.run_id }}
           path: /tmp/texrender-cpack/artifacts

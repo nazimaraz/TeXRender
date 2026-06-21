@@ -68,7 +68,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Upload visual regression artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-regression-linux-headless
           path: build/visual-regression
@@ -82,7 +82,7 @@ jobs:
           TEXRENDER_BUILD_DIR: build
         run: scripts/generate-gallery.sh docs/gallery-formulas.txt build/gallery
       - name: Upload gallery artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: generated-gallery-linux-headless
           path: build/gallery
@@ -253,7 +253,7 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Upload visual regression artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: visual-regression-linux-raylib
           path: build/visual-regression
