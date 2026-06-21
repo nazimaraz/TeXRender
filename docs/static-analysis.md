@@ -65,6 +65,17 @@ scripts/verify-thread-sanitizer.sh
 On macOS, the script probes the default compiler and common Homebrew LLVM paths.
 Set `CXX` if you want to force a specific Clang.
 
+The lifetime stress executable keeps CI defaults short but can be made more
+aggressive locally:
+
+```sh
+TEXRENDER_LIFETIME_THREADS=8 \
+TEXRENDER_LIFETIME_THREAD_ITERATIONS=200 \
+TEXRENDER_LIFETIME_OUTLIVE_ITERATIONS=500 \
+TEXRENDER_LIFETIME_HANDLES_PER_DOCUMENT=24 \
+  scripts/verify-thread-sanitizer.sh
+```
+
 Or use the CMake preset directly:
 
 ```sh

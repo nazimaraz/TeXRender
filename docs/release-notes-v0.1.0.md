@@ -26,6 +26,8 @@ for embedding LaTeX math rendering into applications.
   smoke, nightly seeded fuzzing, static analysis, package consumers, registry
   metadata, release archive smoke, CPack archive smoke, external consumer smoke,
   path-with-spaces smoke, and the WebAssembly live editor.
+- Configurable lifetime stress coverage for document/handle destruction order,
+  shutdown interleavings, cache pressure, and concurrent headless rendering.
 - CI docs gates for Doxygen API generation and third-party notice drift.
 - Public project hygiene: support policy, code of conduct, citation metadata,
   CODEOWNERS, release asset guide, and a why-not-just-TeX FAQ.

@@ -97,9 +97,9 @@ follow [Semantic Versioning](https://semver.org/).
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, pkg-config consumer smoke, C++17 public-header
   checks, strict warning build, SVG and SDL2 backend smoke, Windows
-  shared-library install consumer, shared-library smoke, threaded lifetime
-  stress test, expanded multi-formula structural visual
-  regression, optional exact PNG visual snapshots, visual failure artifacts,
+  shared-library install consumer, shared-library smoke, configurable threaded
+  lifetime stress test for shutdown and handle/document ownership, expanded
+  multi-formula structural visual regression, optional exact PNG visual snapshots,
   clang-format gate, ASan+UBSan pass, fuzz smoke, vcpkg/Conan validation,
   clang-tidy and CodeQL static analysis, coverage reporting, actionlint workflow
   linting, non-blocking benchmark output, wasm build.
