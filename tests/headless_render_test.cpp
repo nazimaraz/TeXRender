@@ -77,6 +77,7 @@ int main()
         CHECK(aligned_top(formula, std::numeric_limits<int>::min(), FormulaAnchor::bottom) == std::numeric_limits<int>::min());
 
         CHECK(document.try_render(R"(\sqrt{a})", 40.f, 0xff000000).has_value());
+        CHECK(document.try_render(R"(\begin{matrix}1&2\\3&4\end{matrix})", 40.f, 0xff000000).has_value());
         CHECK(!document.try_render(R"(})", 40.f, 0xff000000).has_value()); // unbalanced '}' -> parse error
         CHECK(!document.try_render("x", 600.f, 0xff000000).has_value());
 
@@ -88,6 +89,34 @@ int main()
 
         const auto parse_error = document.try_render_detailed(R"(})", 40.f, 0xff000000);
         CHECK_RENDER_ERROR(parse_error, RenderErrorCode::parse_error);
+
+        const auto hostile_control = std::string{"\\\x0e"
+                                                 "rc{\\\\"};
+        CHECK_RENDER_ERROR(document.try_render_detailed(hostile_control, 40.f, 0xff000000), RenderErrorCode::parse_error);
+
+        auto malformed_utf8 = std::string{"\\["};
+        malformed_utf8.push_back(static_cast<char>(0xca));
+        CHECK_RENDER_ERROR(document.try_render_detailed(malformed_utf8, 40.f, 0xff000000), RenderErrorCode::parse_error);
+
+        const auto scripted_empty_accent = document.try_render_detailed(R"(\frac{a+q{\r}'st{x1+0}})", 40.f, 0xff000000);
+        CHECK(scripted_empty_accent.has_value() || scripted_empty_accent.error().code == RenderErrorCode::parse_error);
+
+        const auto empty_inline_math = document.try_render_detailed("\\fr\"ca+{}{\\(}}\n", 40.f, 0xff000000);
+        CHECK(empty_inline_math.has_value() || empty_inline_math.error().code == RenderErrorCode::parse_error);
+
+        const auto empty_rotate = document.try_render_detailed("\\T$icnKaiTi?{x^FHe}}\ne}}\n", 40.f, 0xff000000);
+        CHECK(empty_rotate.has_value() || empty_rotate.error().code == RenderErrorCode::parse_error);
+
+        const auto empty_under_over = document.try_render_detailed(R"(\b@dMMMMMMMMM+)", 40.f, 0xff000000);
+        CHECK(empty_under_over.has_value() || empty_under_over.error().code == RenderErrorCode::parse_error);
+
+        const auto empty_small_cap = document.try_render_detailed(R"(backs$a\lc{\sc$)", 40.f, 0xff000000);
+        CHECK(empty_small_cap.has_value() || empty_small_cap.error().code == RenderErrorCode::parse_error);
+
+        CHECK_RENDER_ERROR(document.try_render_detailed(R"(\c@@pp[o\)", 40.f, 0xff000000), RenderErrorCode::parse_error);
+        CHECK_RENDER_ERROR(document.try_render_detailed(R"(\\{\\[)", 40.f, 0xff000000), RenderErrorCode::parse_error);
+        CHECK_RENDER_ERROR(document.try_render_detailed("\\frac{a&\\fb}{r\\\\f{x_{\n&\\+bx", 40.f, 0xff000000),
+            RenderErrorCode::parse_error);
 
         const auto text_size_error = document.try_render_detailed("x", 600.f, 0xff000000);
         CHECK_RENDER_ERROR(text_size_error, RenderErrorCode::text_size_too_large);

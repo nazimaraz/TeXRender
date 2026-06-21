@@ -215,6 +215,207 @@ unset(_texrender_microtex_indexed_arr_text)
 unset(_texrender_microtex_indexed_arr_before)
 unset(_texrender_microtex_indexed_arr_after)
 
+# MicroTeX can parse an accent command with no base atom, then attach a script
+# to the accent. AccentedAtom::createBox handles that null base with an empty
+# box, but ScriptsAtom's accent special case dereferences the same null base.
+# Patch that missed path so malformed input becomes a renderable empty accent
+# instead of a layout-time null dereference under fuzzing.
+set(_texrender_microtex_atom_basic "${MICROTEX_SRC}/atom/atom_basic.cpp")
+file(READ "${_texrender_microtex_atom_basic}" _texrender_microtex_atom_basic_text)
+set(_texrender_microtex_atom_basic_before "    auto box = acc->_base->createBox(*(env.crampStyle()));")
+set(_texrender_microtex_atom_basic_after [[    auto box = (
+      acc->_base == nullptr
+      ? sptrOf<StrutBox>(0.f, 0.f, 0.f, 0.f)
+      : acc->_base->createBox(*(env.crampStyle()))
+    );]])
+if(_texrender_microtex_atom_basic_text MATCHES "auto box = acc->_base->createBox\\(\\*\\(env\\.crampStyle\\(\\)\\)\\);")
+    string(REPLACE
+        "${_texrender_microtex_atom_basic_before}"
+        "${_texrender_microtex_atom_basic_after}"
+        _texrender_microtex_atom_basic_text
+        "${_texrender_microtex_atom_basic_text}")
+    file(WRITE "${_texrender_microtex_atom_basic}" "${_texrender_microtex_atom_basic_text}")
+elseif(NOT _texrender_microtex_atom_basic_text MATCHES "acc->_base == nullptr[ \n\r\t]+\\?[ \n\r\t]+sptrOf<StrutBox>\\(0\\.f, 0\\.f, 0\\.f, 0\\.f\\)")
+    message(FATAL_ERROR "MicroTeX ScriptsAtom accent patch did not match ${_texrender_microtex_atom_basic}")
+endif()
+unset(_texrender_microtex_atom_basic)
+unset(_texrender_microtex_atom_basic_text)
+unset(_texrender_microtex_atom_basic_before)
+unset(_texrender_microtex_atom_basic_after)
+
+# The parser can also produce a MathAtom wrapper with no base for malformed
+# inline-math delimiters. Other MicroTeX atoms already render null content as
+# an empty strut, so keep MathAtom consistent with that behavior.
+set(_texrender_microtex_atom_basic "${MICROTEX_SRC}/atom/atom_basic.cpp")
+file(READ "${_texrender_microtex_atom_basic}" _texrender_microtex_atom_basic_text)
+set(_texrender_microtex_atom_basic_before "  auto box = _base->createBox(e);")
+set(_texrender_microtex_atom_basic_after [[  auto box = (
+    _base == nullptr
+    ? sptrOf<StrutBox>(0.f, 0.f, 0.f, 0.f)
+    : _base->createBox(e)
+  );]])
+if(_texrender_microtex_atom_basic_text MATCHES "auto box = _base->createBox\\(e\\);")
+    string(REPLACE
+        "${_texrender_microtex_atom_basic_before}"
+        "${_texrender_microtex_atom_basic_after}"
+        _texrender_microtex_atom_basic_text
+        "${_texrender_microtex_atom_basic_text}")
+    file(WRITE "${_texrender_microtex_atom_basic}" "${_texrender_microtex_atom_basic_text}")
+elseif(NOT _texrender_microtex_atom_basic_text MATCHES "_base == nullptr[ \n\r\t]+\\?[ \n\r\t]+sptrOf<StrutBox>\\(0\\.f, 0\\.f, 0\\.f, 0\\.f\\)[ \n\r\t]+:[ \n\r\t]+_base->createBox\\(e\\)")
+    message(FATAL_ERROR "MicroTeX MathAtom null-base patch did not match ${_texrender_microtex_atom_basic}")
+endif()
+unset(_texrender_microtex_atom_basic)
+unset(_texrender_microtex_atom_basic_text)
+unset(_texrender_microtex_atom_basic_before)
+unset(_texrender_microtex_atom_basic_after)
+
+# Malformed \T / rotate macros can construct RotateAtom with no base. Avoid
+# dereferencing that base in the constructors and render absent content as an
+# empty strut, matching other null-tolerant atom wrappers.
+set(_texrender_microtex_atom_impl "${MICROTEX_SRC}/atom/atom_impl.cpp")
+file(READ "${_texrender_microtex_atom_impl}" _texrender_microtex_atom_impl_text)
+set(_texrender_microtex_atom_impl_before [[  _type = base->_type;
+  _base = base;]])
+set(_texrender_microtex_atom_impl_after [[  _type = base == nullptr ? AtomType::ordinary : base->_type;
+  _base = base;]])
+if(_texrender_microtex_atom_impl_text MATCHES "_type = base->_type;")
+    string(REPLACE
+        "${_texrender_microtex_atom_impl_before}"
+        "${_texrender_microtex_atom_impl_after}"
+        _texrender_microtex_atom_impl_text
+        "${_texrender_microtex_atom_impl_text}")
+elseif(NOT _texrender_microtex_atom_impl_text MATCHES "_type = base == nullptr \\? AtomType::ordinary : base->_type;")
+    message(FATAL_ERROR "MicroTeX RotateAtom constructor patch did not match ${_texrender_microtex_atom_impl}")
+endif()
+set(_texrender_microtex_atom_impl_before "_base->createBox(env)")
+set(_texrender_microtex_atom_impl_after "(_base == nullptr ? sptrOf<StrutBox>(0.f, 0.f, 0.f, 0.f) : _base->createBox(env))")
+if(_texrender_microtex_atom_impl_text MATCHES "_base->createBox\\(env\\), _angle")
+    string(REPLACE
+        "${_texrender_microtex_atom_impl_before}"
+        "${_texrender_microtex_atom_impl_after}"
+        _texrender_microtex_atom_impl_text
+        "${_texrender_microtex_atom_impl_text}")
+    file(WRITE "${_texrender_microtex_atom_impl}" "${_texrender_microtex_atom_impl_text}")
+elseif(NOT _texrender_microtex_atom_impl_text MATCHES "_base == nullptr \\? sptrOf<StrutBox>\\(0\\.f, 0\\.f, 0\\.f, 0\\.f\\) : _base->createBox\\(env\\)")
+    message(FATAL_ERROR "MicroTeX RotateAtom createBox patch did not match ${_texrender_microtex_atom_impl}")
+endif()
+unset(_texrender_microtex_atom_impl)
+unset(_texrender_microtex_atom_impl_text)
+unset(_texrender_microtex_atom_impl_before)
+unset(_texrender_microtex_atom_impl_after)
+
+# Malformed accent/limit commands can produce UnderOverAtom with no base. The
+# layout path already has an empty-strut fallback later on, so guard the earlier
+# type and limits reads that happen before that fallback is reached.
+set(_texrender_microtex_atom_basic_h "${MICROTEX_SRC}/atom/atom_basic.h")
+file(READ "${_texrender_microtex_atom_basic_h}" _texrender_microtex_atom_basic_h_text)
+set(_texrender_microtex_atom_basic_h_before [[  AtomType leftType() const override {
+    return _base->leftType();
+  }
+
+  AtomType rightType() const override {
+    return _base->rightType();
+  }]])
+set(_texrender_microtex_atom_basic_h_after [[  AtomType leftType() const override {
+    return _base == nullptr ? AtomType::ordinary : _base->leftType();
+  }
+
+  AtomType rightType() const override {
+    return _base == nullptr ? AtomType::ordinary : _base->rightType();
+  }]])
+if(_texrender_microtex_atom_basic_h_text MATCHES "return _base->leftType\\(\\);")
+    string(REPLACE
+        "${_texrender_microtex_atom_basic_h_before}"
+        "${_texrender_microtex_atom_basic_h_after}"
+        _texrender_microtex_atom_basic_h_text
+        "${_texrender_microtex_atom_basic_h_text}")
+    file(WRITE "${_texrender_microtex_atom_basic_h}" "${_texrender_microtex_atom_basic_h_text}")
+elseif(NOT _texrender_microtex_atom_basic_h_text MATCHES "_base == nullptr \\? AtomType::ordinary : _base->leftType\\(\\)")
+    message(FATAL_ERROR "MicroTeX UnderOverAtom type patch did not match ${_texrender_microtex_atom_basic_h}")
+endif()
+unset(_texrender_microtex_atom_basic_h)
+unset(_texrender_microtex_atom_basic_h_text)
+unset(_texrender_microtex_atom_basic_h_before)
+unset(_texrender_microtex_atom_basic_h_after)
+
+set(_texrender_microtex_atom_basic "${MICROTEX_SRC}/atom/atom_basic.cpp")
+file(READ "${_texrender_microtex_atom_basic}" _texrender_microtex_atom_basic_text)
+set(_texrender_microtex_atom_basic_before [[  if (
+    _base->_limitsType == LimitsType::noLimits
+      || (_base->_limitsType == LimitsType::normal && style >= TexStyle::text)
+    ) {]])
+set(_texrender_microtex_atom_basic_after [[  if (
+    _base != nullptr
+      && (_base->_limitsType == LimitsType::noLimits
+        || (_base->_limitsType == LimitsType::normal && style >= TexStyle::text))
+    ) {]])
+if(_texrender_microtex_atom_basic_text MATCHES "_base->_limitsType == LimitsType::noLimits")
+    string(REPLACE
+        "${_texrender_microtex_atom_basic_before}"
+        "${_texrender_microtex_atom_basic_after}"
+        _texrender_microtex_atom_basic_text
+        "${_texrender_microtex_atom_basic_text}")
+    file(WRITE "${_texrender_microtex_atom_basic}" "${_texrender_microtex_atom_basic_text}")
+elseif(NOT _texrender_microtex_atom_basic_text MATCHES "_base != nullptr[ \n\r\t]+&& \\(_base->_limitsType == LimitsType::noLimits")
+    message(FATAL_ERROR "MicroTeX UnderOverAtom limits patch did not match ${_texrender_microtex_atom_basic}")
+endif()
+unset(_texrender_microtex_atom_basic)
+unset(_texrender_microtex_atom_basic_text)
+unset(_texrender_microtex_atom_basic_before)
+unset(_texrender_microtex_atom_basic_after)
+
+# Malformed cedilla accents can leave CedillaAtom without a base. BoldAtom,
+# immediately above it in MicroTeX, already uses an empty strut for this case;
+# keep CedillaAtom consistent.
+set(_texrender_microtex_atom_impl_h "${MICROTEX_SRC}/atom/atom_impl.h")
+file(READ "${_texrender_microtex_atom_impl_h}" _texrender_microtex_atom_impl_h_text)
+set(_texrender_microtex_atom_impl_h_before "    auto b = _base->createBox(env);")
+set(_texrender_microtex_atom_impl_h_after "    auto b = _base != nullptr ? _base->createBox(env) : sptrOf<StrutBox>(0.f, 0.f, 0.f, 0.f);")
+if(_texrender_microtex_atom_impl_h_text MATCHES "auto b = _base->createBox\\(env\\);")
+    string(REPLACE
+        "${_texrender_microtex_atom_impl_h_before}"
+        "${_texrender_microtex_atom_impl_h_after}"
+        _texrender_microtex_atom_impl_h_text
+        "${_texrender_microtex_atom_impl_h_text}")
+    file(WRITE "${_texrender_microtex_atom_impl_h}" "${_texrender_microtex_atom_impl_h_text}")
+elseif(NOT _texrender_microtex_atom_impl_h_text MATCHES "auto b = _base != nullptr \\? _base->createBox\\(env\\) : sptrOf<StrutBox>\\(0\\.f, 0\\.f, 0\\.f, 0\\.f\\);")
+    message(FATAL_ERROR "MicroTeX CedillaAtom null-base patch did not match ${_texrender_microtex_atom_impl_h}")
+endif()
+unset(_texrender_microtex_atom_impl_h)
+unset(_texrender_microtex_atom_impl_h_text)
+unset(_texrender_microtex_atom_impl_h_before)
+unset(_texrender_microtex_atom_impl_h_after)
+
+# Several inline wrapper atoms in MicroTeX share the same direct base layout
+# assumption. Fuzzing malformed commands repeatedly reaches these wrappers with
+# null bases, so patch the remaining common forms to render absent content as an
+# empty strut.
+set(_texrender_microtex_atom_impl_h "${MICROTEX_SRC}/atom/atom_impl.h")
+file(READ "${_texrender_microtex_atom_impl_h}" _texrender_microtex_atom_impl_h_text)
+set(_texrender_microtex_atom_impl_h_original "${_texrender_microtex_atom_impl_h_text}")
+foreach(_texrender_microtex_atom_impl_h_var IN ITEMS box base bbase bbox)
+    set(_texrender_microtex_atom_impl_h_before "    auto ${_texrender_microtex_atom_impl_h_var} = _base->createBox(env);")
+    set(_texrender_microtex_atom_impl_h_after
+        "    auto ${_texrender_microtex_atom_impl_h_var} = _base != nullptr ? _base->createBox(env) : sptrOf<StrutBox>(0.f, 0.f, 0.f, 0.f);")
+    string(REPLACE
+        "${_texrender_microtex_atom_impl_h_before}"
+        "${_texrender_microtex_atom_impl_h_after}"
+        _texrender_microtex_atom_impl_h_text
+        "${_texrender_microtex_atom_impl_h_text}")
+endforeach()
+if(_texrender_microtex_atom_impl_h_text MATCHES "_base->createBox\\(env\\);")
+    message(FATAL_ERROR "MicroTeX wrapper null-base patch left direct _base->createBox(env) in ${_texrender_microtex_atom_impl_h}")
+endif()
+if(NOT _texrender_microtex_atom_impl_h_text STREQUAL _texrender_microtex_atom_impl_h_original)
+    file(WRITE "${_texrender_microtex_atom_impl_h}" "${_texrender_microtex_atom_impl_h_text}")
+endif()
+unset(_texrender_microtex_atom_impl_h)
+unset(_texrender_microtex_atom_impl_h_text)
+unset(_texrender_microtex_atom_impl_h_original)
+unset(_texrender_microtex_atom_impl_h_var)
+unset(_texrender_microtex_atom_impl_h_before)
+unset(_texrender_microtex_atom_impl_h_after)
+
 # Authoritative core source list (mirrors MicroTeX's own target_sources, minus
 # every src/platform/** backend -- we provide Graphics2D/Font/TextLayout).
 set(MICROTEX_CORE_SOURCES
