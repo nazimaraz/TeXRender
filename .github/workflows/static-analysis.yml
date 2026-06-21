@@ -22,37 +22,9 @@ jobs:
           echo "deb http://apt.llvm.org/noble/ llvm-toolchain-noble-22 main" | sudo tee /etc/apt/sources.list.d/llvm.list
           sudo apt-get update
           sudo apt-get install -y clang-tidy-22 g++-14 ninja-build libfreetype-dev libtinyxml2-dev
-      - name: Configure compile database
-        run: >
-          cmake -S . -B build-tidy -G Ninja
-          -DCMAKE_BUILD_TYPE=Debug
-          -DCMAKE_CXX_COMPILER=g++-14
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-          -DTEXRENDER_BACKEND=headless
-          -DTEXRENDER_BUILD_EXAMPLES=ON
-          -DTEXRENDER_BUILD_TESTS=ON
-          -DTEXRENDER_BUILD_BENCHMARKS=ON
-      - name: Select project translation units
-        run: |
-          python3 - <<'PY' > tidy-files.txt
-          import json
-          from pathlib import Path
-
-          root = Path.cwd().resolve()
-          prefixes = ("source/", "tests/", "benchmarks/", "examples/")
-          files = set()
-          for entry in json.loads(Path("build-tidy/compile_commands.json").read_text()):
-              path = Path(entry["file"]).resolve()
-              try:
-                  rel = path.relative_to(root).as_posix()
-              except ValueError:
-                  continue
-              if rel.startswith(prefixes):
-                  files.add(str(path))
-
-          for path in sorted(files):
-              print(path)
-          PY
-          test -s tidy-files.txt
       - name: Run clang-tidy
-        run: xargs clang-tidy-22 -p build-tidy --warnings-as-errors='*' < tidy-files.txt
+        env:
+          BUILD_DIR: build-tidy
+          CXX: g++-14
+          CLANG_TIDY: clang-tidy-22
+        run: scripts/verify-static-analysis.sh

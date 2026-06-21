@@ -5,6 +5,7 @@
 #include <functional>
 #include <list>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -98,6 +99,6 @@ namespace TeXRender
         [[nodiscard]] std::string default_font_path();
 
         [[nodiscard]] bool debug_enabled();
-        void debug_log(const std::string& message);
+        void debug_log(std::string_view message) noexcept;
     } // namespace detail
 } // namespace TeXRender

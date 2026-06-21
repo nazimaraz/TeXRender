@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <limits>
 #include <mutex>
+#include <string_view>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "render/raster_size.hpp"
@@ -203,8 +204,12 @@ bool detail::debug_enabled()
     return enabled;
 }
 
-void detail::debug_log(const std::string& message)
+void detail::debug_log(const std::string_view message) noexcept
 {
-    if (debug_enabled())
-        (void) std::fprintf(stderr, "[texrender] %s\n", message.c_str());
+    if (!debug_enabled())
+        return;
+
+    (void) std::fputs("[texrender] ", stderr);
+    (void) std::fwrite(message.data(), 1, message.size(), stderr);
+    (void) std::fputc('\n', stderr);
 }

@@ -33,19 +33,13 @@ TSan.
 ## Local Run
 
 ```sh
-cmake -S . -B build-tidy -G Ninja \
-  -DCMAKE_BUILD_TYPE=Debug \
-  -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-  -DTEXRENDER_BACKEND=headless \
-  -DTEXRENDER_BUILD_EXAMPLES=OFF \
-  -DTEXRENDER_BUILD_TESTS=ON \
-  -DTEXRENDER_BUILD_BENCHMARKS=OFF
-
-clang-tidy -p build-tidy source/core/latex_document.cpp
+scripts/verify-static-analysis.sh
 ```
 
-For a full local run, generate a file list from `build-tidy/compile_commands.json`
-the same way the workflow does.
+The wrapper configures a headless Debug compile database, selects first-party
+translation units from `source/`, `tests/`, `examples/`, and `benchmarks/`, and
+runs clang-tidy with warnings promoted to errors. Set `CXX`, `CLANG_TIDY`,
+`BUILD_DIR`, or `GENERATOR` to override the defaults.
 
 ## Local AddressSanitizer Smoke
 
