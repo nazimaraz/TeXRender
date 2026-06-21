@@ -209,6 +209,31 @@ namespace
         write_u32_be(file, png_crc(type, data));
         return static_cast<bool>(file);
     }
+
+    void blend_pixel(std::vector<unsigned char>& pixels, const int width, const int height, const unsigned char r,
+        const unsigned char g, const unsigned char b, const unsigned char a, const int x, const int y, const float coverage)
+    {
+        if (x < 0 || y < 0 || x >= width || y >= height || coverage <= 0.f)
+            return;
+
+        const auto src_alpha = std::clamp(coverage, 0.f, 1.f) * (static_cast<float>(a) / 255.f);
+        const auto idx = (static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x)) * 4u;
+        const auto dst_alpha = static_cast<float>(pixels[idx + 3]) / 255.f;
+        const auto out_alpha = src_alpha + dst_alpha * (1.f - src_alpha);
+        if (out_alpha <= 0.f)
+            return;
+
+        const auto mix = [src_alpha, dst_alpha, out_alpha](const unsigned char dst, const unsigned char src) {
+            const auto src_channel = static_cast<float>(src) / 255.f;
+            const auto dst_channel = static_cast<float>(dst) / 255.f;
+            const auto out_channel = (src_channel * src_alpha + dst_channel * dst_alpha * (1.f - src_alpha)) / out_alpha;
+            return static_cast<unsigned char>(std::lround(std::clamp(out_channel, 0.f, 1.f) * 255.f));
+        };
+        pixels[idx + 0] = mix(pixels[idx + 0], r);
+        pixels[idx + 1] = mix(pixels[idx + 1], g);
+        pixels[idx + 2] = mix(pixels[idx + 2], b);
+        pixels[idx + 3] = static_cast<unsigned char>(std::lround(std::clamp(out_alpha, 0.f, 1.f) * 255.f));
+    }
 } // namespace
 
 void HeadlessSurface::set_color(const uint32_t argb)
@@ -268,30 +293,6 @@ const std::vector<unsigned char>& HeadlessSurface::pixels() const
     return pixels_;
 }
 
-void HeadlessSurface::blend(const int x, const int y, const float coverage)
-{
-    if (x < 0 || y < 0 || x >= width_ || y >= height_ || coverage <= 0.f)
-        return;
-
-    const auto src_alpha = std::clamp(coverage, 0.f, 1.f) * (static_cast<float>(a_) / 255.f);
-    const auto idx = (static_cast<size_t>(y) * static_cast<size_t>(width_) + static_cast<size_t>(x)) * 4u;
-    const auto dst_alpha = static_cast<float>(pixels_[idx + 3]) / 255.f;
-    const auto out_alpha = src_alpha + dst_alpha * (1.f - src_alpha);
-    if (out_alpha <= 0.f)
-        return;
-
-    const auto mix = [src_alpha, dst_alpha, out_alpha](const unsigned char dst, const unsigned char src) {
-        const auto src_channel = static_cast<float>(src) / 255.f;
-        const auto dst_channel = static_cast<float>(dst) / 255.f;
-        const auto out_channel = (src_channel * src_alpha + dst_channel * dst_alpha * (1.f - src_alpha)) / out_alpha;
-        return static_cast<unsigned char>(std::lround(std::clamp(out_channel, 0.f, 1.f) * 255.f));
-    };
-    pixels_[idx + 0] = mix(pixels_[idx + 0], r_);
-    pixels_[idx + 1] = mix(pixels_[idx + 1], g_);
-    pixels_[idx + 2] = mix(pixels_[idx + 2], b_);
-    pixels_[idx + 3] = static_cast<unsigned char>(std::lround(std::clamp(out_alpha, 0.f, 1.f) * 255.f));
-}
-
 void HeadlessSurface::fill_rect(const float x, const float y, const float w, const float h)
 {
     if (width_ <= 0 || height_ <= 0 || !finite_rect(x, y, w, h))
@@ -308,7 +309,7 @@ void HeadlessSurface::fill_rect(const float x, const float y, const float w, con
     const auto y1 = clamp_ceil_to_canvas(y_end, height_);
     for (auto py = y0; py < y1; ++py)
         for (auto px = x0; px < x1; ++px)
-            blend(px, py, 1.f);
+            blend_pixel(pixels_, width_, height_, r_, g_, b_, a_, px, py, 1.f);
 }
 
 void HeadlessSurface::draw_rect(const float x, const float y, const float w, const float h, const float stroke_width)
@@ -379,7 +380,8 @@ void HeadlessSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, co
             const auto y = origin_y + static_cast<double>(row);
             if (x < 0.0 || y < 0.0 || x >= static_cast<double>(width_) || y >= static_cast<double>(height_))
                 continue;
-            blend(static_cast<int>(x), static_cast<int>(y), static_cast<float>(src[col]) / 255.f);
+            blend_pixel(pixels_, width_, height_, r_, g_, b_, a_, static_cast<int>(x), static_cast<int>(y),
+                static_cast<float>(src[col]) / 255.f);
         }
     }
 }

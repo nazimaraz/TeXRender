@@ -58,8 +58,6 @@ namespace TeXRender
         [[nodiscard]] bool write_png(const std::string& path) const;
 
     private:
-        void blend(int x, int y, float coverage);
-
         int width_ = 0;
         int height_ = 0;
         std::vector<unsigned char> pixels_;

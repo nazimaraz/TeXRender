@@ -54,8 +54,6 @@ namespace TeXRender
         [[nodiscard]] bool write_svg(const std::string& path) const;
 
     private:
-        [[nodiscard]] std::string paint_attributes(const char* paint_kind) const;
-
         int width_ = 0;
         int height_ = 0;
         uint32_t color_ = 0xff000000;

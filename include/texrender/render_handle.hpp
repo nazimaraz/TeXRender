@@ -27,34 +27,34 @@ namespace TeXRender
     ///
     /// Drawing is immediate: `draw(x, y)` sends primitives to the document's
     /// surface using the current transform/color state owned by the handle.
-    class TEXRENDER_EXPORT RenderHandle
+    class RenderHandle
     {
     public:
-        ~RenderHandle();
+        TEXRENDER_EXPORT ~RenderHandle();
 
-        RenderHandle(RenderHandle&&) noexcept;
-        RenderHandle& operator=(RenderHandle&&) noexcept;
+        TEXRENDER_EXPORT RenderHandle(RenderHandle&&) noexcept;
+        TEXRENDER_EXPORT RenderHandle& operator=(RenderHandle&&) noexcept;
         RenderHandle(const RenderHandle&) = delete;
         RenderHandle& operator=(const RenderHandle&) = delete;
 
         /// Formula width in pixels.
-        [[nodiscard]] int width() const;
+        [[nodiscard]] TEXRENDER_EXPORT int width() const;
         /// Formula height above and below the baseline in pixels.
-        [[nodiscard]] int height() const;
+        [[nodiscard]] TEXRENDER_EXPORT int height() const;
         /// Formula depth below the baseline in pixels.
-        [[nodiscard]] int depth() const;
+        [[nodiscard]] TEXRENDER_EXPORT int depth() const;
         /// Baseline offset in pixels from the top of the formula box.
-        [[nodiscard]] float baseline() const;
+        [[nodiscard]] TEXRENDER_EXPORT float baseline() const;
 
         /// Change the formula foreground color as 0xAARRGGBB.
         ///
         /// This updates the laid-out formula's color without reparsing it.
-        void set_foreground(uint32_t argb) const;
+        TEXRENDER_EXPORT void set_foreground(uint32_t argb) const;
         /// Draw the formula at the given top-left pixel position.
         ///
         /// The target surface decides whether coordinates are clipped, blended,
         /// or forwarded to a GPU API.
-        void draw(int x, int y) const;
+        TEXRENDER_EXPORT void draw(int x, int y) const;
 
     private:
         friend class LatexDocument;

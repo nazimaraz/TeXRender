@@ -34,6 +34,15 @@ runtime_dirs() {
     esac
 }
 
+shared_library_path() {
+    find "$INSTALL_PREFIX" -type f \( \
+        -name 'libtexrender.so' -o \
+        -name 'libtexrender.so.*' -o \
+        -name 'libtexrender.dylib' -o \
+        -name 'texrender.dll' \
+        \) | head -n 1
+}
+
 run_with_shared_runtime() {
     local var
     var="$(runtime_path_var)"
@@ -47,18 +56,88 @@ run_with_shared_runtime() {
 }
 
 require_shared_library() {
-    if find "$INSTALL_PREFIX" -type f \( \
-        -name 'libtexrender.so' -o \
-        -name 'libtexrender.so.*' -o \
-        -name 'libtexrender.dylib' -o \
-        -name 'texrender.dll' \
-        \) | grep -q .; then
+    if [[ -n "$(shared_library_path)" ]]; then
         return
     fi
 
     printf 'expected an installed shared texrender library under %s\n' "$INSTALL_PREFIX" >&2
     find "$INSTALL_PREFIX" -maxdepth 3 -type f >&2 || true
     exit 1
+}
+
+defined_global_symbols() {
+    local library="$1"
+    case "$(uname -s)" in
+        Darwin)
+            nm -gU "$library"
+            ;;
+        MINGW* | MSYS* | CYGWIN*)
+            nm -g --defined-only "$library"
+            ;;
+        *)
+            nm -D --defined-only "$library"
+            ;;
+    esac
+}
+
+demangle_symbols() {
+    if has c++filt; then
+        c++filt
+    else
+        cat
+    fi
+}
+
+audit_exported_symbols() {
+    if ! has nm; then
+        printf 'nm is required to audit shared-library exports\n' >&2
+        exit 1
+    fi
+
+    local library
+    library="$(shared_library_path)"
+    if [[ -z "$library" ]]; then
+        printf 'expected shared library before export audit\n' >&2
+        exit 1
+    fi
+
+    local symbols_file="${BUILD_ROOT}/exported-symbols-${BACKEND}.txt"
+    defined_global_symbols "$library" | demangle_symbols > "$symbols_file"
+
+    local required_symbol
+    for required_symbol in \
+        'TeXRender::LatexDocument::render' \
+        'TeXRender::RenderHandle::draw' \
+        'TeXRender::HeadlessSurface::draw_glyph' \
+        'TeXRender::SvgSurface::svg' \
+        'TeXRender::cache_limits' \
+        'TeXRender::shutdown'
+    do
+        if ! grep -Fq "$required_symbol" "$symbols_file"; then
+            printf 'expected exported symbol matching "%s" in %s\n' "$required_symbol" "$library" >&2
+            cat "$symbols_file" >&2
+            exit 1
+        fi
+    done
+
+    local forbidden_pattern
+    for forbidden_pattern in \
+        'TeXRender::detail::' \
+        'tex::' \
+        'TeXRender::HeadlessSurface::blend' \
+        'TeXRender::SvgSurface::paint_attributes' \
+        'microtex'
+    do
+        if grep -Fq "$forbidden_pattern" "$symbols_file"; then
+            printf 'unexpected private/internal export matching "%s" in %s\n' "$forbidden_pattern" "$library" >&2
+            grep -F "$forbidden_pattern" "$symbols_file" >&2
+            exit 1
+        fi
+    done
+
+    printf '\nexported-symbol audit passed\n'
+    printf 'library: %s\n' "$library"
+    printf 'symbols: %s\n' "$(wc -l < "$symbols_file" | tr -d '[:space:]')"
 }
 
 case "$BACKEND" in
@@ -94,6 +173,7 @@ run cmake --build "$BUILD_DIR" -j
 run_with_shared_runtime ctest --test-dir "$BUILD_DIR" --output-on-failure
 run cmake --install "$BUILD_DIR" --prefix "$INSTALL_PREFIX"
 require_shared_library
+audit_exported_symbols
 
 run env \
     BUILD_ROOT="${BUILD_ROOT}/installed-header-smoke-${BACKEND}" \

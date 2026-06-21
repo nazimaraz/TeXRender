@@ -296,18 +296,13 @@ std::size_t SvgSurface::element_count() const
     return elements_.size() + (background_.has_value() ? 1u : 0u);
 }
 
-std::string SvgSurface::paint_attributes(const char* const paint_kind) const
-{
-    return ::paint_attributes(color_, paint_kind);
-}
-
 void SvgSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float stroke_width)
 {
     if (!finite_line(x1, y1, x2, y2, stroke_width))
         return;
 
     elements_.push_back("<line x1=\"" + number(x1) + "\" y1=\"" + number(y1) + "\" x2=\"" + number(x2) + "\" y2=\"" + number(y2) +
-                        "\" " + paint_attributes("stroke") + " stroke-width=\"" + number(stroke_width) +
+                        "\" " + ::paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) +
                         "\" stroke-linecap=\"round\"/>");
 }
 
@@ -317,7 +312,8 @@ void SvgSurface::draw_rect(const float x, const float y, const float w, const fl
         return;
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" fill=\"none\" " + paint_attributes("stroke") + " stroke-width=\"" + number(stroke_width) + "\"/>");
+                        "\" fill=\"none\" " + ::paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) +
+                        "\"/>");
 }
 
 void SvgSurface::fill_rect(const float x, const float y, const float w, const float h)
@@ -326,7 +322,7 @@ void SvgSurface::fill_rect(const float x, const float y, const float w, const fl
         return;
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" " + paint_attributes("fill") + "/>");
+                        "\" " + ::paint_attributes(color_, "fill") + "/>");
 }
 
 void SvgSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry,
@@ -336,8 +332,8 @@ void SvgSurface::draw_round_rect(const float x, const float y, const float w, co
         return;
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" fill=\"none\" " + paint_attributes("stroke") +
-                        " stroke-width=\"" + number(stroke_width) + "\"/>");
+                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" fill=\"none\" " +
+                        ::paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) + "\"/>");
 }
 
 void SvgSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)
@@ -346,7 +342,7 @@ void SvgSurface::fill_round_rect(const float x, const float y, const float w, co
         return;
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" " + paint_attributes("fill") + "/>");
+                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" " + ::paint_attributes(color_, "fill") + "/>");
 }
 
 void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
