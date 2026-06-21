@@ -19,6 +19,46 @@ run() {
     "$@"
 }
 
+run_worker_smoke() {
+    local worker="$1"
+    local output="$2"
+    local bad_output="${output}.bad.png"
+    local big_output="${output}.big.png"
+    local bad_stdout="${output}.bad.out"
+    local bad_stderr="${output}.bad.err"
+    local big_stdout="${output}.big.out"
+    local big_stderr="${output}.big.err"
+    local status
+
+    printf '\n==> %s worker smoke\n' "$worker"
+    printf '%s' '\sqrt{x+1}' | "$worker" "$output"
+    test -s "$output"
+
+    set +e
+    printf '%s' '}' | "$worker" "$bad_output" >"$bad_stdout" 2>"$bad_stderr"
+    status=$?
+    set -e
+    if [[ "$status" -ne 3 ]]; then
+        printf 'expected malformed-input worker exit 3, got %s\n' "$status" >&2
+        cat "$bad_stdout" >&2
+        cat "$bad_stderr" >&2
+        exit 1
+    fi
+
+    set +e
+    python3 - <<'PY' | "$worker" "$big_output" >"$big_stdout" 2>"$big_stderr"
+print('x' * 8193, end='')
+PY
+    status=$?
+    set -e
+    if [[ "$status" -ne 2 ]]; then
+        printf 'expected oversized-input worker exit 2, got %s\n' "$status" >&2
+        cat "$big_stdout" >&2
+        cat "$big_stderr" >&2
+        exit 1
+    fi
+}
+
 has() {
     command -v "$1" >/dev/null 2>&1
 }
@@ -92,6 +132,7 @@ if has python3; then
     run python3 "$ROOT_DIR/scripts/check-benchmark-baseline.py" --input "${BUILD_ROOT}/benchmark-results.txt" --warn-only
 fi
 run cmake -E chdir "$BUILD_ROOT" "$HEADLESS_BUILD/texrender_headless_batch" 'e^{i\pi} + 1 = 0'
+run_worker_smoke "$HEADLESS_BUILD/texrender_untrusted_worker" "${BUILD_ROOT}/worker-formula.png"
 
 rm -rf "$SVG_BUILD"
 cmake_configure "$ROOT_DIR" "$SVG_BUILD" \
