@@ -202,5 +202,7 @@ component metadata, optional installed backend package exports, pkg-config
 consumers when pkg-config is available, shared-library install consumers,
 CPack archives, external consumers, path-with-spaces handling, release archive
 smoke, Markdown links, public API snapshot drift, and API documentation when
-Doxygen is installed. It also runs the registry-readiness metadata check when
-Python is available.
+Doxygen is installed. The tag-driven `Release` workflow also extracts each
+hand-named install archive and runs the package consumer against that exact
+downloadable layout before upload. It also runs the registry-readiness metadata
+check when Python is available.

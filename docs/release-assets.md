@@ -70,7 +70,10 @@ Before attaching or announcing release assets:
 - run `scripts/verify-release.sh`
 - run `TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh`
 - run `scripts/verify-release-archive.sh`
+- run `scripts/verify-release-asset.sh <asset>` for any hand-built install archive
 - run `scripts/verify-cpack.sh`
 - run `scripts/verify-pkg-config.sh`
 - confirm the `Release smoke` workflow is green for the tag
+- confirm the `Release` workflow's release asset consumer step is green for
+  Linux, macOS and Windows assets
 - confirm `SHA256SUMS` includes every uploaded archive

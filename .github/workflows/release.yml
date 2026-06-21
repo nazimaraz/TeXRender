@@ -75,6 +75,10 @@ jobs:
             asset_path="dist/${{ matrix.asset }}.tar.gz"
           fi
           cmake -DINPUT_FILE="${asset_path}" -DOUTPUT_FILE="${asset_path}.sha256" -P cmake/WriteSha256.cmake
+          echo "TEXRENDER_RELEASE_ASSET=${asset_path}" >> "$GITHUB_ENV"
+      - name: Verify release asset consumer
+        shell: bash
+        run: scripts/verify-release-asset.sh "$TEXRENDER_RELEASE_ASSET"
       - name: Build CPack package
         shell: bash
         run: |

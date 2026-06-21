@@ -23,6 +23,7 @@ on:
       - "scripts/verify-path-with-spaces.sh"
       - "scripts/verify-pkg-config.sh"
       - "scripts/verify-release-archive.sh"
+      - "scripts/verify-release-asset.sh"
       - "scripts/verify-shared-library.sh"
       - "scripts/verify-msvc-exports.ps1"
   workflow_dispatch:

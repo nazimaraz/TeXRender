@@ -73,6 +73,8 @@ Use this before cutting a public tag.
   `TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh`
 - Run the source archive verifier:
   `scripts/verify-release-archive.sh`
+- Run release asset consumer validation for any hand-built install archive:
+  `scripts/verify-release-asset.sh <asset>`
 - Run CPack archive validation:
   `scripts/verify-cpack.sh`
 - Run external consumer validation:

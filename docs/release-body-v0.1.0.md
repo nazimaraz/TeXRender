@@ -134,6 +134,7 @@ This release is designed to be verified before publishing with:
 scripts/verify-release.sh
 TEXRENDER_FRESH_CLONE_FULL=1 scripts/verify-fresh-clone.sh
 scripts/verify-release-archive.sh
+scripts/verify-release-asset.sh <asset>
 scripts/verify-cpack.sh
 scripts/verify-external-consumers.sh
 scripts/verify-installed-headers.sh

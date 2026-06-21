@@ -104,6 +104,7 @@ def main() -> int:
         "scripts/verify-external-consumers.sh",
         "scripts/verify-path-with-spaces.sh",
         "scripts/verify-pkg-config.sh",
+        "scripts/verify-release-asset.sh",
         "scripts/verify-vcpkg-overlay.sh",
         "docs/package-publishing.md",
         "docs/registry-submissions.md",
