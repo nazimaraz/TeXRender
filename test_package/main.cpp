@@ -11,6 +11,14 @@
 #include <texrender/svg_surface.hpp>
 #include <texrender/version.hpp>
 
+#if defined(TEXRENDER_EXPECT_HAS_RAYLIB) && TEXRENDER_EXPECT_HAS_RAYLIB
+#include <texrender/raylib_surface.hpp>
+#endif
+
+#if defined(TEXRENDER_EXPECT_HAS_SDL2) && TEXRENDER_EXPECT_HAS_SDL2
+#include <texrender/sdl2_surface.hpp>
+#endif
+
 #ifndef TEXRENDER_RES_DIR
 #error "texrender_copy_resources() must define TEXRENDER_RES_DIR"
 #endif
@@ -26,6 +34,14 @@ static_assert(TEXRENDER_HAS_RAYLIB == TEXRENDER_EXPECT_HAS_RAYLIB);
 static_assert(TEXRENDER_HAS_SDL2 == TEXRENDER_EXPECT_HAS_SDL2);
 static_assert(TeXRender::has_raylib == static_cast<bool>(TEXRENDER_EXPECT_HAS_RAYLIB));
 static_assert(TeXRender::has_sdl2 == static_cast<bool>(TEXRENDER_EXPECT_HAS_SDL2));
+#endif
+
+#if defined(TEXRENDER_EXPECT_HAS_RAYLIB) && TEXRENDER_EXPECT_HAS_RAYLIB
+static_assert(!std::is_copy_constructible_v<TeXRender::RaylibSurface>);
+#endif
+
+#if defined(TEXRENDER_EXPECT_HAS_SDL2) && TEXRENDER_EXPECT_HAS_SDL2
+static_assert(!std::is_copy_constructible_v<TeXRender::Sdl2Surface>);
 #endif
 
 int main()

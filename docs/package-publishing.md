@@ -107,6 +107,11 @@ conan create . --build=missing \
   -o "&:with_tests=False" \
   -o "&:with_benchmarks=False"
 conan create . --build=missing \
+  -o "&:backend=raylib" \
+  -o "&:with_examples=False" \
+  -o "&:with_tests=False" \
+  -o "&:with_benchmarks=False"
+conan create . --build=missing \
   -o "&:backend=sdl2" \
   -o "&:with_examples=False" \
   -o "&:with_tests=False" \
@@ -124,7 +129,8 @@ headless rendering, SVG export, and runtime resource copying. Add coverage there
 when package-facing API changes.
 
 The recipe exposes standard `shared` and `fPIC` options. Conan's generated
-`CMakeDeps` config also loads `texrender_copy_resources(target)` and sets
+`CMakeDeps` config links FreeType, tinyxml2, and the selected GUI dependency
+transitively. It also loads `texrender_copy_resources(target)` and sets
 `TEXRENDER_RESOURCE_DIR`, matching the installed CMake package behavior.
 
 Before a Conan Center submission:
@@ -134,8 +140,8 @@ Before a Conan Center submission:
 - make sure the recipe exports only source files needed to build/install
 - check whether dependency versions should be relaxed or updated
 - run both dependency-free backend options (`headless`, `svg`)
-- document raylib and SDL2 backend expectations separately because they carry
-  additional GUI dependencies
+- run both GUI backend options (`raylib`, `sdl2`) on a machine with their native
+  GUI dependencies
 
 ## vcpkg
 
@@ -154,6 +160,8 @@ Overlay port smoke test:
 
 ```sh
 VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
+TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[raylib]' \
+  VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' \
   VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 ```

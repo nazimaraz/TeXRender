@@ -105,3 +105,8 @@ class TeXRenderConan(ConanFile):
             [os.path.join("lib", "cmake", "texrender", "texrenderConanHelpers.cmake")],
         )
         self.cpp_info.libs = ["texrender", "microtex_core"]
+        self.cpp_info.requires = ["freetype::freetype", "tinyxml2::tinyxml2"]
+        if self.options.backend == "raylib":
+            self.cpp_info.requires.append("raylib::raylib")
+        elif self.options.backend == "sdl2":
+            self.cpp_info.requires.append("sdl::libsdl2")

@@ -242,6 +242,11 @@ if has conan; then
         -o '&:with_tests=False' \
         -o '&:with_benchmarks=False'
     run conan create "$ROOT_DIR" --build=missing \
+        -o '&:backend=raylib' \
+        -o '&:with_examples=False' \
+        -o '&:with_tests=False' \
+        -o '&:with_benchmarks=False'
+    run conan create "$ROOT_DIR" --build=missing \
         -o '&:backend=sdl2' \
         -o '&:with_examples=False' \
         -o '&:with_tests=False' \
@@ -267,6 +272,7 @@ if [[ -n "${VCPKG_ROOT:-}" && -x "${VCPKG_ROOT}/vcpkg" ]]; then
     cmake_build "$VCPKG_BUILD"
     run ctest --test-dir "$VCPKG_BUILD" --output-on-failure
     run "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
+    run env TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[raylib]' "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
     run env TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' "$ROOT_DIR/scripts/verify-vcpkg-overlay.sh"
 else
     printf '\n==> skipping vcpkg manifest validation: set VCPKG_ROOT to a vcpkg checkout\n'

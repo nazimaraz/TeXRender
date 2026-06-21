@@ -40,6 +40,8 @@ The local smoke command remains:
 
 ```sh
 VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
+TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[raylib]' \
+  VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' \
   VCPKG_ROOT=/path/to/vcpkg scripts/verify-vcpkg-overlay.sh
 ```
@@ -59,6 +61,7 @@ Before submitting:
    conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"
    conan create . --build=missing -o "&:backend=headless" -o "&:shared=True" -o "&:with_tests=False"
    conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"
+   conan create . --build=missing -o "&:backend=raylib" -o "&:with_tests=False"
    conan create . --build=missing -o "&:backend=sdl2" -o "&:with_tests=False"
    ```
 
