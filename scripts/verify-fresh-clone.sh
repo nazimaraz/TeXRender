@@ -96,6 +96,11 @@ mkdir -p "$BUILD_ROOT"
 run git clone --no-local "$SOURCE_REPO" "$CLONE_DIR"
 run git -C "$CLONE_DIR" checkout --detach "$SOURCE_REF"
 run git -C "$CLONE_DIR" status --short
+if [[ -n "$(git -C "$CLONE_DIR" status --porcelain)" ]]; then
+    printf 'fresh clone is unexpectedly dirty after checkout\n' >&2
+    git -C "$CLONE_DIR" status --short >&2
+    exit 1
+fi
 run python3 "$CLONE_DIR/scripts/check-doc-links.py"
 run python3 "$CLONE_DIR/scripts/check-registry-readiness.py"
 run python3 "$CLONE_DIR/scripts/check-public-api.py"

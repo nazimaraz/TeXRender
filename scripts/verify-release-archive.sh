@@ -11,6 +11,7 @@ ARCHIVE_DIR="${BUILD_ROOT}/artifacts"
 EXTRACT_DIR="${BUILD_ROOT}/src"
 ARCHIVE="${ARCHIVE_DIR}/${PREFIX_NAME}.tar.gz"
 SHA_FILE="${ARCHIVE}.sha256"
+MANIFEST="${ARCHIVE_DIR}/${PREFIX_NAME}.manifest"
 BUILD_DIR="${BUILD_ROOT}/build"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix"
 CONSUMER_BUILD="${BUILD_ROOT}/consumer"
@@ -34,10 +35,59 @@ if [[ "$GENERATOR" == "Ninja" ]] && ! has ninja; then
     exit 1
 fi
 
+require_archive_path() {
+    local path="$1"
+    if ! grep -Fxq "${PREFIX_NAME}/${path}" "$MANIFEST"; then
+        printf 'release archive is missing required path: %s\n' "$path" >&2
+        exit 1
+    fi
+}
+
+forbid_archive_pattern() {
+    local pattern="$1"
+    local description="$2"
+    if grep -Eq "$pattern" "$MANIFEST"; then
+        printf 'release archive contains forbidden %s:\n' "$description" >&2
+        grep -E "$pattern" "$MANIFEST" >&2
+        exit 1
+    fi
+}
+
 rm -rf "$BUILD_ROOT"
 mkdir -p "$ARCHIVE_DIR" "$EXTRACT_DIR"
 
 run git -C "$ROOT_DIR" archive --format=tar.gz --prefix="${PREFIX_NAME}/" "$SOURCE_REF" -o "$ARCHIVE"
+run tar -tzf "$ARCHIVE"
+tar -tzf "$ARCHIVE" > "$MANIFEST"
+
+for path in \
+    CMakeLists.txt \
+    CMakePresets.json \
+    LICENSE \
+    README.md \
+    THIRD_PARTY.md \
+    cmake/texrenderConfig.cmake.in \
+    conanfile.py \
+    docs/local-release-rehearsal.md \
+    docs/release-checklist.md \
+    include/texrender/texrender.hpp \
+    packaging/vcpkg-overlay/ports/texrender/vcpkg.json \
+    scripts/verify-fresh-clone.sh \
+    scripts/verify-installed-headers.sh \
+    scripts/verify-release-archive.sh \
+    tests/package_consumer/CMakeLists.txt \
+    vcpkg.json
+do
+    require_archive_path "$path"
+done
+
+forbid_archive_pattern "^${PREFIX_NAME}/(build|build-[^/]*|cmake-build-[^/]*|out|vcpkg_installed)(/|$)" "top-level build output"
+forbid_archive_pattern "(^|/)test_package/build(/|$)" "Conan test-package build output"
+forbid_archive_pattern "(^|/)__pycache__(/|$)" "Python cache directory"
+forbid_archive_pattern "(^|/)CMakeUserPresets\\.json$" "local CMake user preset"
+forbid_archive_pattern "(^|/)\\.DS_Store$" "macOS metadata file"
+forbid_archive_pattern "^${PREFIX_NAME}/(\\.idea|\\.vscode)(/|$)" "IDE configuration"
+
 if has shasum; then
     run shasum -a 256 "$ARCHIVE"
     shasum -a 256 "$ARCHIVE" > "$SHA_FILE"
