@@ -52,8 +52,8 @@ Use this before cutting a public tag.
   `./build-headless/texrender_render_benchmark | tee /tmp/texrender-benchmark.txt && python3 scripts/check-benchmark-baseline.py --input /tmp/texrender-benchmark.txt --warn-only`
 - Run a fuzz smoke if Clang/libFuzzer is available:
   `./build-fuzz/texrender_try_render_fuzzer -runs=1000 -max_len=256`
-- Run the focused ThreadSanitizer smoke if your Clang runtime supports it:
-  `CXX=clang++ scripts/verify-thread-sanitizer.sh`
+- Run the focused ThreadSanitizer smoke:
+  `scripts/verify-thread-sanitizer.sh`
 - Verify package-manager entry points:
   `conan create . --build=missing -o "&:backend=headless" -o "&:with_tests=False"`,
   `conan create . --build=missing -o "&:backend=svg" -o "&:with_tests=False"`,

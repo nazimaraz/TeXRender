@@ -61,11 +61,15 @@ Set `CXX` if you want to force a specific Clang.
 
 ## Local ThreadSanitizer Smoke
 
-Use the wrapper script when your Clang runtime supports ThreadSanitizer:
+Use the wrapper script to verify the compiler's ThreadSanitizer runtime before
+building the focused tests:
 
 ```sh
-CXX=clang++ scripts/verify-thread-sanitizer.sh
+scripts/verify-thread-sanitizer.sh
 ```
+
+On macOS, the script probes the default compiler and common Homebrew LLVM paths.
+Set `CXX` if you want to force a specific Clang.
 
 Or use the CMake preset directly:
 
