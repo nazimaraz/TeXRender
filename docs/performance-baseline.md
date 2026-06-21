@@ -29,7 +29,8 @@ Refresh the table with:
 ```sh
 cmake -S . -B build-bench -DTEXRENDER_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
 cmake --build build-bench --target texrender_render_benchmark -j
-./build-bench/texrender_render_benchmark
+./build-bench/texrender_render_benchmark --json /tmp/texrender-benchmark.json | tee /tmp/texrender-benchmark.txt
+python3 scripts/check-benchmark-baseline.py --input /tmp/texrender-benchmark.json --update-baseline
 ```
 
 The machine-readable baseline used by
@@ -39,7 +40,7 @@ script compares per-operation times and defaults to a loose 1.4x threshold so it
 catches obvious slowdowns without pretending local benchmark numbers are
 universal.
 
-The [`Benchmarks`](../.github/workflows/benchmarks.yml) workflow uploads the raw
-output for every run and is marked non-blocking. It runs the baseline comparison
-in warn-only mode, making performance movement visible without failing PRs over
-normal CI noise.
+The [`Benchmarks`](../.github/workflows/benchmarks.yml) workflow uploads both the
+human-readable table and JSON output for every run and is marked non-blocking. It
+runs the baseline comparison in warn-only mode, making performance movement
+visible without failing PRs over normal CI noise.

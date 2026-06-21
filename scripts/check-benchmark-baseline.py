@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import json
 import re
 import subprocess
@@ -18,7 +19,24 @@ ROW_RE = re.compile(
 )
 
 
-def parse_output(text: str) -> dict[str, dict[str, float]]:
+def normalize_metrics(raw: dict) -> dict[str, dict[str, float]]:
+    metrics: dict[str, dict[str, float]] = {}
+    for case, values in raw.get("metrics", {}).items():
+        case_metrics: dict[str, float] = {}
+        for metric, value in values.items():
+            if isinstance(value, dict):
+                if "ms_per_op" in value:
+                    case_metrics[metric] = float(value["ms_per_op"])
+                elif "total_ms" in value:
+                    iterations = float(value.get("iterations", 1))
+                    case_metrics[metric] = float(value["total_ms"]) / iterations
+            else:
+                case_metrics[metric] = float(value)
+        metrics[case] = case_metrics
+    return metrics
+
+
+def parse_text_output(text: str) -> dict[str, dict[str, float]]:
     metrics: dict[str, dict[str, float]] = {}
     for line in text.splitlines():
         match = ROW_RE.match(line.strip())
@@ -29,6 +47,13 @@ def parse_output(text: str) -> dict[str, dict[str, float]]:
         value = float(match.group("op") or match.group("total"))
         metrics.setdefault(case, {})[metric] = value
     return metrics
+
+
+def parse_output(text: str) -> dict[str, dict[str, float]]:
+    stripped = text.lstrip()
+    if stripped.startswith("{"):
+        return normalize_metrics(json.loads(stripped))
+    return parse_text_output(text)
 
 
 def read_input(path: Path | None, command: list[str] | None) -> str:
@@ -46,15 +71,30 @@ def main() -> int:
     parser.add_argument("--command", nargs=argparse.REMAINDER, help="run a benchmark command instead of reading input")
     parser.add_argument("--max-ratio", type=float, help="override baseline threshold ratio")
     parser.add_argument("--warn-only", action="store_true", help="print regressions but exit successfully")
+    parser.add_argument("--update-baseline", action="store_true", help="rewrite --baseline metrics from the observed run")
     args = parser.parse_args()
 
     baseline = json.loads(args.baseline.read_text(encoding="utf-8"))
     threshold = args.max_ratio or float(baseline.get("threshold_ratio", 1.4))
+    expected_metrics = normalize_metrics(baseline)
     observed = parse_output(read_input(args.input, args.command))
+    if not observed:
+        print("no benchmark metrics found in input", file=sys.stderr)
+        return 1
+
+    if args.update_baseline:
+        baseline["date"] = dt.date.today().isoformat()
+        baseline["metrics"] = {
+            case: {metric: round(value, 3) for metric, value in metrics.items()} for case, metrics in observed.items()
+        }
+        args.baseline.write_text(json.dumps(baseline, indent=2, sort_keys=False) + "\n", encoding="utf-8")
+        print(f"updated {args.baseline}")
+        print("review platform/compiler/build metadata before committing")
+        return 0
 
     failures: list[str] = []
     missing: list[str] = []
-    for case, metrics in baseline["metrics"].items():
+    for case, metrics in expected_metrics.items():
         for metric, expected in metrics.items():
             try:
                 actual = observed[case][metric]

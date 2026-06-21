@@ -47,9 +47,9 @@ Use this before cutting a public tag.
 - Verify pkg-config consumption:
   `scripts/verify-pkg-config.sh`
 - Run the benchmark once in Release:
-  `./build-headless/texrender_render_benchmark`
+  `./build-headless/texrender_render_benchmark --json /tmp/texrender-benchmark.json | tee /tmp/texrender-benchmark.txt`
 - Compare benchmark output against the loose local baseline:
-  `./build-headless/texrender_render_benchmark | tee /tmp/texrender-benchmark.txt && python3 scripts/check-benchmark-baseline.py --input /tmp/texrender-benchmark.txt --warn-only`
+  `python3 scripts/check-benchmark-baseline.py --input /tmp/texrender-benchmark.json --warn-only`
 - Run a fuzz smoke if Clang/libFuzzer is available:
   `./build-fuzz/texrender_try_render_fuzzer -runs=1000 -max_len=256`
 - Run the focused ThreadSanitizer smoke:

@@ -35,13 +35,14 @@ jobs:
       - name: Run benchmark
         run: |
           set -o pipefail
-          ./build/texrender_render_benchmark | tee benchmark-results.txt
+          ./build/texrender_render_benchmark --json benchmark-results.json | tee benchmark-results.txt
       - name: Compare with local baseline
-        run: python3 scripts/check-benchmark-baseline.py --input benchmark-results.txt --warn-only
+        run: python3 scripts/check-benchmark-baseline.py --input benchmark-results.json --warn-only
       - name: Upload benchmark output
         uses: actions/upload-artifact@v4
         with:
           name: render-benchmark-${{ github.run_id }}
           path: |
             benchmark-results.txt
+            benchmark-results.json
             docs/performance-baseline.json
