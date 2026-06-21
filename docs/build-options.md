@@ -39,6 +39,10 @@ Useful presets:
 - `TEXRENDER_BUILD_BENCHMARKS`: build benchmark executables. Defaults on only when
   this project is top-level.
 - `TEXRENDER_BUILD_FUZZERS`: build libFuzzer targets. Defaults off.
+- `TEXRENDER_FETCH_GUI_DEPENDENCIES`: when `TEXRENDER_BACKEND=raylib` or `sdl2`,
+  fetch the missing GUI dependency from source after `find_package()` fails.
+  Defaults off so dependency consumers fail fast instead of unexpectedly
+  downloading/building a GUI toolkit during configure.
 - `TEXRENDER_INSTALL`: generate install/export support. Defaults off when FreeType,
   tinyxml2, raylib, or SDL2 is fetched from source because the installed package
   relies on `find_dependency()` to recreate those targets for consumers.

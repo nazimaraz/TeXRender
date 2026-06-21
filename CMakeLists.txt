@@ -53,6 +53,7 @@ option(TEXRENDER_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TO
 option(TEXRENDER_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(TEXRENDER_BUILD_BENCHMARKS "Build the benchmark executables" ${PROJECT_IS_TOP_LEVEL})
 option(TEXRENDER_BUILD_FUZZERS "Build libFuzzer targets (Clang/libFuzzer)" OFF)
+option(TEXRENDER_FETCH_GUI_DEPENDENCIES "Fetch raylib/SDL2 from source when a GUI backend dependency is not installed" OFF)
 option(TEXRENDER_WARNINGS_AS_ERRORS "Treat warnings in texrender first-party targets as errors" OFF)
 
 if(BUILD_SHARED_LIBS)

@@ -89,6 +89,9 @@ follow [Semantic Versioning](https://semver.org/).
   pre-push verification.
 - Public launch helper script that checks clean-tree/remote state, runs archive
   smoke, and optionally creates the local release tag.
+- GUI backend source fetching is now explicit via `TEXRENDER_FETCH_GUI_DEPENDENCIES`,
+  so dependency consumers fail fast with install guidance when raylib or SDL2 is
+  missing instead of unexpectedly downloading/building a GUI toolkit.
 - CI/test coverage: Linux/macOS/Windows builds, C++17 consumer smoke test,
   installed package consumer, pkg-config consumer smoke, C++17 public-header
   checks, strict warning build, SVG and SDL2 backend smoke, Windows

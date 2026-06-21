@@ -32,6 +32,8 @@ for embedding LaTeX math rendering into applications.
 - Documented local MicroTeX safety patch with an upstream issue/PR draft.
 - Fresh-clone release rehearsal and local cleanup helpers for final pre-push
   validation.
+- Explicit GUI dependency fetch opt-in, with fast configure errors when raylib
+  or SDL2 is missing and source builds were not requested.
 - Public API snapshot and pkg-config consumer smoke checks for dependency-facing
   changes.
 - Installed-header and optional installed-backend package smoke checks for

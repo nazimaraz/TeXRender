@@ -194,14 +194,16 @@ run cmake -E chdir "$FETCH_EXAMPLE_BUILD" "$FETCH_EXAMPLE_BUILD/texrender_fetchc
 
 cmake_configure "$ROOT_DIR" "$RAYLIB_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXRENDER_BACKEND=raylib
+    -DTEXRENDER_BACKEND=raylib \
+    -DTEXRENDER_FETCH_GUI_DEPENDENCIES=ON
 cmake_build "$RAYLIB_BUILD"
 run ctest --test-dir "$RAYLIB_BUILD" --output-on-failure
 
 rm -rf "$SDL2_BUILD"
 cmake_configure "$ROOT_DIR" "$SDL2_BUILD" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DTEXRENDER_BACKEND=sdl2
+    -DTEXRENDER_BACKEND=sdl2 \
+    -DTEXRENDER_FETCH_GUI_DEPENDENCIES=ON
 cmake_build "$SDL2_BUILD"
 run ctest --test-dir "$SDL2_BUILD" --output-on-failure
 

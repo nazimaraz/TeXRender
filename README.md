@@ -147,9 +147,10 @@ Requirements: a C++17 toolchain and CMake ≥ 3.21. TeXRender itself and its pub
 headers compile as C++17, and `texrender::texrender` propagates only `cxx_std_17` to
 consumers. tinyxml2 and FreeType are resolved with `find_package`, falling back
 to `FetchContent`; raylib and SDL2 are resolved only when their backend is
-selected. MicroTeX's core is always fetched and compiled from source. On macOS
-`brew install freetype tinyxml2` makes the default build instant; add `raylib`
-or `sdl2` when building those GUI backends.
+selected, and missing GUI dependencies fail fast unless
+`TEXRENDER_FETCH_GUI_DEPENDENCIES=ON` is set. MicroTeX's core is always fetched
+and compiled from source. On macOS `brew install freetype tinyxml2` makes the
+default build instant; add `raylib` or `sdl2` when building those GUI backends.
 
 ```sh
 cmake -S . -B build
@@ -200,9 +201,8 @@ shared-library builds, SDL2 notes, and the `TEXRENDER_WARNINGS_AS_ERRORS` policy
 
 ### FetchContent / add_subdirectory
 
-TeXRender can build its dependencies (MicroTeX, FreeType, tinyxml2, raylib, SDL2) via
-CMake `FetchContent`, so the simplest way to consume it is to fetch the project
-the same way — no system packages required:
+TeXRender can build MicroTeX, FreeType and tinyxml2 via CMake `FetchContent`, so
+the simplest way to consume it is to fetch the project the same way:
 
 ```cmake
 include(FetchContent)
@@ -228,8 +228,10 @@ texrender_copy_resources(my_app)
 
 Or, if you vendor the source, `add_subdirectory(path/to/TeXRender)` and link
 `texrender::texrender` the same way. Either path skips TeXRender's own examples and tests
-automatically when it is built as a subproject. You still drive raylib yourself
-or provide your own SDL/custom surface — see [Usage](#usage).
+automatically when it is built as a subproject. GUI dependencies are not fetched
+implicitly; install raylib/SDL2 for those backends or set
+`TEXRENDER_FETCH_GUI_DEPENDENCIES=ON` deliberately. You still drive raylib
+yourself or provide your own SDL/custom surface — see [Usage](#usage).
 
 The repository name is `TeXRender`; package-manager IDs, headers, CMake package,
 exported target, and pkg-config file use the lowercase `texrender` name

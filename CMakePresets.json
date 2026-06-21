@@ -34,7 +34,8 @@
       "binaryDir": "${sourceDir}/out/build/raylib-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "TEXRENDER_BACKEND": "raylib"
+        "TEXRENDER_BACKEND": "raylib",
+        "TEXRENDER_FETCH_GUI_DEPENDENCIES": "ON"
       }
     },
     {
@@ -65,7 +66,8 @@
       "binaryDir": "${sourceDir}/out/build/sdl2-release",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "TEXRENDER_BACKEND": "sdl2"
+        "TEXRENDER_BACKEND": "sdl2",
+        "TEXRENDER_FETCH_GUI_DEPENDENCIES": "ON"
       }
     },
     {

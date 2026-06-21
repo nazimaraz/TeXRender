@@ -8,8 +8,9 @@
 #  * raylib    -> optional GUI backend.
 #  * SDL2      -> optional GUI backend proving the surface seam beyond raylib.
 #
-# Everything is resolved with find_package first, falling back to FetchContent
-# so a fresh clone builds with zero manual setup.
+# Required dependencies are resolved with find_package first, falling back to
+# FetchContent. GUI backend dependencies fail fast unless explicitly allowed by
+# TEXRENDER_FETCH_GUI_DEPENDENCIES.
 # ===========================================================================
 include(FetchContent)
 
@@ -55,6 +56,12 @@ set(TEXRENDER_RAYLIB_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched ray
 if(TEXRENDER_BACKEND STREQUAL "raylib")
     find_package(raylib QUIET)
     if(NOT raylib_FOUND)
+        if(NOT TEXRENDER_FETCH_GUI_DEPENDENCIES)
+            message(FATAL_ERROR
+                "TEXRENDER_BACKEND=raylib requires raylib. Install raylib so find_package(raylib) succeeds, "
+                "or configure with -DTEXRENDER_FETCH_GUI_DEPENDENCIES=ON to let TeXRender fetch and build "
+                "raylib from source.")
+        endif()
         if(EMSCRIPTEN)
             # raylib's own platform switch: build its HTML5/WebGL backend.
             set(PLATFORM "Web" CACHE STRING "raylib platform" FORCE)
@@ -148,6 +155,12 @@ if(TEXRENDER_BACKEND STREQUAL "sdl2")
     endif()
 
     if(NOT TARGET SDL2::SDL2 AND NOT TARGET SDL2::SDL2-static AND NOT TARGET SDL2)
+        if(NOT TEXRENDER_FETCH_GUI_DEPENDENCIES)
+            message(FATAL_ERROR
+                "TEXRENDER_BACKEND=sdl2 requires SDL2. Install SDL2 so find_package(SDL2) succeeds, "
+                "or configure with -DTEXRENDER_FETCH_GUI_DEPENDENCIES=ON to let TeXRender fetch and build "
+                "SDL2 from source.")
+        endif()
         FetchContent_Declare(
             SDL2
             GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
