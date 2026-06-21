@@ -26,6 +26,7 @@ int main(int argc, char** argv)
     const auto latex = std::string{argc > 1 ? argv[1] : R"(\int_{0}^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2})"};
     const auto out = std::string{argc > 2 ? argv[2] : "formula.png"};
 
+    //! [headless-render]
     auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     auto& canvas = *owned;
     const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
@@ -41,6 +42,7 @@ int main(int argc, char** argv)
     canvas.resize(formula->width() + 2 * margin, formula->height() + 2 * margin);
     canvas.clear(0xffffffff); // opaque white
     formula->draw(margin, margin);
+    //! [headless-render]
 
     const auto wrote = ends_with(out, ".ppm") ? canvas.write_ppm(out) : canvas.write_png(out);
     if (!wrote)

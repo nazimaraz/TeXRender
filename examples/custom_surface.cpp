@@ -18,6 +18,7 @@
 
 namespace
 {
+    //! [custom-surface]
     class CountingSurface final : public TeXRender::IDrawSurface
     {
     public:
@@ -66,6 +67,7 @@ namespace
         int glyphs = 0;
         std::size_t covered_pixels = 0;
     };
+    //! [custom-surface]
 } // namespace
 
 int main()

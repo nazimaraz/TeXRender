@@ -22,6 +22,7 @@ your embedding mode.
 
 See also:
 
+- [Getting started with the API](getting-started-api.md)
 - [Embedding notes](api.md)
 - [API compatibility](api-compatibility.md)
 - [Security threat model](security-threat-model.md)

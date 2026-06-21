@@ -13,6 +13,7 @@ INPUT                  = include \
                          SECURITY.md \
                          THIRD_PARTY.md \
                          docs/api-mainpage.md \
+                         docs/getting-started-api.md \
                          docs/api.md \
                          docs/architecture.md \
                          docs/backend-authoring.md \
@@ -52,6 +53,7 @@ INPUT                  = include \
 FILE_PATTERNS          = *.hpp *.md *.json
 RECURSIVE              = YES
 USE_MDFILE_AS_MAINPAGE = docs/api-mainpage.md
+EXAMPLE_PATH           = .
 
 EXTRACT_ALL            = YES
 EXTRACT_PRIVATE        = NO

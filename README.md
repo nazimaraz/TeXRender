@@ -175,6 +175,8 @@ parse one formula, draw it in a raylib loop.
 More copyable consumer examples live in
 [`docs/examples-index.md`](docs/examples-index.md) and
 [`docs/integration-examples.md`](docs/integration-examples.md).
+For the generated API-docs quickstart, see
+[`docs/getting-started-api.md`](docs/getting-started-api.md).
 For a dependency-shaped wrapper around a parsed formula, see
 [`examples/formula_label_widget.cpp`](examples/formula_label_widget.cpp).
 For the stable backend-neutral API surface, include `texrender/texrender.hpp`.
