@@ -138,7 +138,7 @@ options.max_wrap_width = 1024;
 auto result = document.try_render_detailed(user_text, options);
 if (result)
 {
-    result.value().draw(20, 20);
+    result->draw(20, 20);
 }
 else
 {

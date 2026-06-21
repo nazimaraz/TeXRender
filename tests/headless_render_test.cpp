@@ -83,6 +83,8 @@ int main()
         const auto ok = document.try_render_detailed(R"(\sqrt{a})", 40.f, 0xff000000);
         CHECK(ok.has_value());
         CHECK(ok.error().code == RenderErrorCode::none);
+        CHECK(ok->width() > 0);
+        CHECK((*ok).height() > 0);
 
         const auto parse_error = document.try_render_detailed(R"(})", 40.f, 0xff000000);
         CHECK_RENDER_ERROR(parse_error, RenderErrorCode::parse_error);

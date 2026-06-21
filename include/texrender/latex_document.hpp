@@ -108,6 +108,28 @@ namespace TeXRender
         {
             return has_value();
         }
+        /// Access the render handle after checking `has_value()`/operator bool.
+        [[nodiscard]] RenderHandle& operator*() &
+        {
+            return value();
+        }
+        [[nodiscard]] const RenderHandle& operator*() const&
+        {
+            return value();
+        }
+        [[nodiscard]] RenderHandle&& operator*() &&
+        {
+            return std::move(*this).value();
+        }
+        /// Access members of the render handle after checking success.
+        [[nodiscard]] RenderHandle* operator->()
+        {
+            return &value();
+        }
+        [[nodiscard]] const RenderHandle* operator->() const
+        {
+            return &value();
+        }
         /// Return the render handle, throwing `std::bad_optional_access` if empty.
         [[nodiscard]] RenderHandle& value() &
         {

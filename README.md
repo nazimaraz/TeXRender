@@ -369,7 +369,7 @@ message while keeping the same `noexcept` boundary:
 auto result = document.try_render_detailed(user_input, options);
 if (result)
 {
-    result.value().draw(40, 40);
+    result->draw(40, 40);
 }
 else
 {

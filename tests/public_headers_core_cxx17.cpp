@@ -22,6 +22,13 @@ static_assert(TeXRender::has_svg);
 static_assert(std::is_move_constructible_v<TeXRender::RenderHandle>);
 static_assert(!std::is_copy_constructible_v<TeXRender::RenderHandle>);
 static_assert(!std::is_copy_constructible_v<TeXRender::LatexDocument>);
+static_assert(std::is_same_v<decltype(*std::declval<TeXRender::RenderResult&>()), TeXRender::RenderHandle&>);
+static_assert(std::is_same_v<decltype(*std::declval<const TeXRender::RenderResult&>()), const TeXRender::RenderHandle&>);
+static_assert(std::is_same_v<decltype(*std::declval<TeXRender::RenderResult&&>()), TeXRender::RenderHandle&&>);
+static_assert(std::is_same_v<decltype(std::declval<TeXRender::RenderResult&>().operator->()), TeXRender::RenderHandle*>);
+static_assert(
+    std::is_same_v<decltype(std::declval<const TeXRender::RenderResult&>().operator->()), const TeXRender::RenderHandle*>
+);
 
 int main()
 {
