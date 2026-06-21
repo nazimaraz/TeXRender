@@ -79,6 +79,23 @@ cmake --build build-headless --target texrender_headless_batch -j
 ./build-headless/texrender_headless_batch 'e^{i\pi}+1=0' '\int_0^1 x^2\,dx'
 ```
 
+## Untrusted Input Worker
+
+[`examples/untrusted_worker.cpp`](../examples/untrusted_worker.cpp) is the shape
+to use when formulas come from hostile or internet-scale input. It reads one
+formula from stdin, applies strict `RenderOptions`, writes one PNG, and returns a
+small exit code instead of logging the raw formula:
+
+```sh
+cmake -S . -B build-headless -DTEXRENDER_BACKEND=headless -DCMAKE_BUILD_TYPE=Release
+cmake --build build-headless --target texrender_untrusted_worker -j
+printf '%s' '\sqrt{x+1}' | timeout 2s ./build-headless/texrender_untrusted_worker formula.png
+```
+
+Run this executable from a supervising process with OS-level timeout, memory,
+CPU and request-size limits. If the worker exits non-zero, discard that render
+request and start a fresh worker for the next formula.
+
 ## SVG Export
 
 [`examples/svg_export.cpp`](../examples/svg_export.cpp) renders one formula to a

@@ -380,6 +380,11 @@ else
 See [`examples/live_edit.cpp`](examples/live_edit.cpp) for a live editor built on
 `try_render`.
 
+`try_render()` guardrails are not a process sandbox. For hostile internet input,
+run a disposable worker under OS-level timeout and memory limits; see
+[`examples/untrusted_worker.cpp`](examples/untrusted_worker.cpp) and the
+[`security threat model`](docs/security-threat-model.md).
+
 **Destroy documents and handles before `CloseWindow()`.** The backend frees its GPU
 glyph textures when the last `RenderHandle`/`LatexDocument` is destroyed, which
 needs the window still alive; tear them down (e.g. by scoping them) before

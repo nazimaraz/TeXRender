@@ -13,6 +13,7 @@ embed texrender.
 | [`examples/sdl2_minimal.cpp`](../examples/sdl2_minimal.cpp) | `TEXRENDER_BACKEND=sdl2` | Injecting texrender into a caller-owned `SDL_Renderer`. |
 | [`examples/offscreen.cpp`](../examples/offscreen.cpp) | any backend | Rendering one formula to PNG/PPM with `HeadlessSurface`. |
 | [`examples/headless_batch.cpp`](../examples/headless_batch.cpp) | any backend | Command-line batch PNG rendering without a window. |
+| [`examples/untrusted_worker.cpp`](../examples/untrusted_worker.cpp) | any backend | Disposable worker-process rendering for hostile input. |
 | [`examples/svg_export.cpp`](../examples/svg_export.cpp) | any backend | Writing a self-contained SVG file. |
 | [`examples/custom_surface.cpp`](../examples/custom_surface.cpp) | any backend | Implementing a custom `IDrawSurface`. |
 | [`examples/formula_label_widget.cpp`](../examples/formula_label_widget.cpp) | any backend | Wrapping texrender in a reusable app/widget object. |
@@ -25,7 +26,8 @@ embed texrender.
 - Building a game or GUI overlay: start with `minimal.cpp`, then compare
   `realtime_values.cpp`, `raylib_overlay.cpp`, or `sdl2_minimal.cpp`.
 - Generating images on a server or in CI: start with `offscreen.cpp` or
-  `headless_batch.cpp`.
+  `headless_batch.cpp`; use `untrusted_worker.cpp` when formulas come from
+  hostile users.
 - Exporting documents or reports: start with `svg_export.cpp`.
 - Integrating a custom renderer, engine command buffer, or test double: start
   with `custom_surface.cpp`, then read

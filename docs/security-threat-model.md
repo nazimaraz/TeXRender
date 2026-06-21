@@ -48,10 +48,26 @@ Report these privately through GitHub vulnerability reporting; see
 - Set stricter `RenderOptions` for public web forms, chat input, multiplayer
   content, or batch preview services.
 - Keep request body limits and rate limits outside texrender.
-- Prefer a worker process for hostile internet-scale workloads. If the worker
-  crashes or exceeds CPU/memory/time limits, kill and restart it.
+- Prefer a worker process for hostile internet-scale workloads. The
+  [`texrender_untrusted_worker`](../examples/untrusted_worker.cpp) example reads
+  one formula from stdin, renders one PNG and exits with a small status code.
+  Run it from a parent process that enforces CPU, memory, wall-clock and request
+  limits. If the worker crashes or exceeds a limit, kill it, discard the request
+  and start a fresh worker for the next formula.
 - Log `RenderErrorCode` values, but avoid logging raw private user formulas
   unless your application policy allows it.
+
+## Worker Contract
+
+- Treat each worker process as disposable and single-request by default.
+- Send formula text on stdin or another bounded channel rather than command-line
+  arguments, which may appear in process listings.
+- Apply OS-level timeout and memory limits in the parent process. `RenderOptions`
+  reduce parser/layout risk, but they are not a sandbox.
+- Store worker outputs in a temporary path controlled by the parent process and
+  move successful files into durable storage only after a zero exit status.
+- Do not reuse a worker after unexpected termination, sanitizer failure or
+  timeout.
 
 ## Maintainer Checklist
 

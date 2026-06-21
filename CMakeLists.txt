@@ -280,6 +280,7 @@ if(TEXRENDER_BUILD_EXAMPLES)
         set(TEXRENDER_EXAMPLES
             texrender_offscreen examples/offscreen.cpp
             texrender_headless_batch examples/headless_batch.cpp
+            texrender_untrusted_worker examples/untrusted_worker.cpp
             texrender_svg_export examples/svg_export.cpp
             texrender_custom_surface examples/custom_surface.cpp
             texrender_formula_label_widget examples/formula_label_widget.cpp
