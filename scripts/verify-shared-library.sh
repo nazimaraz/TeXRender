@@ -9,6 +9,13 @@ BUILD_DIR="${BUILD_ROOT}/build-${BACKEND}"
 INSTALL_PREFIX="${BUILD_ROOT}/prefix-${BACKEND}"
 PACKAGE_CONSUMER_BUILD="${BUILD_ROOT}/package-consumer-${BACKEND}"
 FIND_EXAMPLE_BUILD="${BUILD_ROOT}/find-example-${BACKEND}"
+PROJECT_VERSION="$(sed -nE 's/^[[:space:]]*VERSION[[:space:]]+([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' "$ROOT_DIR/CMakeLists.txt" | head -n 1)"
+PROJECT_SOVERSION="${PROJECT_VERSION%%.*}"
+
+if [[ -z "$PROJECT_VERSION" || -z "$PROJECT_SOVERSION" ]]; then
+    printf 'failed to parse project version from %s\n' "$ROOT_DIR/CMakeLists.txt" >&2
+    exit 1
+fi
 
 run() {
     printf '\n==> %s\n' "$*"
@@ -35,12 +42,12 @@ runtime_dirs() {
 }
 
 shared_library_path() {
-    find "$INSTALL_PREFIX" -type f \( \
+    find "$INSTALL_PREFIX" \( -type f -o -type l \) \( \
         -name 'libtexrender.so' -o \
         -name 'libtexrender.so.*' -o \
-        -name 'libtexrender.dylib' -o \
+        -name 'libtexrender*.dylib' -o \
         -name 'texrender.dll' \
-        \) | head -n 1
+        \) | sort | head -n 1
 }
 
 run_with_shared_runtime() {
@@ -63,6 +70,44 @@ require_shared_library() {
     printf 'expected an installed shared texrender library under %s\n' "$INSTALL_PREFIX" >&2
     find "$INSTALL_PREFIX" -maxdepth 3 -type f >&2 || true
     exit 1
+}
+
+require_versioned_shared_artifacts() {
+    case "$(uname -s)" in
+        Darwin)
+            for artifact in \
+                "$INSTALL_PREFIX/lib/libtexrender.dylib" \
+                "$INSTALL_PREFIX/lib/libtexrender.${PROJECT_SOVERSION}.dylib" \
+                "$INSTALL_PREFIX/lib/libtexrender.${PROJECT_VERSION}.dylib"
+            do
+                if [[ ! -e "$artifact" ]]; then
+                    printf 'expected installed shared-library artifact: %s\n' "$artifact" >&2
+                    find "$INSTALL_PREFIX/lib" -maxdepth 1 -name 'libtexrender*.dylib' -print >&2 || true
+                    exit 1
+                fi
+            done
+            ;;
+        MINGW* | MSYS* | CYGWIN*)
+            # CMake does not encode SOVERSION into the Windows DLL filename.
+            ;;
+        *)
+            for artifact in \
+                "$INSTALL_PREFIX/lib/libtexrender.so" \
+                "$INSTALL_PREFIX/lib/libtexrender.so.${PROJECT_SOVERSION}" \
+                "$INSTALL_PREFIX/lib/libtexrender.so.${PROJECT_VERSION}"
+            do
+                if [[ ! -e "$artifact" ]]; then
+                    printf 'expected installed shared-library artifact: %s\n' "$artifact" >&2
+                    find "$INSTALL_PREFIX/lib" -maxdepth 1 -name 'libtexrender.so*' -print >&2 || true
+                    exit 1
+                fi
+            done
+            ;;
+    esac
+
+    printf '\nshared-library version artifacts checked\n'
+    printf 'version: %s\n' "$PROJECT_VERSION"
+    printf 'soversion: %s\n' "$PROJECT_SOVERSION"
 }
 
 defined_global_symbols() {
@@ -173,6 +218,7 @@ run cmake --build "$BUILD_DIR" -j
 run_with_shared_runtime ctest --test-dir "$BUILD_DIR" --output-on-failure
 run cmake --install "$BUILD_DIR" --prefix "$INSTALL_PREFIX"
 require_shared_library
+require_versioned_shared_artifacts
 audit_exported_symbols
 
 run env \

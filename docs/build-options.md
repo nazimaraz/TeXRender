@@ -129,7 +129,10 @@ SDL renderer so cached glyph textures can be released while SDL is still alive.
 
 `BUILD_SHARED_LIBS=ON` builds `texrender` as a shared library. Public classes use
 `TEXRENDER_EXPORT`, and consumers of a Windows DLL receive `TEXRENDER_SHARED` from the
-exported target automatically.
+exported target automatically. Shared libraries are installed with
+`VERSION=${PROJECT_VERSION}` and `SOVERSION=${PROJECT_VERSION_MAJOR}` metadata; ABI
+stability is still not promised before `1.0`, so consumers should rebuild when
+upgrading.
 
 ```sh
 cmake -S . -B build-shared -DBUILD_SHARED_LIBS=ON -DTEXRENDER_BACKEND=headless

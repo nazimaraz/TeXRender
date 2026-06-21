@@ -38,6 +38,8 @@ follow [Semantic Versioning](https://semver.org/).
   backend texture cache sizing.
 - Shared-library symbol visibility via `TEXRENDER_EXPORT`, including Windows DLL
   import/export definitions.
+- Versioned shared-library metadata (`VERSION`/`SOVERSION`) and smoke coverage for
+  installed shared-library artifacts.
 - Installed shared-library package smoke test for dynamic-linking consumers.
 - Backend-neutral umbrella header `texrender/texrender.hpp`.
 - Generated `texrender/config.hpp` feature header with backend support macros and

@@ -40,6 +40,8 @@ for embedding LaTeX math rendering into applications.
   dependency-facing package exports.
 - Package component success/failure smoke checks for installed package metadata.
 - Installed shared-library package smoke checks for dynamic-linking consumers.
+- Versioned shared-library metadata and artifact checks for installed dynamic
+  packages.
 - Copyable integration recipes for HUD rendering, PNG/SVG generation, custom
   surfaces, safe user input, and portable feature checks.
 - A dependency-shaped formula-label example that wraps a parsed `RenderHandle`

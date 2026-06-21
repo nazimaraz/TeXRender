@@ -192,6 +192,8 @@ unset(_texrender_library_type)
 
 set_target_properties(texrender PROPERTIES
     CXX_VISIBILITY_PRESET hidden
+    VERSION "${PROJECT_VERSION}"
+    SOVERSION "${PROJECT_VERSION_MAJOR}"
     VISIBILITY_INLINES_HIDDEN YES
 )
 
