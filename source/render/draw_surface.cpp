@@ -2,6 +2,6 @@
 
 using namespace TeXRender;
 
-IDrawSurface::IDrawSurface() = default;
+IDrawSurface::IDrawSurface() noexcept = default;
 
-IDrawSurface::~IDrawSurface() = default;
+IDrawSurface::~IDrawSurface() noexcept = default;

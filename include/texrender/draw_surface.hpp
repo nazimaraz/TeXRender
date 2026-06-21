@@ -18,12 +18,12 @@ namespace TeXRender
     class TEXRENDER_EXPORT IDrawSurface
     {
     public:
-        IDrawSurface();
+        IDrawSurface() noexcept;
         IDrawSurface(const IDrawSurface&) = delete;
         IDrawSurface(IDrawSurface&&) = delete;
         IDrawSurface& operator=(const IDrawSurface&) = delete;
         IDrawSurface& operator=(IDrawSurface&&) = delete;
-        virtual ~IDrawSurface();
+        virtual ~IDrawSurface() noexcept;
 
         /// Set the current drawing color as 0xAARRGGBB.
         ///

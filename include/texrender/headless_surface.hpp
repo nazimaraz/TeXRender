@@ -40,15 +40,15 @@ namespace TeXRender
         void clear(uint32_t argb = 0x00000000);
 
         /// Canvas width in pixels.
-        [[nodiscard]] int width() const;
+        [[nodiscard]] int width() const noexcept;
         /// Canvas height in pixels.
-        [[nodiscard]] int height() const;
+        [[nodiscard]] int height() const noexcept;
         /// Raw RGBA8 pixels in row-major order.
         ///
         /// Bytes are stored as red, green, blue, alpha for each pixel.
-        [[nodiscard]] const std::vector<unsigned char>& pixels() const;
+        [[nodiscard]] const std::vector<unsigned char>& pixels() const noexcept;
         /// Count pixels with non-zero alpha.
-        [[nodiscard]] size_t covered_pixels() const;
+        [[nodiscard]] size_t covered_pixels() const noexcept;
         /// Write the current canvas as a binary PPM image.
         [[nodiscard]] bool write_ppm(const std::string& path) const;
         /// Write the current canvas as an RGBA PNG image.

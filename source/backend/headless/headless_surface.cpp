@@ -278,17 +278,17 @@ void HeadlessSurface::clear(const uint32_t argb)
     }
 }
 
-int HeadlessSurface::width() const
+int HeadlessSurface::width() const noexcept
 {
     return width_;
 }
 
-int HeadlessSurface::height() const
+int HeadlessSurface::height() const noexcept
 {
     return height_;
 }
 
-const std::vector<unsigned char>& HeadlessSurface::pixels() const
+const std::vector<unsigned char>& HeadlessSurface::pixels() const noexcept
 {
     return pixels_;
 }
@@ -386,7 +386,7 @@ void HeadlessSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, co
     }
 }
 
-size_t HeadlessSurface::covered_pixels() const
+size_t HeadlessSurface::covered_pixels() const noexcept
 {
     auto count = size_t{0};
     for (auto i = size_t{3}; i < pixels_.size(); i += 4)

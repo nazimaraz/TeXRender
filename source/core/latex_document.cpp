@@ -243,7 +243,7 @@ LatexDocument::LatexDocument(const std::string& res_root, std::unique_ptr<IDrawS
     : state_{std::make_shared<detail::DocumentState>(res_root, std::move(surface))}
 {}
 
-LatexDocument::~LatexDocument() = default;
+LatexDocument::~LatexDocument() noexcept = default;
 
 IDrawSurface& LatexDocument::surface() const
 {

@@ -80,12 +80,12 @@ Sdl2Surface::Sdl2Surface(SDL_Renderer* const renderer)
     SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
 }
 
-Sdl2Surface::~Sdl2Surface()
+Sdl2Surface::~Sdl2Surface() noexcept
 {
     unload();
 }
 
-void Sdl2Surface::unload()
+void Sdl2Surface::unload() noexcept
 {
     for (const auto& entry : textures_)
         SDL_DestroyTexture(entry.second.texture);
@@ -99,7 +99,7 @@ void Sdl2Surface::set_max_textures(const std::size_t texture_limit)
     evict_excess_textures();
 }
 
-std::size_t Sdl2Surface::max_textures() const
+std::size_t Sdl2Surface::max_textures() const noexcept
 {
     return max_textures_;
 }

@@ -183,7 +183,7 @@ namespace TeXRender
         LatexDocument(LatexDocument&&) = delete;
         LatexDocument& operator=(const LatexDocument&) = delete;
         LatexDocument& operator=(LatexDocument&&) = delete;
-        ~LatexDocument();
+        ~LatexDocument() noexcept;
 
         /// Surface this document's formulas draw into.
         ///

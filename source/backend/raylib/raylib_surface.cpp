@@ -42,12 +42,12 @@ RaylibSurface::RaylibSurface()
     : max_textures_{std::max<size_t>(1, cache_limits().max_gpu_textures)}
 {}
 
-RaylibSurface::~RaylibSurface()
+RaylibSurface::~RaylibSurface() noexcept
 {
     unload();
 }
 
-void RaylibSurface::unload()
+void RaylibSurface::unload() noexcept
 {
     if (IsWindowReady())
     {
@@ -65,7 +65,7 @@ void RaylibSurface::set_max_textures(const std::size_t texture_limit)
     evict_excess_textures();
 }
 
-std::size_t RaylibSurface::max_textures() const
+std::size_t RaylibSurface::max_textures() const noexcept
 {
     return max_textures_;
 }

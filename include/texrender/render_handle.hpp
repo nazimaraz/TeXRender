@@ -30,7 +30,7 @@ namespace TeXRender
     class RenderHandle
     {
     public:
-        TEXRENDER_EXPORT ~RenderHandle();
+        TEXRENDER_EXPORT ~RenderHandle() noexcept;
 
         TEXRENDER_EXPORT RenderHandle(RenderHandle&&) noexcept;
         TEXRENDER_EXPORT RenderHandle& operator=(RenderHandle&&) noexcept;
@@ -38,13 +38,13 @@ namespace TeXRender
         RenderHandle& operator=(const RenderHandle&) = delete;
 
         /// Formula width in pixels.
-        [[nodiscard]] TEXRENDER_EXPORT int width() const;
+        [[nodiscard]] TEXRENDER_EXPORT int width() const noexcept;
         /// Formula height above and below the baseline in pixels.
-        [[nodiscard]] TEXRENDER_EXPORT int height() const;
+        [[nodiscard]] TEXRENDER_EXPORT int height() const noexcept;
         /// Formula depth below the baseline in pixels.
-        [[nodiscard]] TEXRENDER_EXPORT int depth() const;
+        [[nodiscard]] TEXRENDER_EXPORT int depth() const noexcept;
         /// Baseline offset in pixels from the top of the formula box.
-        [[nodiscard]] TEXRENDER_EXPORT float baseline() const;
+        [[nodiscard]] TEXRENDER_EXPORT float baseline() const noexcept;
 
         /// Change the formula foreground color as 0xAARRGGBB.
         ///

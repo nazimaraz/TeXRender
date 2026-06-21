@@ -24,7 +24,7 @@ namespace TeXRender
         RaylibSurface(RaylibSurface&&) = delete;
         RaylibSurface& operator=(const RaylibSurface&) = delete;
         RaylibSurface& operator=(RaylibSurface&&) = delete;
-        ~RaylibSurface() override;
+        ~RaylibSurface() noexcept override;
 
         void set_color(uint32_t argb) override;
         void draw_line(float x1, float y1, float x2, float y2, float width) override;
@@ -37,14 +37,14 @@ namespace TeXRender
         ///
         /// Call this before `CloseWindow()` if the surface may outlive formula
         /// handles or if you want to drop texture memory proactively.
-        void unload();
+        void unload() noexcept;
         /// Set the maximum number of cached glyph textures for this surface.
         ///
         /// Zero is clamped to one; lower values trade memory for more texture
         /// uploads during repeated draws.
         void set_max_textures(std::size_t max_textures);
         /// Maximum cached glyph textures for this surface.
-        [[nodiscard]] std::size_t max_textures() const;
+        [[nodiscard]] std::size_t max_textures() const noexcept;
 
     private:
         [[nodiscard]] const Texture2D* texture_for(const GlyphBitmap& glyph);

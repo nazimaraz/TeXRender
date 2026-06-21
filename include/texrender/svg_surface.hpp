@@ -41,11 +41,11 @@ namespace TeXRender
         void clear(uint32_t argb = 0x00000000);
 
         /// SVG viewport width in pixels.
-        [[nodiscard]] int width() const;
+        [[nodiscard]] int width() const noexcept;
         /// SVG viewport height in pixels.
-        [[nodiscard]] int height() const;
+        [[nodiscard]] int height() const noexcept;
         /// Number of recorded draw elements, excluding the root svg element.
-        [[nodiscard]] std::size_t element_count() const;
+        [[nodiscard]] std::size_t element_count() const noexcept;
         /// Return the complete SVG document.
         ///
         /// The string is self-contained and includes embedded glyph PNG data.

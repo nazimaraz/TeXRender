@@ -14,6 +14,9 @@ follow [Semantic Versioning](https://semver.org/).
 - `LatexDocument` / `RenderHandle` public API: throwing `render()` and
   `noexcept try_render()` for untrusted input, UTF-8 LaTeX strings, metrics
   (`width`/`height`/`depth`/`baseline`), recolouring, optional wrap width.
+- Explicit ownership and cleanup contracts for public handles and surfaces:
+  non-copyable documents/surfaces, move-only handles, `noexcept` destructors,
+  `noexcept` handle metrics, and `noexcept` surface inspection/unload helpers.
 - Baseline and anchor layout helpers in `texrender/formula_layout.hpp`.
 - `try_render_detailed()`, `RenderResult` and `RenderErrorCode` for callers that
   need non-throwing diagnostics instead of only `std::optional`.

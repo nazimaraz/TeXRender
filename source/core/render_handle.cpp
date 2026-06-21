@@ -11,7 +11,7 @@ RenderHandle::RenderHandle(tex::TeXRender* render, std::shared_ptr<detail::Docum
     , render_{render}
 {}
 
-RenderHandle::~RenderHandle() = default;
+RenderHandle::~RenderHandle() noexcept = default;
 
 RenderHandle::RenderHandle(RenderHandle&&) noexcept = default;
 
@@ -26,7 +26,7 @@ RenderHandle& RenderHandle::operator=(RenderHandle&& other) noexcept
     return *this;
 }
 
-int RenderHandle::width() const
+int RenderHandle::width() const noexcept
 {
     if (!render_)
         return 0;
@@ -34,7 +34,7 @@ int RenderHandle::width() const
     return render_->getWidth();
 }
 
-int RenderHandle::height() const
+int RenderHandle::height() const noexcept
 {
     if (!render_)
         return 0;
@@ -42,7 +42,7 @@ int RenderHandle::height() const
     return render_->getHeight();
 }
 
-int RenderHandle::depth() const
+int RenderHandle::depth() const noexcept
 {
     if (!render_)
         return 0;
@@ -50,7 +50,7 @@ int RenderHandle::depth() const
     return render_->getDepth();
 }
 
-float RenderHandle::baseline() const
+float RenderHandle::baseline() const noexcept
 {
     if (!render_)
         return 0.f;

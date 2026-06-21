@@ -20,6 +20,8 @@ for embedding LaTeX math rendering into applications.
   package components for backend-aware consumers.
 - Non-throwing `try_render()` and `try_render_detailed()` paths for
   caller-supplied formulas.
+- Explicit public ownership contracts: non-copyable documents/surfaces,
+  move-only handles, `noexcept` cleanup, metrics, and surface inspection helpers.
 - CI coverage for Linux, macOS, Windows, sanitizers, ThreadSanitizer, fuzz
   smoke, nightly seeded fuzzing, static analysis, package consumers, registry
   metadata, release archive smoke, CPack archive smoke, external consumer smoke,

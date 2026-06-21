@@ -41,7 +41,7 @@ namespace TeXRender
         Sdl2Surface(Sdl2Surface&&) = delete;
         Sdl2Surface& operator=(const Sdl2Surface&) = delete;
         Sdl2Surface& operator=(Sdl2Surface&&) = delete;
-        ~Sdl2Surface() override;
+        ~Sdl2Surface() noexcept override;
 
         void set_color(uint32_t argb) override;
         void draw_line(float x1, float y1, float x2, float y2, float width) override;
@@ -55,14 +55,14 @@ namespace TeXRender
         ///
         /// Call this before destroying the borrowed renderer if object lifetime
         /// is not already scoped that way.
-        void unload();
+        void unload() noexcept;
         /// Set the maximum number of cached glyph textures for this surface.
         ///
         /// Zero is clamped to one; lower values reduce texture memory at the
         /// cost of more uploads.
         void set_max_textures(std::size_t max_textures);
         /// Maximum cached glyph textures for this surface.
-        [[nodiscard]] std::size_t max_textures() const;
+        [[nodiscard]] std::size_t max_textures() const noexcept;
 
     private:
         [[nodiscard]] SDL_Texture* texture_for(const GlyphBitmap& glyph);

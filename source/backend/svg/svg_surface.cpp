@@ -281,17 +281,17 @@ void SvgSurface::clear(const uint32_t argb)
         background_ = argb;
 }
 
-int SvgSurface::width() const
+int SvgSurface::width() const noexcept
 {
     return width_;
 }
 
-int SvgSurface::height() const
+int SvgSurface::height() const noexcept
 {
     return height_;
 }
 
-std::size_t SvgSurface::element_count() const
+std::size_t SvgSurface::element_count() const noexcept
 {
     return elements_.size() + (background_.has_value() ? 1u : 0u);
 }
