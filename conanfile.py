@@ -94,7 +94,8 @@ class TeXRenderConan(ConanFile):
             self,
             helper_path,
             'set(TEXRENDER_RESOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../../share/texrender/res")\n'
-            'include("${CMAKE_CURRENT_LIST_DIR}/texrenderHelpers.cmake")\n',
+            'include("${CMAKE_CURRENT_LIST_DIR}/texrenderHelpers.cmake")\n'
+            + self._conan_backend_helper(),
         )
 
     def package_info(self):
@@ -110,3 +111,66 @@ class TeXRenderConan(ConanFile):
             self.cpp_info.requires.append("raylib::raylib")
         elif self.options.backend == "sdl2":
             self.cpp_info.requires.append("sdl::libsdl2")
+
+    def _conan_backend_helper(self):
+        backend = str(self.options.backend)
+        if backend == "raylib":
+            return (
+                'if(TARGET texrender::texrender AND TARGET raylib)\n'
+                '  target_link_libraries(texrender::texrender INTERFACE raylib)\n'
+                '  set(_texrender_raylib_includes ${raylib_INCLUDE_DIRS})\n'
+                '  foreach(_texrender_config RELEASE DEBUG RELWITHDEBINFO MINSIZEREL)\n'
+                '    set(_texrender_raylib_package_var "raylib_PACKAGE_FOLDER_${_texrender_config}")\n'
+                '    if(DEFINED ${_texrender_raylib_package_var})\n'
+                '      list(APPEND _texrender_raylib_includes "${${_texrender_raylib_package_var}}/include")\n'
+                '    endif()\n'
+                '  endforeach()\n'
+                '  foreach(_texrender_include_dir IN LISTS CMAKE_INCLUDE_PATH)\n'
+                '    if(EXISTS "${_texrender_include_dir}/raylib.h")\n'
+                '      list(APPEND _texrender_raylib_includes "${_texrender_include_dir}")\n'
+                '    endif()\n'
+                '  endforeach()\n'
+                '  unset(_texrender_include_dir)\n'
+                '  unset(_texrender_raylib_package_var)\n'
+                '  if(_texrender_raylib_includes)\n'
+                '    list(REMOVE_DUPLICATES _texrender_raylib_includes)\n'
+                '    target_include_directories(texrender::texrender INTERFACE ${_texrender_raylib_includes})\n'
+                '  endif()\n'
+                '  unset(_texrender_config)\n'
+                '  unset(_texrender_raylib_includes)\n'
+                'endif()\n'
+            )
+        if backend == "sdl2":
+            return (
+                'if(TARGET texrender::texrender)\n'
+                '  set(_texrender_sdl2_targets SDL2::SDL2 SDL2::SDL2-static SDL2)\n'
+                '  foreach(_texrender_sdl2_target IN LISTS _texrender_sdl2_targets)\n'
+                '    if(TARGET ${_texrender_sdl2_target})\n'
+                '      target_link_libraries(texrender::texrender INTERFACE ${_texrender_sdl2_target})\n'
+                '      set(_texrender_sdl2_includes ${sdl_INCLUDE_DIRS})\n'
+                '      foreach(_texrender_config RELEASE DEBUG RELWITHDEBINFO MINSIZEREL)\n'
+                '        set(_texrender_sdl2_package_var "sdl_PACKAGE_FOLDER_${_texrender_config}")\n'
+                '        if(DEFINED ${_texrender_sdl2_package_var})\n'
+                '          list(APPEND _texrender_sdl2_includes "${${_texrender_sdl2_package_var}}/include")\n'
+                '        endif()\n'
+                '      endforeach()\n'
+                '      foreach(_texrender_include_dir IN LISTS CMAKE_INCLUDE_PATH)\n'
+                '        if(EXISTS "${_texrender_include_dir}/SDL.h" OR EXISTS "${_texrender_include_dir}/SDL2/SDL.h")\n'
+                '          list(APPEND _texrender_sdl2_includes "${_texrender_include_dir}")\n'
+                '        endif()\n'
+                '      endforeach()\n'
+                '      unset(_texrender_include_dir)\n'
+                '      unset(_texrender_sdl2_package_var)\n'
+                '      if(_texrender_sdl2_includes)\n'
+                '        list(REMOVE_DUPLICATES _texrender_sdl2_includes)\n'
+                '        target_include_directories(texrender::texrender INTERFACE ${_texrender_sdl2_includes})\n'
+                '      endif()\n'
+                '      unset(_texrender_config)\n'
+                '      unset(_texrender_sdl2_includes)\n'
+                '      break()\n'
+                '    endif()\n'
+                '  endforeach()\n'
+                '  unset(_texrender_sdl2_targets)\n'
+                'endif()\n'
+            )
+        return ""
