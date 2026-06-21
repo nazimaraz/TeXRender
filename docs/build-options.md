@@ -23,6 +23,7 @@ Useful presets:
 - `headless-shared`: shared-library build using the headless backend.
 - `svg-release`: SVG backend and export example.
 - `asan`: AddressSanitizer + UndefinedBehaviorSanitizer.
+- `tsan`: ThreadSanitizer headless build.
 - `coverage`: coverage-instrumented headless build.
 - `fuzz`: libFuzzer target for `try_render()`.
 
