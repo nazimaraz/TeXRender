@@ -70,11 +70,13 @@ scripts/verify-shared-library.sh
 ```
 
 The script builds `BUILD_SHARED_LIBS=ON`, installs the package, verifies that a
-shared library was installed, compiles installed headers, checks CMake package
-components, and runs both the generic package consumer and the
-`examples/consumer-find-package` recipe with the runtime library path pointed at
-the installed prefix. By default it uses the dependency-free headless backend;
-set `TEXRENDER_SHARED_BACKEND=svg` to exercise the SVG default surface as well.
+shared library was installed, audits exported symbols with the platform's symbol
+tool, compiles installed headers, checks CMake package components, and runs both
+the generic package consumer and the `examples/consumer-find-package` recipe with
+the runtime library path pointed at the installed prefix. By default it uses the
+dependency-free headless backend; set `TEXRENDER_SHARED_BACKEND=svg` to exercise
+the SVG default surface as well. Windows/MSVC CI runs the companion
+`scripts/verify-msvc-exports.ps1` check against the installed DLL.
 
 ## Conan
 

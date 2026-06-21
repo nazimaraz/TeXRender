@@ -24,6 +24,7 @@ on:
       - "scripts/verify-pkg-config.sh"
       - "scripts/verify-release-archive.sh"
       - "scripts/verify-shared-library.sh"
+      - "scripts/verify-msvc-exports.ps1"
   workflow_dispatch:
 
 concurrency:

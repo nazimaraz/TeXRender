@@ -12,7 +12,7 @@ compatibility matters more than ABI stability; see
 | Linux | Clang 22 | yes | Fuzz target, PR/scheduled TSan smoke, clang-format/clang-tidy tooling |
 | GitHub CodeQL | C/C++ analysis | yes | Manual headless CMake build for semantic analysis |
 | macOS | Apple Clang | yes | raylib and headless builds |
-| Windows | MSVC | yes | headless static/shared builds and installed consumer smoke |
+| Windows | MSVC | yes | headless static/shared builds, DLL export audit, installed consumer smoke |
 
 TeXRender itself and its public headers compile as C++17 and expose `texrender::texrender`
 with `cxx_std_17`.
@@ -38,7 +38,7 @@ selects the default surface created by `LatexDocument`.
 | installed `find_package(texrender CONFIG REQUIRED)` | supported and tested |
 | installed public headers | selected backend headers only, compiled as C++17 |
 | CMake package components | `headless`, `svg`, `raylib`, `sdl2` |
-| shared library | installed headless shared package consumed in release smoke |
+| shared library | installed headless shared package consumed in release smoke; exported symbols audited on Unix and Windows/MSVC |
 | Conan recipe | starter package metadata, headless/SVG/SDL2/shared validated in CI |
 | vcpkg manifest/overlay | starter metadata with overlay and component smoke tests |
 | CPack TGZ/ZIP archives | supported in release smoke for source and binary packages |

@@ -334,6 +334,8 @@ jobs:
         run: ctest --test-dir build-shared -C Release --output-on-failure
       - name: Install shared package
         run: cmake --install build-shared --config Release --prefix "$env:RUNNER_TEMP/texrender-prefix"
+      - name: Audit shared DLL exports
+        run: .\scripts\verify-msvc-exports.ps1 -InstallPrefix "$env:RUNNER_TEMP/texrender-prefix"
       - name: Configure shared package consumer
         run: >
           cmake -S tests/package_consumer -B package-consumer-shared
