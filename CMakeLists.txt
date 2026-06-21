@@ -415,6 +415,42 @@ if(TEXRENDER_BUILD_TESTS AND NOT EMSCRIPTEN)
     target_compile_features(texrender_public_headers_core_cxx17 PRIVATE cxx_std_17)
     add_test(NAME public_headers_core_cxx17 COMMAND texrender_public_headers_core_cxx17)
 
+    set(TEXRENDER_PUBLIC_HEADER_SELF_CONTAINMENT_HEADERS
+        cache_options.hpp
+        config.hpp
+        draw_surface.hpp
+        export.hpp
+        formula_layout.hpp
+        glyph_bitmap.hpp
+        headless_surface.hpp
+        latex_document.hpp
+        render_handle.hpp
+        svg_surface.hpp
+        texrender.hpp
+        version.hpp
+    )
+
+    if(TEXRENDER_BACKEND STREQUAL "raylib")
+        list(APPEND TEXRENDER_PUBLIC_HEADER_SELF_CONTAINMENT_HEADERS raylib_surface.hpp)
+    elseif(TEXRENDER_BACKEND STREQUAL "sdl2")
+        list(APPEND TEXRENDER_PUBLIC_HEADER_SELF_CONTAINMENT_HEADERS sdl2_surface.hpp)
+    endif()
+
+    foreach(header IN LISTS TEXRENDER_PUBLIC_HEADER_SELF_CONTAINMENT_HEADERS)
+        string(REPLACE ".hpp" "" header_target_suffix "${header}")
+        string(REPLACE "_" "-" header_test_suffix "${header_target_suffix}")
+        set(header_source "${CMAKE_CURRENT_BINARY_DIR}/public-header-self-containment/${header_target_suffix}.cpp")
+        file(WRITE "${header_source}" "#include <texrender/${header}>\n\nint main()\n{\n    return 0;\n}\n")
+        add_executable("texrender_public_header_${header_target_suffix}_self_contained" "${header_source}")
+        target_link_libraries("texrender_public_header_${header_target_suffix}_self_contained" PRIVATE texrender::texrender)
+        texrender_target_warnings("texrender_public_header_${header_target_suffix}_self_contained")
+        target_compile_features("texrender_public_header_${header_target_suffix}_self_contained" PRIVATE cxx_std_17)
+        add_test(
+            NAME "public_header_self_contained.${header_test_suffix}"
+            COMMAND "texrender_public_header_${header_target_suffix}_self_contained"
+        )
+    endforeach()
+
     if(TEXRENDER_BACKEND STREQUAL "raylib")
         add_executable(texrender_public_headers_raylib_cxx17 tests/public_headers_raylib_cxx17.cpp)
         target_link_libraries(texrender_public_headers_raylib_cxx17 PRIVATE texrender::texrender ${TEXRENDER_BACKEND_LIBS})
