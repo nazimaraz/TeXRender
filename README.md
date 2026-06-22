@@ -147,10 +147,9 @@ Requirements: a C++17 toolchain and CMake ≥ 3.21. TeXRender itself and its pub
 headers compile as C++17, and `texrender::texrender` propagates only `cxx_std_17` to
 consumers. Third-party source dependencies are pinned as Git submodules under
 `third_party/`. tinyxml2 and FreeType are resolved with `find_package`, then the
-local submodules, then optional network `FetchContent` fallback. raylib and SDL2
+local submodules. raylib and SDL2
 are resolved only when their backend is selected; their local submodules are
-used when no package is installed, while network fallback remains opt-in through
-`TEXRENDER_FETCH_GUI_DEPENDENCIES=ON`. On macOS `brew install freetype tinyxml2`
+used when no package is installed. On macOS `brew install freetype tinyxml2`
 makes installed-package builds instant; add `raylib` or `sdl2` when building
 those GUI backends from packages.
 
@@ -205,7 +204,7 @@ shared-library builds, SDL2 notes, and the `TEXRENDER_WARNINGS_AS_ERRORS` policy
 ### FetchContent / add_subdirectory
 
 TeXRender vendors its pinned third-party source checkouts as submodules and uses
-CMake `FetchContent` with `SOURCE_DIR` to add them when packages are not found,
+CMake `add_subdirectory` to add them when packages are not found,
 so the simplest way to consume it is to fetch the project the same way:
 
 ```cmake
@@ -233,9 +232,8 @@ texrender_copy_resources(my_app)
 Or, if you vendor the source, initialize the dependency submodules, then
 `add_subdirectory(path/to/TeXRender)` and link `texrender::texrender` the same
 way. Either path skips TeXRender's own examples and tests automatically when it
-is built as a subproject. GUI dependencies are not fetched from the network
-implicitly; install raylib/SDL2, initialize their submodules, or set
-`TEXRENDER_FETCH_GUI_DEPENDENCIES=ON` deliberately. You still drive raylib yourself
+is built as a subproject. GUI dependencies are not downloaded by TeXRender;
+install raylib/SDL2 or initialize their submodules. You still drive raylib yourself
 or provide your own SDL/custom surface — see [Usage](#usage).
 
 The repository name is `TeXRender`; package-manager IDs, headers, CMake package,
@@ -264,8 +262,8 @@ The installed package uses `find_dependency` for FreeType, tinyxml2 and, when
 installed with `TEXRENDER_BACKEND=raylib` or `TEXRENDER_BACKEND=sdl2`, the selected GUI
 dependency. Package export is enabled only when those dependencies were found
 with `find_package`; if FreeType, tinyxml2, or a GUI dependency is fetched from
-source through a submodule or network fallback, prefer `FetchContent` /
-`add_subdirectory` instead of installing that build tree.
+source through a submodule, prefer consuming TeXRender from source with
+`FetchContent` or `add_subdirectory` instead of installing that build tree.
 
 Starter metadata is included for package-manager workflows: [`vcpkg.json`](vcpkg.json)
 and [`conanfile.py`](conanfile.py). They are intended as project-local manifests

@@ -115,7 +115,7 @@ def main() -> int:
     ):
         require(path in gitmodules, f".gitmodules is missing {path}", failures)
 
-    for option in ("TEXRENDER_USE_SUBMODULE_DEPENDENCIES", "TEXRENDER_FETCH_DEPENDENCIES"):
+    for option in ("TEXRENDER_USE_SUBMODULE_DEPENDENCIES",):
         require(option in cmake, f"CMakeLists.txt is missing {option}", failures)
 
     for token in ("vcpkg_from_github", "SHA512", "TEXRENDER_MICROTEX_SOURCE_DIR", "TEXRENDER_VCPKG_SOURCE_DIR"):

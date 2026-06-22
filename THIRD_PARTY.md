@@ -3,7 +3,7 @@
 TeXRender (the integration code in this repository) is MIT-licensed — see
 [LICENSE](LICENSE). It builds on the following third-party projects. Source
 fallbacks are pinned as Git submodules under `third_party/` and are integrated at
-configure time through CMake `FetchContent` `SOURCE_DIR`. Their licenses live in
+configure time through CMake `add_subdirectory`. Their licenses live in
 their respective upstream repositories. **If you redistribute a binary built with TeXRender
 (together with the MicroTeX `res/` directory), you redistribute these too**, so
 keep their notices intact.

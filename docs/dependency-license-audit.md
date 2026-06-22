@@ -11,10 +11,10 @@ honest before publishing.
 | texrender integration code | Public C++ API, backends, examples, tests and CMake package | This repository | Yes | MIT, from [`LICENSE`](../LICENSE). |
 | MicroTeX core | LaTeX parsing, box layout, font/resource loading | Pinned Git submodule copied into the build tree before patching | Yes, compiled into `libmicrotex_core` | MIT upstream. Keep upstream notices when redistributing. |
 | MicroTeX `res/` tree | Runtime fonts, metrics, maps and parser resources | From the pinned MicroTeX submodule checkout | Yes, installed to `share/texrender/res` | Contains several font/resource licenses. Preserve files under `res/fonts/licences/` and per-language `LICENSE` files. |
-| FreeType | Glyph rasterisation from bundled TeX fonts | `find_package(Freetype)`, then pinned `third_party/freetype` submodule through `FetchContent` `SOURCE_DIR`, then optional network fallback | Not vendored as source in install archives; linked by builds | Dual FTL/GPLv2. Prefer FTL for permissive projects and keep attribution. |
-| tinyxml2 | MicroTeX XML resource parsing | `find_package(tinyxml2)`, then pinned `third_party/tinyxml2` submodule through `FetchContent` `SOURCE_DIR`, then optional network fallback | Not vendored as source in install archives; linked by builds | zlib license. |
-| raylib | Optional windowed GPU backend | `find_package(raylib)`, then pinned `third_party/raylib` submodule through `FetchContent` `SOURCE_DIR`, then opt-in network fallback | Only linked when building the raylib backend | zlib/libpng license. |
-| SDL2 | Optional windowed GPU backend | `find_package(SDL2)`, then pinned `third_party/sdl2` submodule through `FetchContent` `SOURCE_DIR`, then opt-in network fallback | Only linked when building the SDL2 backend | zlib license. |
+| FreeType | Glyph rasterisation from bundled TeX fonts | `find_package(Freetype)`, then pinned `third_party/freetype` submodule through `add_subdirectory` | Not vendored as source in install archives; linked by builds | Dual FTL/GPLv2. Prefer FTL for permissive projects and keep attribution. |
+| tinyxml2 | MicroTeX XML resource parsing | `find_package(tinyxml2)`, then pinned `third_party/tinyxml2` submodule through `add_subdirectory` | Not vendored as source in install archives; linked by builds | zlib license. |
+| raylib | Optional windowed GPU backend | `find_package(raylib)`, then pinned `third_party/raylib` submodule through `add_subdirectory` | Only linked when building the raylib backend | zlib/libpng license. |
+| SDL2 | Optional windowed GPU backend | `find_package(SDL2)`, then pinned `third_party/sdl2` submodule through `add_subdirectory` | Only linked when building the SDL2 backend | zlib license. |
 
 ## Release Checks
 

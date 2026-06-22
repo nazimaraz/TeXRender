@@ -1,27 +1,31 @@
-include(FetchContent)
-function(texrender_declare_source_dependency name upper submodule_dir marker)
-    if (TEXRENDER_USE_SUBMODULE_DEPENDENCIES AND EXISTS "${submodule_dir}/${marker}")
-        FetchContent_Declare(${name} SOURCE_DIR "${submodule_dir}")
-        set(TEXRENDER_${upper}_SOURCE_KIND "submodule" CACHE INTERNAL "How texrender resolved ${name}" FORCE)
-    else ()
+function(texrender_add_submodule_dependency name upper submodule_dir marker)
+    if (NOT TEXRENDER_USE_SUBMODULE_DEPENDENCIES)
+        message(FATAL_ERROR
+                "${name} was not found as an installed package. "
+                "Install ${name}, or enable TEXRENDER_USE_SUBMODULE_DEPENDENCIES.")
+    endif ()
+
+    if (NOT EXISTS "${submodule_dir}/${marker}")
         message(FATAL_ERROR
                 "${name} was not found as an installed package and no usable source checkout exists at "
-                "'${submodule_dir}'. Initialize submodules with `git submodule update --init --recursive`, ")
+                "'${submodule_dir}'. Initialize submodules with `git submodule update --init --recursive`.")
     endif ()
+
+    add_subdirectory("${submodule_dir}" "${CMAKE_CURRENT_BINARY_DIR}/_deps/${name}-build" EXCLUDE_FROM_ALL)
+    set(TEXRENDER_${upper}_SOURCE_KIND "submodule" CACHE INTERNAL "How texrender resolved ${name}" FORCE)
 endfunction()
 
 set(TEXRENDER_TINYXML2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched tinyxml2 instead of using find_package" FORCE)
 set(TEXRENDER_TINYXML2_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved tinyxml2" FORCE)
 find_package(tinyxml2 CONFIG QUIET)
 if (NOT tinyxml2_FOUND)
-    texrender_declare_source_dependency(
+    set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+    texrender_add_submodule_dependency(
             tinyxml2
             TINYXML2
             "${CMAKE_CURRENT_LIST_DIR}/../third_party/tinyxml2"
             CMakeLists.txt
     )
-    set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
-    FetchContent_MakeAvailable(tinyxml2)
     set(TEXRENDER_TINYXML2_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched tinyxml2 instead of using find_package" FORCE)
 endif ()
 
@@ -29,14 +33,13 @@ set(TEXRENDER_FREETYPE_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched F
 set(TEXRENDER_FREETYPE_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved FreeType" FORCE)
 find_package(Freetype QUIET)
 if (NOT Freetype_FOUND)
-    texrender_declare_source_dependency(
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+    texrender_add_submodule_dependency(
             freetype
             FREETYPE
             "${CMAKE_CURRENT_LIST_DIR}/../third_party/freetype"
             CMakeLists.txt
     )
-    set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
-    FetchContent_MakeAvailable(freetype)
     unset(CMAKE_POLICY_VERSION_MINIMUM)
     if (NOT TARGET Freetype::Freetype)
         add_library(Freetype::Freetype ALIAS freetype)
@@ -55,12 +58,6 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
             set(PLATFORM "Web" CACHE STRING "raylib platform" FORCE)
         endif ()
 
-        texrender_declare_source_dependency(
-                raylib
-                RAYLIB
-                "${CMAKE_CURRENT_LIST_DIR}/../third_party/raylib"
-                CMakeLists.txt
-        )
         set(_texrender_had_raylib_build_examples_cache FALSE)
         if (DEFINED CACHE{BUILD_EXAMPLES})
             set(_texrender_had_raylib_build_examples_cache TRUE)
@@ -92,7 +89,12 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
         set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
         set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON)
-        FetchContent_MakeAvailable(raylib)
+        texrender_add_submodule_dependency(
+                raylib
+                RAYLIB
+                "${CMAKE_CURRENT_LIST_DIR}/../third_party/raylib"
+                CMakeLists.txt
+        )
         if (_texrender_had_cmake_warn_deprecated_cache)
             if (_texrender_saved_cmake_warn_deprecated_type STREQUAL "UNINITIALIZED")
                 set(_texrender_saved_cmake_warn_deprecated_type BOOL)
@@ -154,16 +156,15 @@ if (TEXRENDER_BACKEND STREQUAL "sdl2")
     endif ()
 
     if (NOT TARGET SDL2::SDL2 AND NOT TARGET SDL2::SDL2-static AND NOT TARGET SDL2)
-        texrender_declare_source_dependency(
+        set(SDL_TEST OFF CACHE BOOL "" FORCE)
+        set(SDL_TESTS OFF CACHE BOOL "" FORCE)
+        set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
+        texrender_add_submodule_dependency(
                 SDL2
                 SDL2
                 "${CMAKE_CURRENT_LIST_DIR}/../third_party/sdl2"
                 CMakeLists.txt
         )
-        set(SDL_TEST OFF CACHE BOOL "" FORCE)
-        set(SDL_TESTS OFF CACHE BOOL "" FORCE)
-        set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
-        FetchContent_MakeAvailable(SDL2)
         set(TEXRENDER_SDL2_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched SDL2 instead of using find_package" FORCE)
     endif ()
 
@@ -183,10 +184,6 @@ if (TEXRENDER_BACKEND STREQUAL "sdl2")
 endif ()
 
 set(_texrender_default_microtex_source_dir "${CMAKE_CURRENT_LIST_DIR}/../third_party/microtex")
-if (DEFINED FETCHCONTENT_SOURCE_DIR_MICROTEX AND NOT FETCHCONTENT_SOURCE_DIR_MICROTEX STREQUAL "")
-    set(_texrender_default_microtex_source_dir "${FETCHCONTENT_SOURCE_DIR_MICROTEX}")
-endif ()
-
 set(TEXRENDER_MICROTEX_SOURCE_DIR "${_texrender_default_microtex_source_dir}" CACHE PATH
         "Path to the MicroTeX source checkout used by texrender")
 set(_texrender_microtex_source_dir "${TEXRENDER_MICROTEX_SOURCE_DIR}")
