@@ -1,4 +1,4 @@
-#include "render/ft_font.hpp"
+#include "ft_font.hpp"
 #include <algorithm>
 #include <array>
 #include <cctype>
@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 #include <utility>
-#include "render/glyph_cache.hpp"
+#include "glyph_cache.hpp"
 
 using namespace TeXRender;
 

@@ -1,8 +1,8 @@
-#include "render/graphics2d_adapter.hpp"
+#include "graphics2d_adapter.hpp"
 #include <algorithm>
 #include <cmath>
-#include "render/ft_font.hpp"
-#include "render/raster_size.hpp"
+#include "ft_font.hpp"
+#include "raster_size.hpp"
 
 using namespace TeXRender;
 

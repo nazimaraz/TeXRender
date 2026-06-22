@@ -1,5 +1,5 @@
 #include "texrender/render_handle.hpp"
-#include "core/document_state.hpp"
+#include "document_state.hpp"
 #include "render.h"
 #include "render/graphics2d_adapter.hpp"
 #include <mutex>

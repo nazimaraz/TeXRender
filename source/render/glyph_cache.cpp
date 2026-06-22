@@ -1,4 +1,4 @@
-#include "render/glyph_cache.hpp"
+#include "glyph_cache.hpp"
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -10,7 +10,7 @@
 #include <string_view>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "render/raster_size.hpp"
+#include "raster_size.hpp"
 #include "texrender/cache_options.hpp"
 
 using namespace TeXRender;

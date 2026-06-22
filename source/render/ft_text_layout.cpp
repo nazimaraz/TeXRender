@@ -1,7 +1,7 @@
-#include "render/ft_text_layout.hpp"
+#include "ft_text_layout.hpp"
 #include "core/document_state.hpp"
-#include "render/glyph_cache.hpp"
-#include "render/raster_size.hpp"
+#include "glyph_cache.hpp"
+#include "raster_size.hpp"
 #include <mutex>
 #include <stdexcept>
 

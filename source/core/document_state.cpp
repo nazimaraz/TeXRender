@@ -1,4 +1,4 @@
-#include "core/document_state.hpp"
+#include "document_state.hpp"
 #include <cstddef>
 #include <mutex>
 #include "latex.h"
