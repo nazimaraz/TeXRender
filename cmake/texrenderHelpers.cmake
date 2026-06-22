@@ -8,7 +8,6 @@ function(texrender_copy_resources target)
     endif()
 
     set(resource_output "$<TARGET_FILE_DIR:${target}>/texrender-res/${target}")
-
     target_compile_definitions("${target}" PRIVATE "TEXRENDER_RES_DIR=\"${resource_output}\"")
     add_custom_command(TARGET "${target}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

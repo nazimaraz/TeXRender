@@ -78,44 +78,12 @@ add_library(texrender
         ${TEXRENDER_BACKEND_SOURCES}
 )
 add_library(texrender::texrender ALIAS texrender)
-target_compile_definitions(texrender PRIVATE TEXRENDER_BUILDING_LIBRARY)
-get_target_property(_texrender_library_type texrender TYPE)
-if (_texrender_library_type STREQUAL "SHARED_LIBRARY" OR _texrender_library_type STREQUAL "MODULE_LIBRARY")
-    target_compile_definitions(texrender INTERFACE TEXRENDER_SHARED)
-endif ()
-
-unset(_texrender_library_type)
-set_target_properties(texrender PROPERTIES
-        CXX_VISIBILITY_PRESET hidden
-        VERSION "${PROJECT_VERSION}"
-        SOVERSION "${PROJECT_VERSION_MAJOR}"
-        VISIBILITY_INLINES_HIDDEN YES
-)
-target_include_directories(texrender PUBLIC
-        $<BUILD_INTERFACE:${TEXRENDER_GENERATED_INCLUDE_DIR}>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-)
-target_include_directories(texrender PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/source
-)
-target_include_directories(texrender SYSTEM PRIVATE
-        ${MICROTEX_SRC}
-)
-target_link_libraries(texrender
-        PRIVATE microtex_core Freetype::Freetype
-)
-if (NOT BUILD_SHARED_LIBS)
-    target_link_libraries(microtex_core PRIVATE texrender)
-endif ()
-
-if (TEXRENDER_BACKEND_LIBS)
-    target_link_libraries(texrender PUBLIC
-            "$<BUILD_INTERFACE:${TEXRENDER_BACKEND_LIBS}>"
-            "$<INSTALL_INTERFACE:${TEXRENDER_BACKEND_LIBS}>"
-    )
-endif ()
-
+target_include_directories(texrender PUBLIC include)
+target_include_directories(texrender PRIVATE source)
+target_include_directories(texrender SYSTEM PRIVATE ${MICROTEX_SRC})
+target_link_libraries(texrender PRIVATE microtex_core Freetype::Freetype)
+target_link_libraries(microtex_core PRIVATE texrender)
+target_link_libraries(texrender PUBLIC ${TEXRENDER_BACKEND_LIBS})
 target_compile_features(texrender PRIVATE cxx_std_17)
 target_compile_features(texrender INTERFACE cxx_std_17)
 if (TEXRENDER_BUILD_EXAMPLES)
@@ -136,9 +104,7 @@ if (TEXRENDER_BUILD_EXAMPLES)
                 texrender_raylib_overlay examples/raylib_overlay.cpp
         )
     elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
-        list(APPEND TEXRENDER_EXAMPLES
-                texrender_sdl2_minimal examples/sdl2_minimal.cpp
-        )
+        list(APPEND TEXRENDER_EXAMPLES texrender_sdl2_minimal examples/sdl2_minimal.cpp)
     endif ()
 
     while (TEXRENDER_EXAMPLES)
