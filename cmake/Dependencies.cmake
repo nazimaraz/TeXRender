@@ -1,5 +1,4 @@
 include(FetchContent)
-
 function(texrender_declare_source_dependency name upper submodule_dir marker)
     if (TEXRENDER_USE_SUBMODULE_DEPENDENCIES AND EXISTS "${submodule_dir}/${marker}")
         FetchContent_Declare(${name} SOURCE_DIR "${submodule_dir}")
@@ -11,7 +10,6 @@ function(texrender_declare_source_dependency name upper submodule_dir marker)
     endif ()
 endfunction()
 
-# --- tinyxml2 --------------------------------------------------------------
 set(TEXRENDER_TINYXML2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched tinyxml2 instead of using find_package" FORCE)
 set(TEXRENDER_TINYXML2_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved tinyxml2" FORCE)
 find_package(tinyxml2 CONFIG QUIET)
@@ -27,7 +25,6 @@ if (NOT tinyxml2_FOUND)
     set(TEXRENDER_TINYXML2_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched tinyxml2 instead of using find_package" FORCE)
 endif ()
 
-# --- FreeType --------------------------------------------------------------
 set(TEXRENDER_FREETYPE_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched FreeType instead of using find_package" FORCE)
 set(TEXRENDER_FREETYPE_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved FreeType" FORCE)
 find_package(Freetype QUIET)
@@ -38,19 +35,16 @@ if (NOT Freetype_FOUND)
             "${CMAKE_CURRENT_LIST_DIR}/../third_party/freetype"
             CMakeLists.txt
     )
-    # FreeType 2.13's cmake_minimum_required(3.0) is below CMake 4's floor;
-    # this lets it configure under modern CMake without patching its sources.
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
     FetchContent_MakeAvailable(freetype)
     unset(CMAKE_POLICY_VERSION_MINIMUM)
-    # Normalise to the imported-target name used throughout this project.
     if (NOT TARGET Freetype::Freetype)
         add_library(Freetype::Freetype ALIAS freetype)
     endif ()
+
     set(TEXRENDER_FREETYPE_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched FreeType instead of using find_package" FORCE)
 endif ()
 
-# --- raylib (only when its backend is selected) ----------------------------
 set(TEXRENDER_RAYLIB_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched raylib instead of using find_package" FORCE)
 set(TEXRENDER_RAYLIB_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved raylib" FORCE)
 if (TEXRENDER_BACKEND STREQUAL "raylib")
@@ -60,6 +54,7 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
             # raylib's own platform switch: build its HTML5/WebGL backend.
             set(PLATFORM "Web" CACHE STRING "raylib platform" FORCE)
         endif ()
+
         texrender_declare_source_dependency(
                 raylib
                 RAYLIB
@@ -73,11 +68,13 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
             get_property(_texrender_saved_build_examples_type CACHE BUILD_EXAMPLES PROPERTY TYPE)
             get_property(_texrender_saved_build_examples_help CACHE BUILD_EXAMPLES PROPERTY HELPSTRING)
         endif ()
+
         set(_texrender_had_cmake_warn_deprecated FALSE)
         if (DEFINED CMAKE_WARN_DEPRECATED)
             set(_texrender_had_cmake_warn_deprecated TRUE)
             set(_texrender_saved_cmake_warn_deprecated "${CMAKE_WARN_DEPRECATED}")
         endif ()
+
         set(_texrender_had_cmake_warn_deprecated_cache FALSE)
         if (DEFINED CACHE{CMAKE_WARN_DEPRECATED})
             set(_texrender_had_cmake_warn_deprecated_cache TRUE)
@@ -85,11 +82,13 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
             get_property(_texrender_saved_cmake_warn_deprecated_type CACHE CMAKE_WARN_DEPRECATED PROPERTY TYPE)
             get_property(_texrender_saved_cmake_warn_deprecated_help CACHE CMAKE_WARN_DEPRECATED PROPERTY HELPSTRING)
         endif ()
+
         set(_texrender_had_cmake_suppress_developer_warnings FALSE)
         if (DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
             set(_texrender_had_cmake_suppress_developer_warnings TRUE)
             set(_texrender_saved_cmake_suppress_developer_warnings "${CMAKE_SUPPRESS_DEVELOPER_WARNINGS}")
         endif ()
+
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
         set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
         set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON)
@@ -98,30 +97,36 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
             if (_texrender_saved_cmake_warn_deprecated_type STREQUAL "UNINITIALIZED")
                 set(_texrender_saved_cmake_warn_deprecated_type BOOL)
             endif ()
+
             set(CMAKE_WARN_DEPRECATED "${_texrender_saved_cmake_warn_deprecated_cache}" CACHE
                     "${_texrender_saved_cmake_warn_deprecated_type}" "${_texrender_saved_cmake_warn_deprecated_help}" FORCE)
         else ()
             unset(CMAKE_WARN_DEPRECATED CACHE)
         endif ()
+
         if (_texrender_had_cmake_warn_deprecated)
             set(CMAKE_WARN_DEPRECATED "${_texrender_saved_cmake_warn_deprecated}")
         else ()
             unset(CMAKE_WARN_DEPRECATED)
         endif ()
+
         if (_texrender_had_cmake_suppress_developer_warnings)
             set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS "${_texrender_saved_cmake_suppress_developer_warnings}")
         else ()
             unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
         endif ()
+
         if (_texrender_had_raylib_build_examples_cache)
             if (_texrender_saved_build_examples_type STREQUAL "UNINITIALIZED")
                 set(_texrender_saved_build_examples_type BOOL)
             endif ()
+
             set(BUILD_EXAMPLES "${_texrender_saved_build_examples}" CACHE "${_texrender_saved_build_examples_type}"
                     "${_texrender_saved_build_examples_help}" FORCE)
         else ()
             unset(BUILD_EXAMPLES CACHE)
         endif ()
+
         unset(_texrender_had_raylib_build_examples_cache)
         unset(_texrender_saved_build_examples)
         unset(_texrender_saved_build_examples_type)
@@ -138,7 +143,6 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
     endif ()
 endif ()
 
-# --- SDL2 (only when its backend is selected) ------------------------------
 set(TEXRENDER_SDL2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched SDL2 instead of using find_package" FORCE)
 set(TEXRENDER_SDL2_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved SDL2" FORCE)
 set(TEXRENDER_SDL2_TARGET "" CACHE INTERNAL "SDL2 target used by texrender" FORCE)
@@ -178,13 +182,11 @@ if (TEXRENDER_BACKEND STREQUAL "sdl2")
     endif ()
 endif ()
 
-# --- MicroTeX (submodule source; we build the core ourselves) --------------
 set(_texrender_default_microtex_source_dir "${CMAKE_CURRENT_LIST_DIR}/../third_party/microtex")
 if (DEFINED FETCHCONTENT_SOURCE_DIR_MICROTEX AND NOT FETCHCONTENT_SOURCE_DIR_MICROTEX STREQUAL "")
-    # Compatibility for existing package-manager smoke tests that already pass
-    # a prepared MicroTeX checkout using CMake's FetchContent override name.
     set(_texrender_default_microtex_source_dir "${FETCHCONTENT_SOURCE_DIR_MICROTEX}")
 endif ()
+
 set(TEXRENDER_MICROTEX_SOURCE_DIR "${_texrender_default_microtex_source_dir}" CACHE PATH
         "Path to the MicroTeX source checkout used by texrender")
 set(_texrender_microtex_source_dir "${TEXRENDER_MICROTEX_SOURCE_DIR}")
@@ -192,6 +194,7 @@ if (NOT IS_ABSOLUTE "${_texrender_microtex_source_dir}")
     get_filename_component(_texrender_microtex_source_dir "${_texrender_microtex_source_dir}" ABSOLUTE
             BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 endif ()
+
 if (NOT EXISTS "${_texrender_microtex_source_dir}/src/latex.cpp"
         OR NOT EXISTS "${_texrender_microtex_source_dir}/res/.clatexmath-res_root")
     message(FATAL_ERROR
@@ -200,8 +203,6 @@ if (NOT EXISTS "${_texrender_microtex_source_dir}/src/latex.cpp"
             "or configure with -DTEXRENDER_MICROTEX_SOURCE_DIR=/path/to/MicroTeX.")
 endif ()
 
-# Keep the submodule checkout pristine: local safety patches below are applied
-# only to this build-tree copy.
 set(_texrender_microtex_build_source_dir "${CMAKE_CURRENT_BINARY_DIR}/_deps/microtex-src")
 file(REMOVE_RECURSE "${_texrender_microtex_build_source_dir}")
 file(MAKE_DIRECTORY "${_texrender_microtex_build_source_dir}")
@@ -215,11 +216,6 @@ set(MICROTEX_RES_DIR "${_texrender_microtex_build_source_dir}/res" CACHE INTERNA
 unset(_texrender_default_microtex_source_dir)
 unset(_texrender_microtex_source_dir)
 unset(_texrender_microtex_build_source_dir)
-
-# MicroTeX's IndexedArray binary search initializes the high bound to `_rows`
-# instead of the last valid row. Misses can read one row past static font tables
-# under ASan (for example accent next-larger lookups). Patch the fetched source
-# in the build tree before compiling the pinned core.
 set(_texrender_microtex_indexed_arr "${MICROTEX_SRC}/utils/indexed_arr.h")
 file(READ "${_texrender_microtex_indexed_arr}" _texrender_microtex_indexed_arr_text)
 set(_texrender_microtex_indexed_arr_before "int     l = 0, h = _rows;")
@@ -234,16 +230,11 @@ if (_texrender_microtex_indexed_arr_text MATCHES "int     l = 0, h = _rows;")
 elseif (NOT _texrender_microtex_indexed_arr_text MATCHES "int     l = 0, h = static_cast<int>\\(_rows\\) - 1;")
     message(FATAL_ERROR "MicroTeX IndexedArray patch did not match ${_texrender_microtex_indexed_arr}")
 endif ()
+
 unset(_texrender_microtex_indexed_arr)
 unset(_texrender_microtex_indexed_arr_text)
 unset(_texrender_microtex_indexed_arr_before)
 unset(_texrender_microtex_indexed_arr_after)
-
-# MicroTeX can parse an accent command with no base atom, then attach a script
-# to the accent. AccentedAtom::createBox handles that null base with an empty
-# box, but ScriptsAtom's accent special case dereferences the same null base.
-# Patch that missed path so malformed input becomes a renderable empty accent
-# instead of a layout-time null dereference under fuzzing.
 set(_texrender_microtex_atom_basic "${MICROTEX_SRC}/atom/atom_basic.cpp")
 file(READ "${_texrender_microtex_atom_basic}" _texrender_microtex_atom_basic_text)
 set(_texrender_microtex_atom_basic_before "    auto box = acc->_base->createBox(*(env.crampStyle()));")
@@ -262,14 +253,11 @@ if (_texrender_microtex_atom_basic_text MATCHES "auto box = acc->_base->createBo
 elseif (NOT _texrender_microtex_atom_basic_text MATCHES "acc->_base == nullptr[ \n\r\t]+\\?[ \n\r\t]+sptrOf<StrutBox>\\(0\\.f, 0\\.f, 0\\.f, 0\\.f\\)")
     message(FATAL_ERROR "MicroTeX ScriptsAtom accent patch did not match ${_texrender_microtex_atom_basic}")
 endif ()
+
 unset(_texrender_microtex_atom_basic)
 unset(_texrender_microtex_atom_basic_text)
 unset(_texrender_microtex_atom_basic_before)
 unset(_texrender_microtex_atom_basic_after)
-
-# The parser can also produce a MathAtom wrapper with no base for malformed
-# inline-math delimiters. Other MicroTeX atoms already render null content as
-# an empty strut, so keep MathAtom consistent with that behavior.
 set(_texrender_microtex_atom_basic "${MICROTEX_SRC}/atom/atom_basic.cpp")
 file(READ "${_texrender_microtex_atom_basic}" _texrender_microtex_atom_basic_text)
 set(_texrender_microtex_atom_basic_before "  auto box = _base->createBox(e);")
@@ -288,14 +276,11 @@ if (_texrender_microtex_atom_basic_text MATCHES "auto box = _base->createBox\\(e
 elseif (NOT _texrender_microtex_atom_basic_text MATCHES "_base == nullptr[ \n\r\t]+\\?[ \n\r\t]+sptrOf<StrutBox>\\(0\\.f, 0\\.f, 0\\.f, 0\\.f\\)[ \n\r\t]+:[ \n\r\t]+_base->createBox\\(e\\)")
     message(FATAL_ERROR "MicroTeX MathAtom null-base patch did not match ${_texrender_microtex_atom_basic}")
 endif ()
+
 unset(_texrender_microtex_atom_basic)
 unset(_texrender_microtex_atom_basic_text)
 unset(_texrender_microtex_atom_basic_before)
 unset(_texrender_microtex_atom_basic_after)
-
-# Malformed \T / rotate macros can construct RotateAtom with no base. Avoid
-# dereferencing that base in the constructors and render absent content as an
-# empty strut, matching other null-tolerant atom wrappers.
 set(_texrender_microtex_atom_impl "${MICROTEX_SRC}/atom/atom_impl.cpp")
 file(READ "${_texrender_microtex_atom_impl}" _texrender_microtex_atom_impl_text)
 set(_texrender_microtex_atom_impl_before [[  _type = base->_type;
@@ -311,6 +296,7 @@ if (_texrender_microtex_atom_impl_text MATCHES "_type = base->_type;")
 elseif (NOT _texrender_microtex_atom_impl_text MATCHES "_type = base == nullptr \\? AtomType::ordinary : base->_type;")
     message(FATAL_ERROR "MicroTeX RotateAtom constructor patch did not match ${_texrender_microtex_atom_impl}")
 endif ()
+
 set(_texrender_microtex_atom_impl_before "_base->createBox(env)")
 set(_texrender_microtex_atom_impl_after "(_base == nullptr ? sptrOf<StrutBox>(0.f, 0.f, 0.f, 0.f) : _base->createBox(env))")
 if (_texrender_microtex_atom_impl_text MATCHES "_base->createBox\\(env\\), _angle")
@@ -323,14 +309,11 @@ if (_texrender_microtex_atom_impl_text MATCHES "_base->createBox\\(env\\), _angl
 elseif (NOT _texrender_microtex_atom_impl_text MATCHES "_base == nullptr \\? sptrOf<StrutBox>\\(0\\.f, 0\\.f, 0\\.f, 0\\.f\\) : _base->createBox\\(env\\)")
     message(FATAL_ERROR "MicroTeX RotateAtom createBox patch did not match ${_texrender_microtex_atom_impl}")
 endif ()
+
 unset(_texrender_microtex_atom_impl)
 unset(_texrender_microtex_atom_impl_text)
 unset(_texrender_microtex_atom_impl_before)
 unset(_texrender_microtex_atom_impl_after)
-
-# Malformed accent/limit commands can produce UnderOverAtom with no base. The
-# layout path already has an empty-strut fallback later on, so guard the earlier
-# type and limits reads that happen before that fallback is reached.
 set(_texrender_microtex_atom_basic_h "${MICROTEX_SRC}/atom/atom_basic.h")
 file(READ "${_texrender_microtex_atom_basic_h}" _texrender_microtex_atom_basic_h_text)
 set(_texrender_microtex_atom_basic_h_before [[  AtomType leftType() const override {
@@ -361,7 +344,6 @@ unset(_texrender_microtex_atom_basic_h)
 unset(_texrender_microtex_atom_basic_h_text)
 unset(_texrender_microtex_atom_basic_h_before)
 unset(_texrender_microtex_atom_basic_h_after)
-
 set(_texrender_microtex_atom_basic "${MICROTEX_SRC}/atom/atom_basic.cpp")
 file(READ "${_texrender_microtex_atom_basic}" _texrender_microtex_atom_basic_text)
 set(_texrender_microtex_atom_basic_before [[  if (
@@ -387,10 +369,6 @@ unset(_texrender_microtex_atom_basic)
 unset(_texrender_microtex_atom_basic_text)
 unset(_texrender_microtex_atom_basic_before)
 unset(_texrender_microtex_atom_basic_after)
-
-# Malformed cedilla accents can leave CedillaAtom without a base. BoldAtom,
-# immediately above it in MicroTeX, already uses an empty strut for this case;
-# keep CedillaAtom consistent.
 set(_texrender_microtex_atom_impl_h "${MICROTEX_SRC}/atom/atom_impl.h")
 file(READ "${_texrender_microtex_atom_impl_h}" _texrender_microtex_atom_impl_h_text)
 set(_texrender_microtex_atom_impl_h_before "    auto b = _base->createBox(env);")
@@ -409,11 +387,6 @@ unset(_texrender_microtex_atom_impl_h)
 unset(_texrender_microtex_atom_impl_h_text)
 unset(_texrender_microtex_atom_impl_h_before)
 unset(_texrender_microtex_atom_impl_h_after)
-
-# Several inline wrapper atoms in MicroTeX share the same direct base layout
-# assumption. Fuzzing malformed commands repeatedly reaches these wrappers with
-# null bases, so patch the remaining common forms to render absent content as an
-# empty strut.
 set(_texrender_microtex_atom_impl_h "${MICROTEX_SRC}/atom/atom_impl.h")
 file(READ "${_texrender_microtex_atom_impl_h}" _texrender_microtex_atom_impl_h_text)
 set(_texrender_microtex_atom_impl_h_original "${_texrender_microtex_atom_impl_h_text}")
@@ -439,9 +412,6 @@ unset(_texrender_microtex_atom_impl_h_original)
 unset(_texrender_microtex_atom_impl_h_var)
 unset(_texrender_microtex_atom_impl_h_before)
 unset(_texrender_microtex_atom_impl_h_after)
-
-# Authoritative core source list (mirrors MicroTeX's own target_sources, minus
-# every src/platform/** backend -- we provide Graphics2D/Font/TextLayout).
 set(MICROTEX_CORE_SOURCES
         atom/atom_basic.cpp atom/atom_char.cpp atom/atom_impl.cpp atom/atom_matrix.cpp
         atom/atom_row.cpp atom/atom_space.cpp atom/colors_def.cpp atom/unit_conversion.cpp
@@ -469,33 +439,8 @@ set(MICROTEX_CORE_SOURCES
         latex.cpp render.cpp
 )
 list(TRANSFORM MICROTEX_CORE_SOURCES PREPEND "${MICROTEX_SRC}/")
-
 add_library(microtex_core STATIC ${MICROTEX_CORE_SOURCES})
 add_library(microtex::core ALIAS microtex_core)
-
 target_include_directories(microtex_core SYSTEM PRIVATE "${MICROTEX_SRC}")
-# Pin MicroTeX's own sources to C++17 (its legacy code predates C++23 removals);
-# the PUBLIC feature still raises consumers to at least 17.
 target_compile_features(microtex_core PUBLIC cxx_std_17)
-set_target_properties(microtex_core PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
-set_target_properties(microtex_core PROPERTIES
-        POSITION_INDEPENDENT_CODE ON
-        CXX_VISIBILITY_PRESET hidden
-        VISIBILITY_INLINES_HIDDEN YES
-)
-
-# tinyxml2 exports either an imported target or a bare `tinyxml2` target.
-if (TARGET tinyxml2::tinyxml2)
-    target_link_libraries(microtex_core PRIVATE tinyxml2::tinyxml2)
-else ()
-    target_link_libraries(microtex_core PRIVATE tinyxml2)
-endif ()
-
-# No BUILD_GTK/BUILD_QT/... so no platform graphic_*.cpp compiles.
-# No HAVE_LOG and no GRAPHICS_DEBUG so rendering stays clean and quiet.
-# MicroTeX's source has accumulated warnings; keep them out of our face.
-if (MSVC)
-    target_compile_options(microtex_core PRIVATE /w)
-else ()
-    target_compile_options(microtex_core PRIVATE -w)
-endif ()
+target_link_libraries(microtex_core PRIVATE tinyxml2::tinyxml2)
