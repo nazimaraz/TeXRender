@@ -11,11 +11,6 @@ option(TEXRENDER_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(TEXRENDER_USE_SUBMODULE_DEPENDENCIES "Use third_party dependency submodules before network FetchContent fallbacks" ON)
 option(TEXRENDER_FETCH_DEPENDENCIES "Allow network FetchContent fallback when required dependency packages and submodules are missing" ON)
 option(TEXRENDER_FETCH_GUI_DEPENDENCIES "Allow network FetchContent fallback when selected GUI dependency packages and submodules are missing" OFF)
-if (EMSCRIPTEN)
-    add_compile_options(-fwasm-exceptions)
-    add_link_options(-fwasm-exceptions)
-endif ()
-
 include(cmake/Dependencies.cmake)
 set(TEXRENDER_RESOURCE_DIR "${MICROTEX_RES_DIR}" CACHE INTERNAL "texrender MicroTeX resource directory")
 include(cmake/texrenderHelpers.cmake)
@@ -124,30 +119,26 @@ endif ()
 target_compile_features(texrender PRIVATE cxx_std_17)
 target_compile_features(texrender INTERFACE cxx_std_17)
 if (TEXRENDER_BUILD_EXAMPLES)
-    if (EMSCRIPTEN AND TEXRENDER_BACKEND STREQUAL "raylib")
-        set(TEXRENDER_EXAMPLES texrender_live examples/live_edit.cpp)
-    else ()
-        set(TEXRENDER_EXAMPLES
-                texrender_offscreen examples/offscreen.cpp
-                texrender_headless_batch examples/headless_batch.cpp
-                texrender_untrusted_worker examples/untrusted_worker.cpp
-                texrender_svg_export examples/svg_export.cpp
-                texrender_custom_surface examples/custom_surface.cpp
-                texrender_formula_label_widget examples/formula_label_widget.cpp
+    set(TEXRENDER_EXAMPLES
+            texrender_offscreen examples/offscreen.cpp
+            texrender_headless_batch examples/headless_batch.cpp
+            texrender_untrusted_worker examples/untrusted_worker.cpp
+            texrender_svg_export examples/svg_export.cpp
+            texrender_custom_surface examples/custom_surface.cpp
+            texrender_formula_label_widget examples/formula_label_widget.cpp
+    )
+    if (TEXRENDER_BACKEND STREQUAL "raylib")
+        list(APPEND TEXRENDER_EXAMPLES
+                texrender_minimal examples/minimal.cpp
+                texrender_demo examples/demo_main.cpp
+                texrender_realtime_values examples/realtime_values.cpp
+                texrender_live examples/live_edit.cpp
+                texrender_raylib_overlay examples/raylib_overlay.cpp
         )
-        if (TEXRENDER_BACKEND STREQUAL "raylib")
-            list(APPEND TEXRENDER_EXAMPLES
-                    texrender_minimal examples/minimal.cpp
-                    texrender_demo examples/demo_main.cpp
-                    texrender_realtime_values examples/realtime_values.cpp
-                    texrender_live examples/live_edit.cpp
-                    texrender_raylib_overlay examples/raylib_overlay.cpp
-            )
-        elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
-            list(APPEND TEXRENDER_EXAMPLES
-                    texrender_sdl2_minimal examples/sdl2_minimal.cpp
-            )
-        endif ()
+    elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
+        list(APPEND TEXRENDER_EXAMPLES
+                texrender_sdl2_minimal examples/sdl2_minimal.cpp
+        )
     endif ()
 
     while (TEXRENDER_EXAMPLES)
@@ -155,27 +146,6 @@ if (TEXRENDER_BUILD_EXAMPLES)
         add_executable(${example_name} ${example_source})
         target_link_libraries(${example_name} PRIVATE texrender::texrender ${TEXRENDER_BACKEND_EXECUTABLE_LIBS})
         set_target_properties(${example_name} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
-        if (EMSCRIPTEN)
-            target_compile_definitions(${example_name} PRIVATE TEXRENDER_RES_DIR="/res")
-        else ()
-            texrender_copy_resources(${example_name})
-        endif ()
+        texrender_copy_resources(${example_name})
     endwhile ()
-
-    if (TARGET texrender_live AND EMSCRIPTEN)
-        set_target_properties(texrender_live PROPERTIES
-                OUTPUT_NAME index
-                SUFFIX ".html"
-                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/site"
-        )
-        target_link_options(texrender_live PRIVATE
-                "-sUSE_GLFW=3"                # raylib's web backend speaks GLFW
-                "-sALLOW_MEMORY_GROWTH=1"
-                "-sSTACK_SIZE=2097152"        # MicroTeX's parser recurses; default 64K is tight
-                "SHELL:--preload-file ${MICROTEX_RES_DIR}@/res"
-                "SHELL:--shell-file ${CMAKE_CURRENT_SOURCE_DIR}/examples/web/shell.html"
-        )
-        set_property(TARGET texrender_live APPEND PROPERTY
-                LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/examples/web/shell.html")
-    endif ()
 endif ()
