@@ -8,7 +8,7 @@ AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
 BreakTemplateDeclarations: Yes
-BraceWrapping:
+BraceWrapping: 
   AfterCaseLabel: true
   AfterClass: true
   AfterControlStatement: true
@@ -23,7 +23,7 @@ BraceWrapping:
   BeforeLambdaBody: false
   BeforeWhile: false
   SplitEmptyFunction: false
-  SplitEmptyRecord: true
+  SplitEmptyRecord: false
   SplitEmptyNamespace: true
 BreakBeforeBraces: Custom
 AllowShortFunctionsOnASingleLine: None
@@ -40,7 +40,7 @@ ColumnLimit: 132
 PackConstructorInitializers: Never
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-IncludeCategories:
+IncludeCategories: 
   - Regex: '^<.*'
     Priority: 1
   - Regex: '^".*'
@@ -51,10 +51,12 @@ IncludeIsMainRegex: '([-_](test|unittest))?$'
 SortIncludes: false
 IndentCaseLabels: true
 IndentWidth: 4
+IndentWrappedFunctionNames: true
 InsertNewlineAtEOF: true
 MacroBlockBegin: ''
 MacroBlockEnd: ''
 MaxEmptyLinesToKeep: 2
+SeparateDefinitionBlocks: Always
 NamespaceIndentation: All
 QualifierAlignment: Custom
 QualifierOrder: [static, constexpr, const, type]

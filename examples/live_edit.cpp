@@ -92,6 +92,7 @@ namespace
         std::optional<TeXRender::RenderHandle> formula{};
         bool valid{true};
     };
+
     std::optional<EditorState> g_editor;
 
     void apply_environment_overrides(EditorState& ed)

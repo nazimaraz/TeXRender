@@ -67,6 +67,7 @@ namespace
         int glyphs = 0;
         std::size_t covered_pixels = 0;
     };
+
     //! [custom-surface]
 } // namespace
 

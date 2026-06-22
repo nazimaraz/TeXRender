@@ -92,9 +92,11 @@ namespace TeXRender
     {
     public:
         RenderResult() = default;
+
         explicit RenderResult(RenderHandle handle)
             : handle_{std::move(handle)}
         {}
+
         explicit RenderResult(RenderError error)
             : error_{std::move(error)}
         {}
@@ -104,50 +106,61 @@ namespace TeXRender
         {
             return handle_.has_value();
         }
+
         [[nodiscard]] explicit operator bool() const noexcept
         {
             return has_value();
         }
+
         /// Access the render handle after checking `has_value()`/operator bool.
         [[nodiscard]] RenderHandle& operator*() &
         {
             return value();
         }
+
         [[nodiscard]] const RenderHandle& operator*() const&
         {
             return value();
         }
+
         [[nodiscard]] RenderHandle&& operator*() &&
         {
             return std::move(*this).value();
         }
+
         /// Access members of the render handle after checking success.
         [[nodiscard]] RenderHandle* operator->()
         {
             return &value();
         }
+
         [[nodiscard]] const RenderHandle* operator->() const
         {
             return &value();
         }
+
         /// Return the render handle, throwing `std::bad_optional_access` if empty.
         [[nodiscard]] RenderHandle& value() &
         {
             return handle_.value();
         }
+
         [[nodiscard]] const RenderHandle& value() const&
         {
             return handle_.value();
         }
+
         [[nodiscard]] RenderHandle&& value() &&
         {
             return std::move(handle_).value();
         }
+
         /// Return the diagnostic payload. Meaningful when `has_value()` is false.
         [[nodiscard]] const RenderError& error() const noexcept
         {
             return error_;
         }
+
         /// Convert into the compact optional form, discarding any error details.
         [[nodiscard]] std::optional<RenderHandle> into_optional() && noexcept
         {

@@ -1,67 +1,51 @@
----
 Checks: >
-  -*,
-  bugprone-*,
-  cert-*,
   clang-analyzer-*,
-  concurrency-*,
+  bugprone-*,
   cppcoreguidelines-*,
-  misc-*,
-  modernize-*,
   performance-*,
   portability-*,
+  cert-*,
+  misc-*,
+  modernize-*,
   readability-*,
-  -bugprone-easily-swappable-parameters,
-  -cppcoreguidelines-avoid-do-while,
-  -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-non-private-member-variables-in-classes,
-  -cppcoreguidelines-pro-bounds-constant-array-index,
-  -cppcoreguidelines-pro-type-vararg,
-  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-  -cppcoreguidelines-avoid-non-const-global-variables,
-  -concurrency-mt-unsafe,
-  -bugprone-suspicious-stringview-data-usage,
-  -misc-include-cleaner,
-  -misc-non-private-member-variables-in-classes,
-  -misc-use-anonymous-namespace,
-  -misc-use-internal-linkage,
-  -modernize-raw-string-literal,
-  -modernize-use-nodiscard,
-  -modernize-use-trailing-return-type,
-  -readability-identifier-length,
-  -readability-magic-numbers,
-  -readability-math-missing-parentheses,
-  -readability-named-parameter,
-  -readability-redundant-access-specifiers,
-  -readability-uppercase-literal-suffix,
+  -fuchsia-*,
+  -hicpp-*,
+  -google-*,
+  -*-use-trailing-return-type,
   -*-braces-around-statements,
-  -*-qualified-auto,
-  -*-use-designated-initializers,
+  -*-avoid-do-while,
+  -*-pro-type-reinterpret-cast,
+  -*-implicit-widening-of-multiplication-result,
+  -*-pro-bounds-pointer-arithmetic,
+  -*-math-missing-parentheses,
   -*-implicit-bool-conversion,
-  -portability-avoid-pragma-once,
-  -cppcoreguidelines-avoid-const-or-ref-data-members,
-  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access
-
-WarningsAsErrors: ''
-HeaderFilterRegex: '^.*/source/.*'
-FormatStyle: file
+  -*-pro-type-const-cast,
+  -*-qualified-auto,
+  -*-avoid-c-arrays,
+  -*-uppercase-literal-suffix,
+  -*-pro-bounds-array-to-pointer-decay,
+  -*-owning-memory,
+  -*-easily-swappable-parameters,
+  -*-identifier-length,
+  -*-function-cognitive-complexity,
+  -*-avoid-const-or-ref-data-members,
+  -*-use-designated-initializers,
+  -*-avoid-magic-numbers,
+  -*-magic-numbers,
+  -*-throwing-static-initialization,
+  -*-pro-type-union-access,
+  -*-err58-cpp,
+  -*-include-cleaner,
+  -*-avoid-pragma-once,
+  -*-non-private-member-variables-in-classes
 
 CheckOptions:
-  readability-function-cognitive-complexity.Threshold: '30'
-  readability-identifier-naming.ClassCase: CamelCase
-  readability-identifier-naming.StructCase: CamelCase
-  readability-identifier-naming.EnumCase: CamelCase
-  readability-identifier-naming.NamespaceCase: CamelCase
-  readability-identifier-naming.NamespaceIgnoredRegexp: '^(detail|raylib|math|std|tex)$'
-  readability-identifier-naming.StructIgnoredRegexp: 'FT_.*'
-  readability-identifier-naming.FunctionCase: lower_case
-  readability-identifier-naming.MethodCase: lower_case
-  readability-identifier-naming.VariableCase: lower_case
-  readability-identifier-naming.ParameterCase: lower_case
-  readability-identifier-naming.PrivateMemberSuffix: '_'
-  readability-identifier-naming.ProtectedMemberSuffix: '_'
-  readability-identifier-naming.MemberCase: lower_case
-  readability-identifier-naming.ConstexprVariableCase: lower_case
-  readability-identifier-naming.GlobalConstantCase: lower_case
-  readability-identifier-naming.StaticConstantCase: lower_case
-  readability-identifier-naming.TemplateParameterCase: CamelCase
+  misc-include-cleaner.UnusedIncludes: true
+  misc-include-cleaner.MissingIncludes: true
+  misc-include-cleaner.IgnoreHeaders: 'Windows\.h|gtest/.*|gmock/.*'
+  modernize-deprecated-headers.CheckHeaderFile: true
+  cppcoreguidelines-pro-type-member-init.IgnorePOD: false
+  cppcoreguidelines-pro-type-member-init.IgnoreArrays: false
+
+HeaderFilterRegex: '.*'
+FormatStyle: file
