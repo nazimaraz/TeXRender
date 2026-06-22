@@ -15,8 +15,6 @@ function(texrender_add_submodule_dependency name upper submodule_dir marker)
     set(TEXRENDER_${upper}_SOURCE_KIND "submodule" CACHE INTERNAL "How texrender resolved ${name}" FORCE)
 endfunction()
 
-set(TEXRENDER_TINYXML2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched tinyxml2 instead of using find_package" FORCE)
-set(TEXRENDER_TINYXML2_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved tinyxml2" FORCE)
 find_package(tinyxml2 CONFIG QUIET)
 if (NOT tinyxml2_FOUND)
     set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
@@ -26,11 +24,8 @@ if (NOT tinyxml2_FOUND)
             "${CMAKE_CURRENT_LIST_DIR}/../third_party/tinyxml2"
             CMakeLists.txt
     )
-    set(TEXRENDER_TINYXML2_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched tinyxml2 instead of using find_package" FORCE)
 endif ()
 
-set(TEXRENDER_FREETYPE_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched FreeType instead of using find_package" FORCE)
-set(TEXRENDER_FREETYPE_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved FreeType" FORCE)
 find_package(Freetype QUIET)
 if (NOT Freetype_FOUND)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
@@ -41,112 +36,22 @@ if (NOT Freetype_FOUND)
             CMakeLists.txt
     )
     unset(CMAKE_POLICY_VERSION_MINIMUM)
-    if (NOT TARGET Freetype::Freetype)
-        add_library(Freetype::Freetype ALIAS freetype)
-    endif ()
-
-    set(TEXRENDER_FREETYPE_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched FreeType instead of using find_package" FORCE)
+    add_library(Freetype::Freetype ALIAS freetype)
 endif ()
 
-set(TEXRENDER_RAYLIB_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched raylib instead of using find_package" FORCE)
-set(TEXRENDER_RAYLIB_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved raylib" FORCE)
 if (TEXRENDER_BACKEND STREQUAL "raylib")
     find_package(raylib QUIET)
     if (NOT raylib_FOUND)
-        if (EMSCRIPTEN)
-            # raylib's own platform switch: build its HTML5/WebGL backend.
-            set(PLATFORM "Web" CACHE STRING "raylib platform" FORCE)
-        endif ()
-
-        set(_texrender_had_raylib_build_examples_cache FALSE)
-        if (DEFINED CACHE{BUILD_EXAMPLES})
-            set(_texrender_had_raylib_build_examples_cache TRUE)
-            get_property(_texrender_saved_build_examples CACHE BUILD_EXAMPLES PROPERTY VALUE)
-            get_property(_texrender_saved_build_examples_type CACHE BUILD_EXAMPLES PROPERTY TYPE)
-            get_property(_texrender_saved_build_examples_help CACHE BUILD_EXAMPLES PROPERTY HELPSTRING)
-        endif ()
-
-        set(_texrender_had_cmake_warn_deprecated FALSE)
-        if (DEFINED CMAKE_WARN_DEPRECATED)
-            set(_texrender_had_cmake_warn_deprecated TRUE)
-            set(_texrender_saved_cmake_warn_deprecated "${CMAKE_WARN_DEPRECATED}")
-        endif ()
-
-        set(_texrender_had_cmake_warn_deprecated_cache FALSE)
-        if (DEFINED CACHE{CMAKE_WARN_DEPRECATED})
-            set(_texrender_had_cmake_warn_deprecated_cache TRUE)
-            get_property(_texrender_saved_cmake_warn_deprecated_cache CACHE CMAKE_WARN_DEPRECATED PROPERTY VALUE)
-            get_property(_texrender_saved_cmake_warn_deprecated_type CACHE CMAKE_WARN_DEPRECATED PROPERTY TYPE)
-            get_property(_texrender_saved_cmake_warn_deprecated_help CACHE CMAKE_WARN_DEPRECATED PROPERTY HELPSTRING)
-        endif ()
-
-        set(_texrender_had_cmake_suppress_developer_warnings FALSE)
-        if (DEFINED CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
-            set(_texrender_had_cmake_suppress_developer_warnings TRUE)
-            set(_texrender_saved_cmake_suppress_developer_warnings "${CMAKE_SUPPRESS_DEVELOPER_WARNINGS}")
-        endif ()
-
         set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-        set(CMAKE_WARN_DEPRECATED OFF CACHE BOOL "" FORCE)
-        set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS ON)
         texrender_add_submodule_dependency(
                 raylib
                 RAYLIB
                 "${CMAKE_CURRENT_LIST_DIR}/../third_party/raylib"
                 CMakeLists.txt
         )
-        if (_texrender_had_cmake_warn_deprecated_cache)
-            if (_texrender_saved_cmake_warn_deprecated_type STREQUAL "UNINITIALIZED")
-                set(_texrender_saved_cmake_warn_deprecated_type BOOL)
-            endif ()
-
-            set(CMAKE_WARN_DEPRECATED "${_texrender_saved_cmake_warn_deprecated_cache}" CACHE
-                    "${_texrender_saved_cmake_warn_deprecated_type}" "${_texrender_saved_cmake_warn_deprecated_help}" FORCE)
-        else ()
-            unset(CMAKE_WARN_DEPRECATED CACHE)
-        endif ()
-
-        if (_texrender_had_cmake_warn_deprecated)
-            set(CMAKE_WARN_DEPRECATED "${_texrender_saved_cmake_warn_deprecated}")
-        else ()
-            unset(CMAKE_WARN_DEPRECATED)
-        endif ()
-
-        if (_texrender_had_cmake_suppress_developer_warnings)
-            set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS "${_texrender_saved_cmake_suppress_developer_warnings}")
-        else ()
-            unset(CMAKE_SUPPRESS_DEVELOPER_WARNINGS)
-        endif ()
-
-        if (_texrender_had_raylib_build_examples_cache)
-            if (_texrender_saved_build_examples_type STREQUAL "UNINITIALIZED")
-                set(_texrender_saved_build_examples_type BOOL)
-            endif ()
-
-            set(BUILD_EXAMPLES "${_texrender_saved_build_examples}" CACHE "${_texrender_saved_build_examples_type}"
-                    "${_texrender_saved_build_examples_help}" FORCE)
-        else ()
-            unset(BUILD_EXAMPLES CACHE)
-        endif ()
-
-        unset(_texrender_had_raylib_build_examples_cache)
-        unset(_texrender_saved_build_examples)
-        unset(_texrender_saved_build_examples_type)
-        unset(_texrender_saved_build_examples_help)
-        unset(_texrender_had_cmake_warn_deprecated)
-        unset(_texrender_saved_cmake_warn_deprecated)
-        unset(_texrender_had_cmake_warn_deprecated_cache)
-        unset(_texrender_saved_cmake_warn_deprecated_cache)
-        unset(_texrender_saved_cmake_warn_deprecated_type)
-        unset(_texrender_saved_cmake_warn_deprecated_help)
-        unset(_texrender_had_cmake_suppress_developer_warnings)
-        unset(_texrender_saved_cmake_suppress_developer_warnings)
-        set(TEXRENDER_RAYLIB_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched raylib instead of using find_package" FORCE)
     endif ()
 endif ()
 
-set(TEXRENDER_SDL2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched SDL2 instead of using find_package" FORCE)
-set(TEXRENDER_SDL2_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved SDL2" FORCE)
 set(TEXRENDER_SDL2_TARGET "" CACHE INTERNAL "SDL2 target used by texrender" FORCE)
 set(TEXRENDER_SDL2MAIN_TARGET "" CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
 if (TEXRENDER_BACKEND STREQUAL "sdl2")
@@ -165,7 +70,6 @@ if (TEXRENDER_BACKEND STREQUAL "sdl2")
                 "${CMAKE_CURRENT_LIST_DIR}/../third_party/sdl2"
                 CMakeLists.txt
         )
-        set(TEXRENDER_SDL2_FETCHED TRUE CACHE INTERNAL "Whether texrender fetched SDL2 instead of using find_package" FORCE)
     endif ()
 
     if (TARGET SDL2::SDL2)
