@@ -39,15 +39,23 @@ Useful presets:
 - `TEXRENDER_BUILD_BENCHMARKS`: build benchmark executables. Defaults on only when
   this project is top-level.
 - `TEXRENDER_BUILD_FUZZERS`: build libFuzzer targets. Defaults off.
+- `TEXRENDER_USE_SUBMODULE_DEPENDENCIES`: use pinned `third_party/` dependency
+  submodules when `find_package()` does not provide a dependency. Defaults on.
+- `TEXRENDER_FETCH_DEPENDENCIES`: allow network `FetchContent` fallback for
+  required dependencies when neither `find_package()` nor a submodule checkout is
+  available. Defaults on.
 - `TEXRENDER_FETCH_GUI_DEPENDENCIES`: when `TEXRENDER_BACKEND=raylib` or `sdl2`,
-  fetch the missing GUI dependency from source after `find_package()` fails.
-  Defaults off so dependency consumers fail fast instead of unexpectedly
-  downloading/building a GUI toolkit during configure.
+  allow network `FetchContent` fallback after `find_package()` and local
+  submodule lookup both fail. Defaults off so dependency consumers fail fast
+  instead of unexpectedly downloading/building a GUI toolkit during configure.
+  For strictly offline source builds, initialize submodules and configure with
+  both `TEXRENDER_FETCH_DEPENDENCIES=OFF` and
+  `TEXRENDER_FETCH_GUI_DEPENDENCIES=OFF`.
 - `TEXRENDER_MICROTEX_SOURCE_DIR`: path to the pinned MicroTeX checkout. Defaults
   to the `third_party/microtex` submodule and is copied into the build tree
   before TeXRender applies its local safety patches.
 - `TEXRENDER_INSTALL`: generate install/export support. Defaults off when FreeType,
-  tinyxml2, raylib, or SDL2 is fetched from source because the installed package
+  tinyxml2, raylib, or SDL2 is built from source because the installed package
   relies on `find_dependency()` to recreate those targets for consumers.
 - `TEXRENDER_WARNINGS_AS_ERRORS`: treat first-party warnings as errors. This never
   applies to MicroTeX or other third-party sources.

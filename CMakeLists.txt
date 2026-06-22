@@ -7,7 +7,9 @@ option(TEXRENDER_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TO
 option(TEXRENDER_BUILD_TESTS "Build the unit tests" ${PROJECT_IS_TOP_LEVEL})
 option(TEXRENDER_BUILD_BENCHMARKS "Build the benchmark executables" ${PROJECT_IS_TOP_LEVEL})
 option(TEXRENDER_BUILD_FUZZERS "Build libFuzzer targets (Clang/libFuzzer)" OFF)
-option(TEXRENDER_FETCH_GUI_DEPENDENCIES "Fetch raylib/SDL2 from source when a GUI backend dependency is not installed" OFF)
+option(TEXRENDER_USE_SUBMODULE_DEPENDENCIES "Use third_party dependency submodules before network FetchContent fallbacks" ON)
+option(TEXRENDER_FETCH_DEPENDENCIES "Allow network FetchContent fallback when required dependency packages and submodules are missing" ON)
+option(TEXRENDER_FETCH_GUI_DEPENDENCIES "Allow network FetchContent fallback when selected GUI dependency packages and submodules are missing" OFF)
 option(TEXRENDER_WARNINGS_AS_ERRORS "Treat warnings in texrender first-party targets as errors" OFF)
 if (BUILD_SHARED_LIBS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
@@ -401,28 +403,28 @@ endif ()
 option(TEXRENDER_INSTALL "Generate install and find_package(texrender) support" ${_texrender_install_default})
 if (TEXRENDER_INSTALL AND TEXRENDER_TINYXML2_FETCHED)
     message(FATAL_ERROR
-            "TEXRENDER_INSTALL=ON with a FetchContent-built tinyxml2 cannot be exported cleanly. "
+            "TEXRENDER_INSTALL=ON with a source-built tinyxml2 cannot be exported cleanly. "
             "Install tinyxml2 so find_package(tinyxml2 CONFIG) succeeds, or consume texrender with "
             "FetchContent/add_subdirectory instead of installing it.")
 endif ()
 
 if (TEXRENDER_INSTALL AND TEXRENDER_FREETYPE_FETCHED)
     message(FATAL_ERROR
-            "TEXRENDER_INSTALL=ON with a FetchContent-built FreeType cannot be exported cleanly. "
+            "TEXRENDER_INSTALL=ON with a source-built FreeType cannot be exported cleanly. "
             "Install FreeType so find_package(Freetype) succeeds, or consume texrender with "
             "FetchContent/add_subdirectory instead of installing it.")
 endif ()
 
 if (TEXRENDER_INSTALL AND TEXRENDER_RAYLIB_FETCHED)
     message(FATAL_ERROR
-            "TEXRENDER_INSTALL=ON with a FetchContent-built raylib cannot be exported cleanly. "
+            "TEXRENDER_INSTALL=ON with a source-built raylib cannot be exported cleanly. "
             "Install raylib so find_package(raylib) succeeds, or install with -DTEXRENDER_BACKEND=headless "
             "or -DTEXRENDER_BACKEND=svg.")
 endif ()
 
 if (TEXRENDER_INSTALL AND TEXRENDER_SDL2_FETCHED)
     message(FATAL_ERROR
-            "TEXRENDER_INSTALL=ON with a FetchContent-built SDL2 cannot be exported cleanly. "
+            "TEXRENDER_INSTALL=ON with a source-built SDL2 cannot be exported cleanly. "
             "Install SDL2 so find_package(SDL2) succeeds, or install with -DTEXRENDER_BACKEND=headless "
             "or -DTEXRENDER_BACKEND=svg.")
 endif ()

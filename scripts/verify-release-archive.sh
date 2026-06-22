@@ -76,8 +76,13 @@ for path in \
     docs/release-checklist.md \
     include/texrender/texrender.hpp \
     packaging/vcpkg-overlay/ports/texrender/vcpkg.json \
+    third_party/freetype/CMakeLists.txt \
+    third_party/freetype/subprojects/dlg/LICENSE \
     third_party/microtex/res/.clatexmath-res_root \
     third_party/microtex/src/latex.cpp \
+    third_party/raylib/CMakeLists.txt \
+    third_party/sdl2/CMakeLists.txt \
+    third_party/tinyxml2/CMakeLists.txt \
     scripts/verify-fresh-clone.sh \
     scripts/verify-installed-headers.sh \
     scripts/verify-release-archive.sh \

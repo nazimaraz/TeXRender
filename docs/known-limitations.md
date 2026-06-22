@@ -50,9 +50,9 @@ high-risk workloads.
 
 Installed CMake package export works when FreeType, tinyxml2, and any selected
 GUI backend were found with `find_package()`. If one of those dependencies is
-pulled in through `FetchContent`, `TEXRENDER_INSTALL` defaults off because the
-installed package would otherwise reference build-tree targets that consumers
-cannot recreate reliably.
+built from a submodule or network `FetchContent` fallback, `TEXRENDER_INSTALL`
+defaults off because the installed package would otherwise reference build-tree
+targets that consumers cannot recreate reliably.
 
 ## Headless Rendering Fidelity
 

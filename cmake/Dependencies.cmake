@@ -9,21 +9,51 @@
 #  * raylib    -> optional GUI backend.
 #  * SDL2      -> optional GUI backend proving the surface seam beyond raylib.
 #
-# Required package dependencies are resolved with find_package first, falling
-# back to FetchContent. GUI backend dependencies fail fast unless explicitly
-# allowed by TEXRENDER_FETCH_GUI_DEPENDENCIES.
+# Required package dependencies are resolved with find_package first, then
+# third_party submodules through FetchContent SOURCE_DIR, then optional network
+# FetchContent fallbacks. GUI backend dependencies fail fast unless a local
+# submodule is present or network fallback is explicitly allowed.
 # ===========================================================================
 include(FetchContent)
 
+function(texrender_declare_source_dependency name upper submodule_dir marker git_repository git_tag allow_network_var)
+    set(_override_var "FETCHCONTENT_SOURCE_DIR_${upper}")
+    if(DEFINED ${_override_var} AND NOT "${${_override_var}}" STREQUAL "")
+        FetchContent_Declare(${name} SOURCE_DIR "${${_override_var}}")
+        set(TEXRENDER_${upper}_SOURCE_KIND "override" CACHE INTERNAL "How texrender resolved ${name}" FORCE)
+    elseif(TEXRENDER_USE_SUBMODULE_DEPENDENCIES AND EXISTS "${submodule_dir}/${marker}")
+        FetchContent_Declare(${name} SOURCE_DIR "${submodule_dir}")
+        set(TEXRENDER_${upper}_SOURCE_KIND "submodule" CACHE INTERNAL "How texrender resolved ${name}" FORCE)
+    elseif(${allow_network_var})
+        FetchContent_Declare(
+            ${name}
+            GIT_REPOSITORY "${git_repository}"
+            GIT_TAG "${git_tag}"
+            GIT_SHALLOW TRUE
+        )
+        set(TEXRENDER_${upper}_SOURCE_KIND "network" CACHE INTERNAL "How texrender resolved ${name}" FORCE)
+    else()
+        message(FATAL_ERROR
+            "${name} was not found as an installed package and no usable source checkout exists at "
+            "'${submodule_dir}'. Initialize submodules with `git submodule update --init --recursive`, "
+            "or enable -D${allow_network_var}=ON to allow a network FetchContent fallback.")
+    endif()
+    unset(_override_var)
+endfunction()
+
 # --- tinyxml2 --------------------------------------------------------------
 set(TEXRENDER_TINYXML2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched tinyxml2 instead of using find_package" FORCE)
+set(TEXRENDER_TINYXML2_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved tinyxml2" FORCE)
 find_package(tinyxml2 CONFIG QUIET)
 if(NOT tinyxml2_FOUND)
-    FetchContent_Declare(
+    texrender_declare_source_dependency(
         tinyxml2
-        GIT_REPOSITORY https://github.com/leethomason/tinyxml2.git
-        GIT_TAG 10.0.0
-        GIT_SHALLOW TRUE
+        TINYXML2
+        "${CMAKE_CURRENT_LIST_DIR}/../third_party/tinyxml2"
+        CMakeLists.txt
+        https://github.com/leethomason/tinyxml2.git
+        10.0.0
+        TEXRENDER_FETCH_DEPENDENCIES
     )
     set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(tinyxml2)
@@ -32,13 +62,17 @@ endif()
 
 # --- FreeType --------------------------------------------------------------
 set(TEXRENDER_FREETYPE_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched FreeType instead of using find_package" FORCE)
+set(TEXRENDER_FREETYPE_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved FreeType" FORCE)
 find_package(Freetype QUIET)
 if(NOT Freetype_FOUND)
-    FetchContent_Declare(
+    texrender_declare_source_dependency(
         freetype
-        GIT_REPOSITORY https://github.com/freetype/freetype.git
-        GIT_TAG VER-2-13-2
-        GIT_SHALLOW TRUE
+        FREETYPE
+        "${CMAKE_CURRENT_LIST_DIR}/../third_party/freetype"
+        CMakeLists.txt
+        https://github.com/freetype/freetype.git
+        VER-2-13-2
+        TEXRENDER_FETCH_DEPENDENCIES
     )
     # FreeType 2.13's cmake_minimum_required(3.0) is below CMake 4's floor;
     # this lets it configure under modern CMake without patching its sources.
@@ -54,24 +88,22 @@ endif()
 
 # --- raylib (only when its backend is selected) ----------------------------
 set(TEXRENDER_RAYLIB_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched raylib instead of using find_package" FORCE)
+set(TEXRENDER_RAYLIB_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved raylib" FORCE)
 if(TEXRENDER_BACKEND STREQUAL "raylib")
     find_package(raylib QUIET)
     if(NOT raylib_FOUND)
-        if(NOT TEXRENDER_FETCH_GUI_DEPENDENCIES)
-            message(FATAL_ERROR
-                "TEXRENDER_BACKEND=raylib requires raylib. Install raylib so find_package(raylib) succeeds, "
-                "or configure with -DTEXRENDER_FETCH_GUI_DEPENDENCIES=ON to let TeXRender fetch and build "
-                "raylib from source.")
-        endif()
         if(EMSCRIPTEN)
             # raylib's own platform switch: build its HTML5/WebGL backend.
             set(PLATFORM "Web" CACHE STRING "raylib platform" FORCE)
         endif()
-        FetchContent_Declare(
+        texrender_declare_source_dependency(
             raylib
-            GIT_REPOSITORY https://github.com/raysan5/raylib.git
-            GIT_TAG 5.5
-            GIT_SHALLOW TRUE
+            RAYLIB
+            "${CMAKE_CURRENT_LIST_DIR}/../third_party/raylib"
+            CMakeLists.txt
+            https://github.com/raysan5/raylib.git
+            5.5
+            TEXRENDER_FETCH_GUI_DEPENDENCIES
         )
         set(_texrender_had_raylib_build_examples_cache FALSE)
         if(DEFINED CACHE{BUILD_EXAMPLES})
@@ -147,6 +179,7 @@ endif()
 
 # --- SDL2 (only when its backend is selected) ------------------------------
 set(TEXRENDER_SDL2_FETCHED FALSE CACHE INTERNAL "Whether texrender fetched SDL2 instead of using find_package" FORCE)
+set(TEXRENDER_SDL2_SOURCE_KIND "package" CACHE INTERNAL "How texrender resolved SDL2" FORCE)
 set(TEXRENDER_SDL2_TARGET "" CACHE INTERNAL "SDL2 target used by texrender" FORCE)
 set(TEXRENDER_SDL2MAIN_TARGET "" CACHE INTERNAL "Optional SDL2main target used by SDL2 examples" FORCE)
 if(TEXRENDER_BACKEND STREQUAL "sdl2")
@@ -156,17 +189,14 @@ if(TEXRENDER_BACKEND STREQUAL "sdl2")
     endif()
 
     if(NOT TARGET SDL2::SDL2 AND NOT TARGET SDL2::SDL2-static AND NOT TARGET SDL2)
-        if(NOT TEXRENDER_FETCH_GUI_DEPENDENCIES)
-            message(FATAL_ERROR
-                "TEXRENDER_BACKEND=sdl2 requires SDL2. Install SDL2 so find_package(SDL2) succeeds, "
-                "or configure with -DTEXRENDER_FETCH_GUI_DEPENDENCIES=ON to let TeXRender fetch and build "
-                "SDL2 from source.")
-        endif()
-        FetchContent_Declare(
+        texrender_declare_source_dependency(
             SDL2
-            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-            GIT_TAG release-2.32.10
-            GIT_SHALLOW TRUE
+            SDL2
+            "${CMAKE_CURRENT_LIST_DIR}/../third_party/sdl2"
+            CMakeLists.txt
+            https://github.com/libsdl-org/SDL.git
+            release-2.32.10
+            TEXRENDER_FETCH_GUI_DEPENDENCIES
         )
         set(SDL_TEST OFF CACHE BOOL "" FORCE)
         set(SDL_TESTS OFF CACHE BOOL "" FORCE)

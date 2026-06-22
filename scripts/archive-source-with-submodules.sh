@@ -55,26 +55,43 @@ trap 'rm -rf "$TMP_DIR"' EXIT
 
 mkdir -p "$(dirname "$OUTPUT")"
 SUPER_TAR="${TMP_DIR}/source.tar"
-MICROTEX_TAR="${TMP_DIR}/microtex.tar"
 
 git -C "$ROOT_DIR" archive --format=tar --prefix="$PREFIX" "$SOURCE_REF" -o "$SUPER_TAR"
 
-microtex_tree_entry="$(git -C "$ROOT_DIR" ls-tree "$SOURCE_REF" third_party/microtex || true)"
-if [[ "$microtex_tree_entry" == 160000* ]]; then
-    microtex_sha="$(printf '%s\n' "$microtex_tree_entry" | awk '{print $3}')"
-    if [[ ! -e "$ROOT_DIR/third_party/microtex/.git" ]]; then
-        git -C "$ROOT_DIR" submodule update --init --recursive third_party/microtex
-    fi
-    if ! git -C "$ROOT_DIR/third_party/microtex" cat-file -e "${microtex_sha}^{commit}" 2>/dev/null; then
-        git -C "$ROOT_DIR/third_party/microtex" fetch origin "$microtex_sha"
-    fi
-    git -C "$ROOT_DIR/third_party/microtex" archive \
-        --format=tar \
-        --prefix="${PREFIX}third_party/microtex/" \
-        "$microtex_sha" \
-        -o "$MICROTEX_TAR"
-    tar -Af "$SUPER_TAR" "$MICROTEX_TAR"
-fi
+append_submodule_archives() {
+    local repo_dir="$1"
+    local tree_ref="$2"
+    local relative_prefix="$3"
+    local mode _type sha path submodule_path submodule_dir submodule_tar
+
+    while read -r mode _type sha path; do
+        if [[ "$mode" != "160000" ]]; then
+            continue
+        fi
+
+        submodule_path="${relative_prefix}${path}"
+        submodule_dir="${repo_dir}/${path}"
+
+        if [[ ! -e "$submodule_dir/.git" ]]; then
+            git -C "$repo_dir" submodule update --init --recursive "$path"
+        fi
+        if ! git -C "$submodule_dir" cat-file -e "${sha}^{commit}" 2>/dev/null; then
+            git -C "$submodule_dir" fetch origin "$sha"
+        fi
+
+        submodule_tar="${TMP_DIR}/submodule-${submodule_path//\//_}.tar"
+        git -C "$submodule_dir" archive \
+            --format=tar \
+            --prefix="${PREFIX}${submodule_path}/" \
+            "$sha" \
+            -o "$submodule_tar"
+        tar -Af "$SUPER_TAR" "$submodule_tar"
+
+        append_submodule_archives "$submodule_dir" "$sha" "${submodule_path}/"
+    done < <(git -C "$repo_dir" ls-tree -r "$tree_ref")
+}
+
+append_submodule_archives "$ROOT_DIR" "$SOURCE_REF" ""
 
 if [[ "$FORMAT" == "tar.gz" ]]; then
     gzip -n -c "$SUPER_TAR" > "$OUTPUT"

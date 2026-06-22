@@ -40,6 +40,7 @@ def main() -> int:
     failures: list[str] = []
 
     cmake = read("CMakeLists.txt")
+    gitmodules = read(".gitmodules")
     conan = read("conanfile.py")
     portfile = read("packaging/vcpkg-overlay/ports/texrender/portfile.cmake")
     manifest = load_json("vcpkg.json")
@@ -104,6 +105,18 @@ def main() -> int:
         require("sdl2" in features, f"{path} is missing sdl2 feature", failures)
 
     require("default-features" not in manifest, "vcpkg.json should default to the headless backend", failures)
+
+    for path in (
+        "third_party/microtex",
+        "third_party/tinyxml2",
+        "third_party/freetype",
+        "third_party/raylib",
+        "third_party/sdl2",
+    ):
+        require(path in gitmodules, f".gitmodules is missing {path}", failures)
+
+    for option in ("TEXRENDER_USE_SUBMODULE_DEPENDENCIES", "TEXRENDER_FETCH_DEPENDENCIES"):
+        require(option in cmake, f"CMakeLists.txt is missing {option}", failures)
 
     for token in ("vcpkg_from_github", "SHA512", "TEXRENDER_MICROTEX_SOURCE_DIR", "TEXRENDER_VCPKG_SOURCE_DIR"):
         require(token in portfile, f"vcpkg overlay portfile is missing {token}", failures)
