@@ -6,8 +6,8 @@ paths explicit.
 
 ## Which Asset Should I Use?
 
-Use the GitHub source archive or the tagged repository when you want
-`FetchContent` or `add_subdirectory`:
+Use the TeXRender release source archive or a recursive checkout of the tagged
+repository when you want `FetchContent` or `add_subdirectory`:
 
 ```cmake
 include(FetchContent)

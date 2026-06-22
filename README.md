@@ -112,7 +112,7 @@ community expectations live in [SUPPORT.md](SUPPORT.md) and
 ```
                  ┌──────────────────────────────────────────┐
    LaTeX string  │  LatexDocument  ──▶  MicroTeX core        │  parse + layout
-                 │   │   (owns surface) (FetchContent)        │
+                 │   │   (owns surface) (submodule)           │
                  │   └─▶ RenderHandle.draw(x, y)              │
                  │            │                               │
                  │  Graphics2DAdapter : tex::Graphics2D       │  transforms, color,
@@ -145,14 +145,16 @@ For public API and lifetime details, see [`docs/api.md`](docs/api.md).
 
 Requirements: a C++17 toolchain and CMake ≥ 3.21. TeXRender itself and its public
 headers compile as C++17, and `texrender::texrender` propagates only `cxx_std_17` to
-consumers. tinyxml2 and FreeType are resolved with `find_package`, falling back
-to `FetchContent`; raylib and SDL2 are resolved only when their backend is
+consumers. MicroTeX is pinned as a Git submodule under `third_party/microtex`;
+tinyxml2 and FreeType are resolved with `find_package`, falling back to
+`FetchContent`; raylib and SDL2 are resolved only when their backend is
 selected, and missing GUI dependencies fail fast unless
-`TEXRENDER_FETCH_GUI_DEPENDENCIES=ON` is set. MicroTeX's core is always fetched
-and compiled from source. On macOS `brew install freetype tinyxml2` makes the
+`TEXRENDER_FETCH_GUI_DEPENDENCIES=ON` is set. On macOS
+`brew install freetype tinyxml2` makes the
 default build instant; add `raylib` or `sdl2` when building those GUI backends.
 
 ```sh
+git submodule update --init --recursive
 cmake -S . -B build
 cmake --build build -j
 ./build/texrender_offscreen    # render to formula.png — no window needed
@@ -201,8 +203,9 @@ shared-library builds, SDL2 notes, and the `TEXRENDER_WARNINGS_AS_ERRORS` policy
 
 ### FetchContent / add_subdirectory
 
-TeXRender can build MicroTeX, FreeType and tinyxml2 via CMake `FetchContent`, so
-the simplest way to consume it is to fetch the project the same way:
+TeXRender vendors its pinned MicroTeX checkout as a submodule and can build
+FreeType and tinyxml2 via CMake `FetchContent` fallbacks, so the simplest way to
+consume it is to fetch the project the same way:
 
 ```cmake
 include(FetchContent)
@@ -226,10 +229,11 @@ target_link_libraries(my_app PRIVATE texrender::texrender)
 texrender_copy_resources(my_app)
 ```
 
-Or, if you vendor the source, `add_subdirectory(path/to/TeXRender)` and link
-`texrender::texrender` the same way. Either path skips TeXRender's own examples and tests
-automatically when it is built as a subproject. GUI dependencies are not fetched
-implicitly; install raylib/SDL2 for those backends or set
+Or, if you vendor the source, initialize the MicroTeX submodule, then
+`add_subdirectory(path/to/TeXRender)` and link `texrender::texrender` the same
+way. Either path skips TeXRender's own examples and tests automatically when it
+is built as a subproject. GUI dependencies are not fetched implicitly; install
+raylib/SDL2 for those backends or set
 `TEXRENDER_FETCH_GUI_DEPENDENCIES=ON` deliberately. You still drive raylib
 yourself or provide your own SDL/custom surface — see [Usage](#usage).
 

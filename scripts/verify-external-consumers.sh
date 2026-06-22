@@ -83,7 +83,7 @@ if [[ "$SOURCE_REF" == "HEAD" && "$ALLOW_DIRTY_ARCHIVE" != "1" ]]; then
 elif [[ "$SOURCE_REF" == "HEAD" ]]; then
     printf '\n==> warning: archiving HEAD while ignoring uncommitted working-tree changes\n'
 fi
-run git -C "$ROOT_DIR" archive --format=tar "$SOURCE_REF" -o "$SOURCE_ARCHIVE"
+run "$ROOT_DIR/scripts/archive-source-with-submodules.sh" --format tar --ref "$SOURCE_REF" --output "$SOURCE_ARCHIVE"
 run tar -xf "$SOURCE_ARCHIVE" -C "$SOURCE_DIR"
 
 write_fetch_consumer

@@ -51,6 +51,8 @@ jobs:
             deps: ""
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Install dependencies
         if: matrix.deps != ''
         shell: bash
@@ -104,6 +106,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:

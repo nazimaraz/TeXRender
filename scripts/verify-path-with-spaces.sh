@@ -24,7 +24,7 @@ fi
 rm -rf "$BUILD_ROOT"
 mkdir -p "$SOURCE_DIR"
 
-run git -C "$ROOT_DIR" archive --format=tar "$SOURCE_REF" -o "$SOURCE_ARCHIVE"
+run "$ROOT_DIR/scripts/archive-source-with-submodules.sh" --format tar --ref "$SOURCE_REF" --output "$SOURCE_ARCHIVE"
 run tar -xf "$SOURCE_ARCHIVE" -C "$SOURCE_DIR"
 
 run cmake -S "$SOURCE_DIR" -B "$BUILD_DIR" -G "$GENERATOR" \

@@ -43,6 +43,9 @@ Useful presets:
   fetch the missing GUI dependency from source after `find_package()` fails.
   Defaults off so dependency consumers fail fast instead of unexpectedly
   downloading/building a GUI toolkit during configure.
+- `TEXRENDER_MICROTEX_SOURCE_DIR`: path to the pinned MicroTeX checkout. Defaults
+  to the `third_party/microtex` submodule and is copied into the build tree
+  before TeXRender applies its local safety patches.
 - `TEXRENDER_INSTALL`: generate install/export support. Defaults off when FreeType,
   tinyxml2, raylib, or SDL2 is fetched from source because the installed package
   relies on `find_dependency()` to recreate those targets for consumers.

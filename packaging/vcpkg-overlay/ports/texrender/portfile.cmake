@@ -27,7 +27,7 @@ vcpkg_cmake_configure(
         -DTEXRENDER_BUILD_BENCHMARKS=OFF
         -DTEXRENDER_BUILD_FUZZERS=OFF
         -DTEXRENDER_INSTALL=ON
-        -DFETCHCONTENT_SOURCE_DIR_MICROTEX=${MICROTEX_SOURCE_PATH}
+        -DTEXRENDER_MICROTEX_SOURCE_DIR=${MICROTEX_SOURCE_PATH}
 )
 vcpkg_cmake_install()
 vcpkg_cmake_config_fixup(PACKAGE_NAME texrender CONFIG_PATH lib/cmake/texrender)

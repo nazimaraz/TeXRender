@@ -56,7 +56,11 @@ forbid_archive_pattern() {
 rm -rf "$BUILD_ROOT"
 mkdir -p "$ARCHIVE_DIR" "$EXTRACT_DIR"
 
-run git -C "$ROOT_DIR" archive --format=tar.gz --prefix="${PREFIX_NAME}/" "$SOURCE_REF" -o "$ARCHIVE"
+run "$ROOT_DIR/scripts/archive-source-with-submodules.sh" \
+    --format tar.gz \
+    --prefix "${PREFIX_NAME}/" \
+    --ref "$SOURCE_REF" \
+    --output "$ARCHIVE"
 run tar -tzf "$ARCHIVE"
 tar -tzf "$ARCHIVE" > "$MANIFEST"
 
@@ -72,6 +76,8 @@ for path in \
     docs/release-checklist.md \
     include/texrender/texrender.hpp \
     packaging/vcpkg-overlay/ports/texrender/vcpkg.json \
+    third_party/microtex/res/.clatexmath-res_root \
+    third_party/microtex/src/latex.cpp \
     scripts/verify-fresh-clone.sh \
     scripts/verify-installed-headers.sh \
     scripts/verify-release-archive.sh \

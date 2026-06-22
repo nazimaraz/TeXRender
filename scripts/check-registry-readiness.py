@@ -46,7 +46,7 @@ def main() -> int:
     overlay_manifest = load_json("packaging/vcpkg-overlay/ports/texrender/vcpkg.json")
 
     try:
-        cmake_version = match(r"project\s*\(\s*texrender\s+VERSION\s+([0-9]+(?:\.[0-9]+){2})", cmake, "CMake project version")
+        cmake_version = match(r"project\s*\(\s*(?i:texrender)\s+VERSION\s+([0-9]+(?:\.[0-9]+){2})", cmake, "CMake project version")
     except ValueError as error:
         failures.append(str(error))
         cmake_version = ""
@@ -75,7 +75,17 @@ def main() -> int:
     for backend in ('"headless"', '"raylib"', '"svg"', '"sdl2"'):
         require(backend in conan, f"conanfile.py backend options are missing {backend}", failures)
 
-    for exported in ('"CMakeLists.txt"', '"cmake/*"', '"include/*"', '"source/*"', '"tests/*"', '"docs/*"'):
+    for exported in (
+        '"CMakeLists.txt"',
+        '".gitmodules"',
+        '"cmake/*"',
+        '"include/*"',
+        '"source/*"',
+        '"third_party/microtex/src/*"',
+        '"third_party/microtex/res/*"',
+        '"tests/*"',
+        '"docs/*"',
+    ):
         require(exported in conan, f"conanfile.py exports_sources is missing {exported}", failures)
 
     for path, data in (("vcpkg.json", manifest), ("packaging/vcpkg-overlay/ports/texrender/vcpkg.json", overlay_manifest)):
@@ -95,7 +105,7 @@ def main() -> int:
 
     require("default-features" not in manifest, "vcpkg.json should default to the headless backend", failures)
 
-    for token in ("vcpkg_from_github", "SHA512", "FETCHCONTENT_SOURCE_DIR_MICROTEX", "TEXRENDER_VCPKG_SOURCE_DIR"):
+    for token in ("vcpkg_from_github", "SHA512", "TEXRENDER_MICROTEX_SOURCE_DIR", "TEXRENDER_VCPKG_SOURCE_DIR"):
         require(token in portfile, f"vcpkg overlay portfile is missing {token}", failures)
 
     for path in (

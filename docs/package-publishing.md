@@ -168,8 +168,9 @@ TEXRENDER_VCPKG_PACKAGE_SPEC='texrender[sdl2]' \
 
 The overlay port under `packaging/vcpkg-overlay/ports/texrender/` builds
 from the current checkout through vcpkg's portfile flow. It also fetches the
-pinned MicroTeX source archive in the portfile and passes it into CMake, so
-vcpkg can keep `FETCHCONTENT_FULLY_DISCONNECTED=ON` during configure. The port
+pinned MicroTeX source archive in the portfile and passes it into CMake as
+`TEXRENDER_MICROTEX_SOURCE_DIR`, so vcpkg can keep
+`FETCHCONTENT_FULLY_DISCONNECTED=ON` during configure. The port
 is intentionally local-development shaped: set `TEXRENDER_VCPKG_SOURCE_DIR` or run
 the script, which sets it for you. After install, the script also configures the
 package component smoke through the vcpkg toolchain so `texrender/config.hpp`,

@@ -93,8 +93,9 @@ fi
 rm -rf "$BUILD_ROOT"
 mkdir -p "$BUILD_ROOT"
 
-run git clone --no-local "$SOURCE_REPO" "$CLONE_DIR"
+run git clone --recurse-submodules --no-local "$SOURCE_REPO" "$CLONE_DIR"
 run git -C "$CLONE_DIR" checkout --detach "$SOURCE_REF"
+run git -C "$CLONE_DIR" submodule update --init --recursive
 run git -C "$CLONE_DIR" status --short
 if [[ -n "$(git -C "$CLONE_DIR" status --porcelain)" ]]; then
     printf 'fresh clone is unexpectedly dirty after checkout\n' >&2

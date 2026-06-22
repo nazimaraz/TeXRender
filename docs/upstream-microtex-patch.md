@@ -1,8 +1,9 @@
 # Upstream MicroTeX Patch Note
 
-TeXRender carries configure-time patches against the pinned MicroTeX checkout.
-They are applied in [`cmake/Dependencies.cmake`](../cmake/Dependencies.cmake)
-before MicroTeX is compiled.
+TeXRender carries configure-time patches against the pinned MicroTeX submodule.
+[`cmake/Dependencies.cmake`](../cmake/Dependencies.cmake) copies that checkout
+into the build tree, applies the patches to the copy, and then compiles
+MicroTeX.
 
 ## IndexedArray Bounds
 

@@ -1,16 +1,17 @@
 # ===========================================================================
 # Dependencies for TeXRender
 #
-#  * MicroTeX  -> source-only fetch; we compile just its platform-agnostic
-#                 core into `microtex::core` and supply our own Graphics2D.
+#  * MicroTeX  -> submodule-backed source; we copy it into the build tree,
+#                 compile just its platform-agnostic core into `microtex::core`,
+#                 and supply our own Graphics2D.
 #  * tinyxml2  -> required by the MicroTeX core resource parsers.
 #  * FreeType  -> used by our backend-neutral glyph rasteriser.
 #  * raylib    -> optional GUI backend.
 #  * SDL2      -> optional GUI backend proving the surface seam beyond raylib.
 #
-# Required dependencies are resolved with find_package first, falling back to
-# FetchContent. GUI backend dependencies fail fast unless explicitly allowed by
-# TEXRENDER_FETCH_GUI_DEPENDENCIES.
+# Required package dependencies are resolved with find_package first, falling
+# back to FetchContent. GUI backend dependencies fail fast unless explicitly
+# allowed by TEXRENDER_FETCH_GUI_DEPENDENCIES.
 # ===========================================================================
 include(FetchContent)
 
@@ -189,21 +190,43 @@ if(TEXRENDER_BACKEND STREQUAL "sdl2")
     endif()
 endif()
 
-# --- MicroTeX (download only; we build the core ourselves) -----------------
-# SOURCE_SUBDIR points at a directory with no CMakeLists.txt, so MakeAvailable
-# fetches the sources without running MicroTeX's own CMake (which would drag in
-# Cairo/GTK on Unix). This is the supported replacement for the deprecated
-# single-argument FetchContent_Populate (CMP0169).
-FetchContent_Declare(
-    microtex
-    GIT_REPOSITORY https://github.com/NanoMichael/MicroTeX.git
-    GIT_TAG 0e3707f6dafebb121d98b53c64364d16fefe481d
-    SOURCE_SUBDIR do-not-run-microtex-cmake
-)
-FetchContent_MakeAvailable(microtex)
+# --- MicroTeX (submodule source; we build the core ourselves) --------------
+set(_texrender_default_microtex_source_dir "${CMAKE_CURRENT_LIST_DIR}/../third_party/microtex")
+if(DEFINED FETCHCONTENT_SOURCE_DIR_MICROTEX AND NOT FETCHCONTENT_SOURCE_DIR_MICROTEX STREQUAL "")
+    # Compatibility for existing package-manager smoke tests that already pass
+    # a prepared MicroTeX checkout using CMake's FetchContent override name.
+    set(_texrender_default_microtex_source_dir "${FETCHCONTENT_SOURCE_DIR_MICROTEX}")
+endif()
+set(TEXRENDER_MICROTEX_SOURCE_DIR "${_texrender_default_microtex_source_dir}" CACHE PATH
+    "Path to the MicroTeX source checkout used by texrender")
+set(_texrender_microtex_source_dir "${TEXRENDER_MICROTEX_SOURCE_DIR}")
+if(NOT IS_ABSOLUTE "${_texrender_microtex_source_dir}")
+    get_filename_component(_texrender_microtex_source_dir "${_texrender_microtex_source_dir}" ABSOLUTE
+        BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+if(NOT EXISTS "${_texrender_microtex_source_dir}/src/latex.cpp"
+   OR NOT EXISTS "${_texrender_microtex_source_dir}/res/.clatexmath-res_root")
+    message(FATAL_ERROR
+        "MicroTeX sources were not found at '${_texrender_microtex_source_dir}'. "
+        "Initialize the submodule with `git submodule update --init --recursive`, "
+        "or configure with -DTEXRENDER_MICROTEX_SOURCE_DIR=/path/to/MicroTeX.")
+endif()
 
-set(MICROTEX_SRC "${microtex_SOURCE_DIR}/src")
-set(MICROTEX_RES_DIR "${microtex_SOURCE_DIR}/res" CACHE INTERNAL "MicroTeX resource directory")
+# Keep the submodule checkout pristine: local safety patches below are applied
+# only to this build-tree copy.
+set(_texrender_microtex_build_source_dir "${CMAKE_CURRENT_BINARY_DIR}/_deps/microtex-src")
+file(REMOVE_RECURSE "${_texrender_microtex_build_source_dir}")
+file(MAKE_DIRECTORY "${_texrender_microtex_build_source_dir}")
+file(COPY
+    "${_texrender_microtex_source_dir}/src"
+    "${_texrender_microtex_source_dir}/res"
+    DESTINATION "${_texrender_microtex_build_source_dir}"
+)
+set(MICROTEX_SRC "${_texrender_microtex_build_source_dir}/src")
+set(MICROTEX_RES_DIR "${_texrender_microtex_build_source_dir}/res" CACHE INTERNAL "MicroTeX resource directory")
+unset(_texrender_default_microtex_source_dir)
+unset(_texrender_microtex_source_dir)
+unset(_texrender_microtex_build_source_dir)
 
 # MicroTeX's IndexedArray binary search initializes the high bound to `_rows`
 # instead of the last valid row. Misses can read one row past static font tables

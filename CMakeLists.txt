@@ -524,6 +524,7 @@ if (PROJECT_IS_TOP_LEVEL AND NOT EMSCRIPTEN)
     set(CPACK_SOURCE_PACKAGE_FILE_NAME "TeXRender-${PROJECT_VERSION}-source")
     set(CPACK_SOURCE_IGNORE_FILES
             "/\\\\.git/"
+            "/\\\\.git$"
             "/\\\\.github/workflows/.*~$"
             "/build[^/]*/"
             "/out/"
