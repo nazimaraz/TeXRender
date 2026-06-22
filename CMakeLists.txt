@@ -37,32 +37,6 @@ else ()
     message(FATAL_ERROR "Unsupported TEXRENDER_BACKEND='${TEXRENDER_BACKEND}'. Supported: 'raylib', 'headless', 'svg', 'sdl2'.")
 endif ()
 
-set(TEXRENDER_HAS_HEADLESS 1)
-set(TEXRENDER_HAS_SVG 1)
-set(TEXRENDER_HAS_RAYLIB 0)
-set(TEXRENDER_HAS_SDL2 0)
-if (TEXRENDER_BACKEND STREQUAL "raylib")
-    set(TEXRENDER_HAS_RAYLIB 1)
-elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
-    set(TEXRENDER_HAS_SDL2 1)
-endif ()
-
-set(TEXRENDER_HAS_RAYLIB_CMAKE FALSE)
-set(TEXRENDER_HAS_SDL2_CMAKE FALSE)
-if (TEXRENDER_HAS_RAYLIB)
-    set(TEXRENDER_HAS_RAYLIB_CMAKE TRUE)
-endif ()
-
-if (TEXRENDER_HAS_SDL2)
-    set(TEXRENDER_HAS_SDL2_CMAKE TRUE)
-endif ()
-
-set(TEXRENDER_GENERATED_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/include")
-configure_file(
-        cmake/texrenderConfig.hpp.in
-        "${TEXRENDER_GENERATED_INCLUDE_DIR}/texrender/config.hpp"
-        @ONLY
-)
 add_library(texrender
         source/core/latex_document.cpp
         source/core/cache_options.cpp
