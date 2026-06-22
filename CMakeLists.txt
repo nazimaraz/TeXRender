@@ -22,7 +22,6 @@ endif ()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
 if (EMSCRIPTEN)
     add_compile_options(-fwasm-exceptions)
     add_link_options(-fwasm-exceptions)
@@ -94,7 +93,6 @@ configure_file(
         "${TEXRENDER_GENERATED_INCLUDE_DIR}/texrender/config.hpp"
         @ONLY
 )
-
 add_library(texrender
         source/core/latex_document.cpp
         source/core/cache_options.cpp
@@ -155,28 +153,6 @@ set(TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG "")
 if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET)
     set(TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG "-mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
     target_link_options(texrender INTERFACE "${TEXRENDER_MACOS_DEPLOYMENT_LINK_FLAG}")
-endif ()
-
-if (APPLE AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    get_filename_component(_texrender_clang_bin "${CMAKE_CXX_COMPILER}" DIRECTORY)
-    get_filename_component(_texrender_toolchain_root "${_texrender_clang_bin}" DIRECTORY)
-    set(_texrender_libcxx_dir "")
-    foreach (_candidate "${_texrender_toolchain_root}/lib/c++" "${_texrender_toolchain_root}/lib")
-        if (EXISTS "${_candidate}/libc++.dylib" OR EXISTS "${_candidate}/libc++.1.dylib")
-            set(_texrender_libcxx_dir "${_candidate}")
-            break()
-        endif ()
-    endforeach ()
-    if (_texrender_libcxx_dir)
-        message(STATUS "texrender: linking non-Apple Clang libc++ from ${_texrender_libcxx_dir}")
-        target_link_options(texrender PRIVATE "-L${_texrender_libcxx_dir}" "-Wl,-rpath,${_texrender_libcxx_dir}")
-        target_link_options(texrender INTERFACE
-                "$<BUILD_INTERFACE:-L${_texrender_libcxx_dir}>"
-                "$<BUILD_INTERFACE:-Wl,-rpath,${_texrender_libcxx_dir}>")
-    endif ()
-    unset(_texrender_clang_bin)
-    unset(_texrender_toolchain_root)
-    unset(_texrender_libcxx_dir)
 endif ()
 
 if (TEXRENDER_BUILD_EXAMPLES)
