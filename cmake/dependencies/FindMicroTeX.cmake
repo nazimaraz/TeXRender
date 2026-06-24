@@ -13,6 +13,8 @@ if (NOT EXISTS "${_texrender_microtex_source_dir}/CMakeLists.txt"
     return()
 endif ()
 
+option(TEXRENDER_MICROTEX_LOGS "Enable MicroTeX runtime debug logs" OFF)
+set(HAVE_LOG "${TEXRENDER_MICROTEX_LOGS}" CACHE BOOL "Enable MicroTeX runtime debug logs" FORCE)
 set(MICROTEX_OUTPUT_NAME microtex_core CACHE STRING "MicroTeX library output name")
 add_subdirectory("${_texrender_microtex_source_dir}" "${CMAKE_CURRENT_BINARY_DIR}/_deps/microtex-build" EXCLUDE_FROM_ALL)
 set(MICROTEX_TARGET LaTeX CACHE INTERNAL "MicroTeX CMake target used by texrender")
