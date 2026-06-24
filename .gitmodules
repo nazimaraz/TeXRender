@@ -1,6 +1,6 @@
 [submodule "third_party/microtex"]
 	path = third_party/microtex
-	url = https://github.com/NanoMichael/MicroTeX.git
+	url = git@github.com:nazimaraz/MicroTeX.git
 [submodule "third_party/tinyxml2"]
 	path = third_party/tinyxml2
 	url = https://github.com/leethomason/tinyxml2.git
