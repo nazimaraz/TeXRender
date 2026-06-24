@@ -50,8 +50,10 @@ IncludeCategories:
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 SortIncludes: false
 IndentCaseLabels: true
+IndentPPDirectives: AfterHash
 IndentWidth: 4
 IndentWrappedFunctionNames: true
+PPIndentWidth: 3
 InsertNewlineAtEOF: true
 MacroBlockBegin: ''
 MacroBlockEnd: ''
