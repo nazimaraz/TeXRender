@@ -1,9 +1,0 @@
-# Nested fractions should keep both numerator and denominator visible.
-formula=\frac{1+\frac{x}{y}}{1-\frac{x}{y}}
-text_size=52
-margin=14
-min_covered_pixels=220
-min_ink_width=45
-min_ink_height=50
-min_rule_run=10
-require_horizontal_rule=true

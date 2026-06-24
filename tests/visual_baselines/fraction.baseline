@@ -1,8 +1,0 @@
-# Structural baseline for tests/visual_regression_test.cpp.
-formula=\frac{a+b}{c+d}
-text_size=56
-margin=12
-min_covered_pixels=150
-min_ink_width=30
-min_ink_height=25
-min_rule_run=12

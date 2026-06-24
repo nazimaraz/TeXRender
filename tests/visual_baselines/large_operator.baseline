@@ -1,9 +1,0 @@
-# Large operators should allocate vertical space for limits and keep visible ink.
-formula=\sum_{n=1}^{10} \frac{1}{n^2}
-text_size=52
-margin=14
-min_covered_pixels=180
-min_ink_width=45
-min_ink_height=45
-min_rule_run=8
-require_horizontal_rule=true

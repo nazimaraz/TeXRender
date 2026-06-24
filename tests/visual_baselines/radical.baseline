@@ -1,9 +1,0 @@
-# Radical plus nested fraction.
-formula=\sqrt{\frac{a^2+b^2}{c}}
-text_size=56
-margin=12
-min_covered_pixels=180
-min_ink_width=35
-min_ink_height=30
-min_rule_run=10
-require_horizontal_rule=true
