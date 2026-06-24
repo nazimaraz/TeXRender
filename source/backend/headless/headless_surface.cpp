@@ -147,11 +147,11 @@ namespace
 
     [[nodiscard]] uint32_t adler32(const std::vector<unsigned char>& data)
     {
-        constexpr auto mod_adler = 65521u;
         auto a = 1u;
         auto b = 0u;
         for (const auto byte : data)
         {
+            constexpr auto mod_adler = 65'521u;
             a = (a + byte) % mod_adler;
             b = (b + a) % mod_adler;
         }
@@ -162,7 +162,7 @@ namespace
     {
         const auto blocks = data.empty() ? std::size_t{0} : 1u + (data.size() - 1u) / 65'535u;
         constexpr auto zlib_overhead = std::size_t{8};
-        const auto max_size = std::numeric_limits<std::size_t>::max();
+        constexpr auto max_size = std::numeric_limits<std::size_t>::max();
         if (data.size() > max_size - zlib_overhead || blocks > (max_size - data.size() - zlib_overhead) / 5u)
             return std::nullopt;
 
@@ -468,8 +468,7 @@ bool HeadlessSurface::write_png(const std::string& path) const
         scanlines.insert(scanlines.end(), row_begin, row_begin + static_cast<std::ptrdiff_t>(stride));
     }
 
-    const auto idat = zlib_store(scanlines);
-    if (!idat || !write_png_chunk(file, "IDAT", *idat))
+    if (const auto idat = zlib_store(scanlines); !idat || !write_png_chunk(file, "IDAT", *idat))
         return false;
 
     return write_png_chunk(file, "IEND", {});

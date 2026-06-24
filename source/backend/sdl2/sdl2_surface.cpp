@@ -1,7 +1,6 @@
 #include "texrender/sdl2_surface.hpp"
 #include <algorithm>
 #include <atomic>
-#include <cmath>
 #include <limits>
 #include <stdexcept>
 #include <string>

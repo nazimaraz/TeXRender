@@ -14,7 +14,7 @@ namespace TeXRender::detail
         const auto width = static_cast<std::size_t>(glyph.width);
         const auto height = static_cast<std::size_t>(glyph.height);
         const auto pitch = static_cast<std::size_t>(glyph.pitch);
-        const auto max = std::numeric_limits<std::size_t>::max();
+        constexpr auto max = std::numeric_limits<std::size_t>::max();
         return height - 1u <= (max - width) / pitch;
     }
 
@@ -25,7 +25,7 @@ namespace TeXRender::detail
 
         const auto width = static_cast<std::size_t>(glyph.width);
         const auto height = static_cast<std::size_t>(glyph.height);
-        const auto max_pixels = std::numeric_limits<std::size_t>::max() / 4u;
+        constexpr auto max_pixels = std::numeric_limits<std::size_t>::max() / 4u;
         return width <= max_pixels / height;
     }
 

@@ -168,11 +168,13 @@ namespace
 
         for (const auto ch : latex)
         {
-            const auto byte = static_cast<unsigned char>(ch);
-            if ((byte < 0x20u && byte != '\t' && byte != '\n' && byte != '\r') || byte == 0x7fu)
+            if (const auto byte = static_cast<unsigned char>(ch);
+                (byte < 0x20u && byte != '\t' && byte != '\n' && byte != '\r') || byte == 0x7fu)
+            {
                 return RenderError{
                     RenderErrorCode::parse_error, "texrender: LaTeX input contains an unsupported control character"
                 };
+            }
         }
 
         if (!is_valid_utf8(latex))

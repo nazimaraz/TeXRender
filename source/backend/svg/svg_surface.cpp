@@ -1,7 +1,6 @@
 #include "texrender/svg_surface.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstdint>
 #include <fstream>
 #include <iomanip>
 #include <limits>
@@ -92,11 +91,11 @@ namespace
 
     [[nodiscard]] uint32_t adler32(const std::vector<unsigned char>& data)
     {
-        constexpr auto mod_adler = 65521u;
         auto a = 1u;
         auto b = 0u;
         for (const auto byte : data)
         {
+            constexpr auto mod_adler = 65'521u;
             a = (a + byte) % mod_adler;
             b = (b + a) % mod_adler;
         }
@@ -135,7 +134,7 @@ namespace
     {
         const auto blocks = data.empty() ? std::size_t{0} : 1u + (data.size() - 1u) / 65'535u;
         constexpr auto zlib_overhead = std::size_t{8};
-        const auto max_size = std::numeric_limits<std::size_t>::max();
+        constexpr auto max_size = std::numeric_limits<std::size_t>::max();
         if (data.size() > max_size - zlib_overhead || blocks > (max_size - data.size() - zlib_overhead) / 5u)
             return std::nullopt;
 
@@ -169,8 +168,8 @@ namespace
     [[nodiscard]] std::optional<std::vector<unsigned char>> png_rgba(const int width, const int height,
         const std::vector<unsigned char>& rgba)
     {
-        auto expected_bytes = std::size_t{0};
-        if (!byte_count_for_rgba(width, height, rgba.max_size(), expected_bytes) || rgba.size() != expected_bytes)
+        if (auto expected_bytes = std::size_t{0};
+            !byte_count_for_rgba(width, height, rgba.max_size(), expected_bytes) || rgba.size() != expected_bytes)
             return std::nullopt;
 
         auto png = std::vector<unsigned char>{0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
@@ -202,8 +201,8 @@ namespace
             const auto begin = rgba.begin() + static_cast<std::ptrdiff_t>(static_cast<std::size_t>(y) * stride);
             scanlines.insert(scanlines.end(), begin, begin + static_cast<std::ptrdiff_t>(stride));
         }
-        const auto idat = zlib_store(scanlines);
-        if (!idat || !append_png_chunk(png, "IDAT", *idat) || !append_png_chunk(png, "IEND", {}))
+        if (const auto idat = zlib_store(scanlines);
+            !idat || !append_png_chunk(png, "IDAT", *idat) || !append_png_chunk(png, "IEND", {}))
             return std::nullopt;
 
         return png;
@@ -231,8 +230,7 @@ namespace
 
         // Each 3-byte group always emits 4 characters above (missing bytes encode
         // as zero); convert the trailing characters of the final group to padding.
-        const auto remainder = input.size() % 3u;
-        if (remainder != 0u)
+        if (const auto remainder = input.size() % 3u; remainder != 0u)
         {
             output[output.size() - 1u] = '=';
             if (remainder == 1u)
@@ -302,7 +300,7 @@ void SvgSurface::draw_line(const float x1, const float y1, const float x2, const
         return;
 
     elements_.push_back("<line x1=\"" + number(x1) + "\" y1=\"" + number(y1) + "\" x2=\"" + number(x2) + "\" y2=\"" + number(y2) +
-                        "\" " + ::paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) +
+                        "\" " + paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) +
                         "\" stroke-linecap=\"round\"/>");
 }
 
@@ -312,7 +310,7 @@ void SvgSurface::draw_rect(const float x, const float y, const float w, const fl
         return;
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" fill=\"none\" " + ::paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) +
+                        "\" fill=\"none\" " + paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) +
                         "\"/>");
 }
 
@@ -322,7 +320,7 @@ void SvgSurface::fill_rect(const float x, const float y, const float w, const fl
         return;
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" " + ::paint_attributes(color_, "fill") + "/>");
+                        "\" " + paint_attributes(color_, "fill") + "/>");
 }
 
 void SvgSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry,
@@ -333,7 +331,7 @@ void SvgSurface::draw_round_rect(const float x, const float y, const float w, co
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
                         "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" fill=\"none\" " +
-                        ::paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) + "\"/>");
+                        paint_attributes(color_, "stroke") + " stroke-width=\"" + number(stroke_width) + "\"/>");
 }
 
 void SvgSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)
@@ -395,7 +393,7 @@ std::string SvgSurface::svg() const
     out << '\n';
     if (background_)
     {
-        out << "  <rect width=\"100%\" height=\"100%\" " << ::paint_attributes(*background_, "fill") << "/>\n";
+        out << "  <rect width=\"100%\" height=\"100%\" " << paint_attributes(*background_, "fill") << "/>\n";
     }
     for (const auto& element : elements_)
         out << "  " << element << '\n';
