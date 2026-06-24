@@ -6,7 +6,6 @@
 /// include `texrender/raylib_surface.hpp` or `texrender/sdl2_surface.hpp` only when
 /// the package was built with that backend.
 #include "texrender/cache_options.hpp"
-#include "texrender/config.hpp"
 #include "texrender/draw_surface.hpp"
 #include "texrender/formula_layout.hpp"
 #include "texrender/glyph_bitmap.hpp"
