@@ -313,35 +313,31 @@ unset(_texrender_microtex_atom_impl_h_original)
 unset(_texrender_microtex_atom_impl_h_var)
 unset(_texrender_microtex_atom_impl_h_before)
 unset(_texrender_microtex_atom_impl_h_after)
-set(MICROTEX_CORE_SOURCES
-        atom/atom_basic.cpp atom/atom_char.cpp atom/atom_impl.cpp atom/atom_matrix.cpp
-        atom/atom_row.cpp atom/atom_space.cpp atom/colors_def.cpp atom/unit_conversion.cpp
-        box/box.cpp box/box_factory.cpp box/box_group.cpp box/box_single.cpp
-        core/core.cpp core/formula.cpp core/formula_def.cpp core/glue.cpp
-        core/localized_num.cpp core/macro.cpp core/macro_def.cpp core/macro_impl.cpp core/parser.cpp
-        fonts/alphabet.cpp fonts/font_basic.cpp fonts/font_info.cpp fonts/fonts.cpp
-        utils/string_utils.cpp utils/utf.cpp utils/utils.cpp
-        res/builtin/formula_mappings.res.cpp res/builtin/symbol_mapping.res.cpp
-        res/builtin/tex_param.res.cpp res/builtin/tex_symbols.res.cpp
-        res/font/bi10.def.cpp res/font/bx10.def.cpp res/font/cmbsy10.def.cpp res/font/cmbx10.def.cpp
-        res/font/cmbxti10.def.cpp res/font/cmex10.def.cpp res/font/cmmi10.def.cpp
-        res/font/cmmi10_unchanged.def.cpp res/font/cmmib10.def.cpp res/font/cmmib10_unchanged.def.cpp
-        res/font/cmr10.def.cpp res/font/cmss10.def.cpp res/font/cmssbx10.def.cpp res/font/cmssi10.def.cpp
-        res/font/cmsy10.def.cpp res/font/cmti10.def.cpp res/font/cmti10_unchanged.def.cpp
-        res/font/cmtt10.def.cpp res/font/dsrom10.def.cpp res/font/eufb10.def.cpp res/font/eufm10.def.cpp
-        res/font/i10.def.cpp res/font/moustache.def.cpp res/font/msam10.def.cpp res/font/msbm10.def.cpp
-        res/font/r10.def.cpp res/font/r10_unchanged.def.cpp res/font/rsfs10.def.cpp res/font/sb10.def.cpp
-        res/font/sbi10.def.cpp res/font/si10.def.cpp res/font/special.def.cpp res/font/ss10.def.cpp
-        res/font/stmary10.def.cpp res/font/tt10.def.cpp
-        res/parser/font_parser.cpp res/parser/formula_parser.cpp
-        res/reg/builtin_font_reg.cpp res/reg/builtin_syms_reg.cpp
-        res/sym/amsfonts.def.cpp res/sym/amssymb.def.cpp res/sym/base.def.cpp
-        res/sym/stmaryrd.def.cpp res/sym/symspecial.def.cpp
-        latex.cpp render.cpp
-)
-list(TRANSFORM MICROTEX_CORE_SOURCES PREPEND "${MICROTEX_SRC}/")
-add_library(microtex_core STATIC ${MICROTEX_CORE_SOURCES})
-add_library(microtex::core ALIAS microtex_core)
-target_include_directories(microtex_core SYSTEM PRIVATE "${MICROTEX_SRC}")
-target_compile_features(microtex_core PUBLIC cxx_std_17)
-target_link_libraries(microtex_core PRIVATE tinyxml2::tinyxml2)
+function(texrender_add_microtex_core source_dir)
+    file(GLOB _microtex_core_sources CONFIGURE_DEPENDS
+            "${source_dir}/atom/*.cpp"
+            "${source_dir}/box/*.cpp"
+            "${source_dir}/core/*.cpp"
+            "${source_dir}/fonts/*.cpp"
+            "${source_dir}/utils/*.cpp"
+            "${source_dir}/res/builtin/*.cpp"
+            "${source_dir}/res/font/*.cpp"
+            "${source_dir}/res/parser/*.cpp"
+            "${source_dir}/res/reg/*.cpp"
+            "${source_dir}/res/sym/*.cpp"
+            "${source_dir}/latex.cpp"
+            "${source_dir}/render.cpp"
+    )
+
+    if (NOT _microtex_core_sources)
+        message(FATAL_ERROR "No MicroTeX core sources found in '${source_dir}'")
+    endif ()
+
+    add_library(microtex_core STATIC ${_microtex_core_sources})
+    add_library(microtex::core ALIAS microtex_core)
+    target_include_directories(microtex_core SYSTEM PRIVATE "${source_dir}")
+    target_compile_features(microtex_core PUBLIC cxx_std_17)
+    target_link_libraries(microtex_core PRIVATE tinyxml2::tinyxml2)
+endfunction()
+
+texrender_add_microtex_core("${MICROTEX_SRC}")
