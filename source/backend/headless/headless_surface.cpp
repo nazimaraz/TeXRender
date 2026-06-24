@@ -30,7 +30,7 @@ namespace
         return static_cast<int>(std::clamp(std::ceil(value), 0.0, static_cast<double>(max)));
     }
 
-    [[nodiscard]] bool pixel_byte_count(const int width, const int height, const size_t max_size, size_t& byte_count)
+    [[nodiscard]] bool pixel_byte_count(const int width, const int height, const std::size_t max_size, std::size_t& byte_count)
     {
         if (width <= 0 || height <= 0)
         {
@@ -39,8 +39,8 @@ namespace
         }
 
         const auto max_pixels = max_size / 4u;
-        const auto canvas_width = static_cast<size_t>(width);
-        const auto canvas_height = static_cast<size_t>(height);
+        const auto canvas_width = static_cast<std::size_t>(width);
+        const auto canvas_height = static_cast<std::size_t>(height);
         if (canvas_height > max_pixels / canvas_width)
             return false;
 
@@ -50,7 +50,7 @@ namespace
 
     [[nodiscard]] bool valid_canvas(const int width, const int height, const std::vector<unsigned char>& pixels)
     {
-        auto expected_bytes = size_t{0};
+        auto expected_bytes = std::size_t{0};
         return pixel_byte_count(width, height, pixels.max_size(), expected_bytes) && expected_bytes > 0 &&
                pixels.size() == expected_bytes;
     }
@@ -62,7 +62,6 @@ namespace
         auto t1 = 1.0;
         const auto dx = x2 - x1;
         const auto dy = y2 - y1;
-
         const auto clip = [&t0, &t1](const double p, const double q) {
             if (p == 0.0)
                 return q >= 0.0;
@@ -82,7 +81,6 @@ namespace
             }
             return true;
         };
-
         if (!clip(-dx, x1 - min_x) || !clip(dx, max_x - x1) || !clip(-dy, y1 - min_y) || !clip(dy, max_y - y1))
             return false;
 
@@ -162,14 +160,14 @@ namespace
 
     [[nodiscard]] std::optional<std::vector<unsigned char>> zlib_store(const std::vector<unsigned char>& data)
     {
-        const auto blocks = data.empty() ? size_t{0} : 1u + (data.size() - 1u) / 65535u;
-        constexpr auto zlib_overhead = size_t{8};
-        const auto max_size = std::numeric_limits<size_t>::max();
+        const auto blocks = data.empty() ? std::size_t{0} : 1u + (data.size() - 1u) / 65'535u;
+        constexpr auto zlib_overhead = std::size_t{8};
+        const auto max_size = std::numeric_limits<std::size_t>::max();
         if (data.size() > max_size - zlib_overhead || blocks > (max_size - data.size() - zlib_overhead) / 5u)
             return std::nullopt;
 
         const auto output_size = data.size() + blocks * 5u + zlib_overhead;
-        if (output_size > static_cast<size_t>(std::numeric_limits<uint32_t>::max()))
+        if (output_size > static_cast<std::size_t>(std::numeric_limits<uint32_t>::max()))
             return std::nullopt;
 
         auto output = std::vector<unsigned char>{};
@@ -177,15 +175,15 @@ namespace
         output.push_back(0x78u);
         output.push_back(0x01u);
 
-        auto offset = size_t{0};
+        auto offset = std::size_t{0};
         while (offset < data.size())
         {
             const auto remaining = data.size() - offset;
-            const auto block_size = static_cast<uint16_t>(std::min<size_t>(remaining, 65535u));
+            const auto block_size = static_cast<std::uint16_t>(std::min<size_t>(remaining, 65'535u));
             const auto final_block = offset + block_size == data.size();
             output.push_back(final_block ? 0x01u : 0x00u);
             append_u16_le(output, block_size);
-            append_u16_le(output, static_cast<uint16_t>(~block_size));
+            append_u16_le(output, static_cast<std::uint16_t>(~block_size));
             output.insert(output.end(), data.begin() + static_cast<std::ptrdiff_t>(offset),
                 data.begin() + static_cast<std::ptrdiff_t>(offset + block_size));
             offset += block_size;
@@ -203,9 +201,8 @@ namespace
         write_u32_be(file, static_cast<uint32_t>(data.size()));
         file.write(type.data(), static_cast<std::streamsize>(type.size()));
         if (!data.empty())
-            // ofstream::write needs char*; data holds raw PNG bytes (unsigned char) with no clean alternative.
-            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             file.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
+
         write_u32_be(file, png_crc(type, data));
         return static_cast<bool>(file);
     }
@@ -236,7 +233,7 @@ namespace
     }
 } // namespace
 
-void HeadlessSurface::set_color(const uint32_t argb)
+void HeadlessSurface::set_color(const std::uint32_t argb)
 {
     a_ = channel(argb, 24);
     r_ = channel(argb, 16);
@@ -263,13 +260,13 @@ void HeadlessSurface::resize(const int canvas_width, const int canvas_height)
     pixels_ = std::move(new_pixels);
 }
 
-void HeadlessSurface::clear(const uint32_t argb)
+void HeadlessSurface::clear(const std::uint32_t argb)
 {
     const auto a = channel(argb, 24);
     const auto r = channel(argb, 16);
     const auto g = channel(argb, 8);
     const auto b = channel(argb, 0);
-    for (auto i = size_t{0}; i < pixels_.size(); i += 4)
+    for (auto i = std::size_t{0}; i < pixels_.size(); i += 4)
     {
         pixels_[i + 0] = r;
         pixels_[i + 1] = g;
@@ -303,13 +300,15 @@ void HeadlessSurface::fill_rect(const float x, const float y, const float w, con
     if (!std::isfinite(x_end) || !std::isfinite(y_end))
         return;
 
-    const auto x0 = clamp_floor_to_canvas(static_cast<double>(x), width_);
-    const auto y0 = clamp_floor_to_canvas(static_cast<double>(y), height_);
+    const auto x0 = clamp_floor_to_canvas(x, width_);
+    const auto y0 = clamp_floor_to_canvas(y, height_);
     const auto x1 = clamp_ceil_to_canvas(x_end, width_);
     const auto y1 = clamp_ceil_to_canvas(y_end, height_);
     for (auto py = y0; py < y1; ++py)
+    {
         for (auto px = x0; px < x1; ++px)
             blend_pixel(pixels_, width_, height_, r_, g_, b_, a_, px, py, 1.f);
+    }
 }
 
 void HeadlessSurface::draw_rect(const float x, const float y, const float w, const float h, const float stroke_width)
@@ -327,7 +326,6 @@ void HeadlessSurface::draw_line(const float x1, const float y1, const float x2, 
         !std::isfinite(stroke_width))
         return;
 
-    // Thin axis-friendly line via dense sampling; adequate for rules/fraction bars.
     const auto max_thickness = static_cast<float>(static_cast<double>(std::max(width_, height_)) * 2.0 + 2.0);
     const auto thickness = std::clamp(stroke_width, 1.f, max_thickness);
     const auto half = static_cast<double>(thickness) / 2.0;
@@ -405,7 +403,7 @@ bool HeadlessSurface::write_ppm(const std::string& path) const
     if (!file)
         return false;
 
-    file.imbue(std::locale::classic()); // ASCII header dimensions must not pick up locale digit grouping
+    file.imbue(std::locale::classic());
     file << "P6\n" << width_ << ' ' << height_ << "\n255\n";
     for (auto i = size_t{0}; i + 3 < pixels_.size(); i += 4)
     {
@@ -414,7 +412,7 @@ bool HeadlessSurface::write_ppm(const std::string& path) const
             static_cast<char>(pixels_[i + 1]),
             static_cast<char>(pixels_[i + 2]),
         };
-        file.write(rgb.data(), static_cast<std::streamsize>(rgb.size()));
+        file.write(rgb.data(), rgb.size());
     }
 
     return static_cast<bool>(file);
@@ -439,7 +437,7 @@ bool HeadlessSurface::write_png(const std::string& path) const
         static_cast<char>(0x1au),
         static_cast<char>(0x0au),
     };
-    file.write(signature.data(), static_cast<std::streamsize>(signature.size()));
+    file.write(signature.data(), signature.size());
 
     auto ihdr = std::vector<unsigned char>{};
     ihdr.reserve(13);

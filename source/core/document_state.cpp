@@ -57,9 +57,7 @@ namespace TeXRender::detail
 void TeXRender::shutdown() noexcept
 {
     using namespace TeXRender::detail;
-    // Serialize against in-flight renders (render_mutex) and initialization
-    // (g_mutex). std::scoped_lock acquires both without a fixed order, and no
-    // other path locks these two together, so this cannot deadlock.
+
     const auto lock = std::scoped_lock{render_mutex(), g_mutex};
     if (!g_initialised)
         return;
@@ -70,9 +68,5 @@ void TeXRender::shutdown() noexcept
         return;
     }
 
-    // MicroTeX's release path is not re-initialization safe in the pinned
-    // upstream version: it deletes process-wide singletons without resetting
-    // every static pointer/container that init() consults later. Keep this API
-    // as a harmless compatibility hook until teardown can be made comprehensive.
     debug_log("shutdown is currently a no-op; MicroTeX state remains process-lifetime");
 }

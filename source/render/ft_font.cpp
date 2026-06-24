@@ -1,8 +1,6 @@
 #include "ft_font.hpp"
 #include <algorithm>
 #include <array>
-#include <cctype>
-#include <cstddef>
 #include <string>
 #include <string_view>
 #include <utility>

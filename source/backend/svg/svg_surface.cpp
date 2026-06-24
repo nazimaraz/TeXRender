@@ -133,7 +133,7 @@ namespace
 
     [[nodiscard]] std::optional<std::vector<unsigned char>> zlib_store(const std::vector<unsigned char>& data)
     {
-        const auto blocks = data.empty() ? std::size_t{0} : 1u + (data.size() - 1u) / 65535u;
+        const auto blocks = data.empty() ? std::size_t{0} : 1u + (data.size() - 1u) / 65'535u;
         constexpr auto zlib_overhead = std::size_t{8};
         const auto max_size = std::numeric_limits<std::size_t>::max();
         if (data.size() > max_size - zlib_overhead || blocks > (max_size - data.size() - zlib_overhead) / 5u)
@@ -152,7 +152,7 @@ namespace
         while (offset < data.size())
         {
             const auto remaining = data.size() - offset;
-            const auto block_size = static_cast<uint16_t>(std::min<std::size_t>(remaining, 65535u));
+            const auto block_size = static_cast<uint16_t>(std::min<std::size_t>(remaining, 65'535u));
             const auto final_block = offset + block_size == data.size();
             output.push_back(final_block ? 0x01u : 0x00u);
             append_u16_le(output, block_size);

@@ -186,8 +186,6 @@ const Texture2D* RaylibSurface::texture_for(const GlyphBitmap& glyph)
 
 void RaylibSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)
 {
-    // Without a live GL context the upload would yield (and cache) an unusable
-    // id-0 texture under a key that is never retried, so bail before texture_for.
     if (!IsWindowReady() || !detail::valid_cacheable_glyph_bitmap_for_rgba(glyph) || !std::isfinite(pen_x) ||
         !std::isfinite(pen_y) || !std::isfinite(angle))
         return;

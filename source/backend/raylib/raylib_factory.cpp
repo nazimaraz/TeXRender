@@ -1,5 +1,3 @@
-// Compiled only when TEXRENDER_BACKEND=raylib: documents draw into a
-// RaylibSurface unless the caller injects a surface of their own.
 #include <memory>
 #include "render/surface_factory.hpp"
 #include "texrender/raylib_surface.hpp"
