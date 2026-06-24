@@ -23,7 +23,7 @@ CacheLimits TeXRender::cache_limits() noexcept
     return g_cache_limits;
 }
 
-void TeXRender::set_cache_limits(CacheLimits limits) noexcept
+void TeXRender::set_cache_limits(const CacheLimits limits) noexcept
 {
     const auto lock = std::scoped_lock{g_cache_limits_mutex};
     g_cache_limits = normalized(limits);

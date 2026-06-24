@@ -1,10 +1,5 @@
 #pragma once
 
-/// Convenience umbrella header for the stable, backend-neutral texrender API.
-///
-/// Backend-specific surfaces stay opt-in:
-/// include `texrender/raylib_surface.hpp` or `texrender/sdl2_surface.hpp` only when
-/// the package was built with that backend.
 #include "texrender/cache_options.hpp"
 #include "texrender/draw_surface.hpp"
 #include "texrender/formula_layout.hpp"

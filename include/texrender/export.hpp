@@ -1,7 +1,5 @@
 #pragma once
 
-// Symbol visibility for shared-library builds. Static builds leave the macro
-// empty; consumers of a Windows DLL receive dllimport via TEXRENDER_SHARED.
 #if defined(_WIN32) || defined(__CYGWIN__)
 #if defined(TEXRENDER_BUILDING_LIBRARY)
 #define TEXRENDER_EXPORT __declspec(dllexport)

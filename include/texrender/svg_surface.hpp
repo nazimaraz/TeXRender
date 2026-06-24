@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -10,12 +9,6 @@
 
 namespace TeXRender
 {
-    /// IDrawSurface implementation that records draw calls into an SVG document.
-    ///
-    /// Lines and rectangles are emitted as native SVG elements. Glyphs arrive at
-    /// this backend as FreeType bitmaps, so they are embedded as small RGBA PNG
-    /// data URIs inside the SVG. This keeps SVG export backend-neutral while
-    /// preserving MicroTeX's font rendering choices.
     class TEXRENDER_EXPORT SvgSurface final : public IDrawSurface
     {
     public:
@@ -29,28 +22,12 @@ namespace TeXRender
         void draw_round_rect(float x, float y, float w, float h, float rx, float ry, float width) override;
         void fill_round_rect(float x, float y, float w, float h, float rx, float ry) override;
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
-
-        /// Set the SVG viewport dimensions in pixels.
-        ///
-        /// Resize before drawing if the output should tightly fit a formula.
         void resize(int width, int height);
-        /// Clear recorded elements and optionally set a background color.
-        ///
-        /// A fully transparent color clears the background instead of emitting a
-        /// background rectangle.
         void clear(uint32_t argb = 0x00000000);
-
-        /// SVG viewport width in pixels.
         [[nodiscard]] int width() const noexcept;
-        /// SVG viewport height in pixels.
         [[nodiscard]] int height() const noexcept;
-        /// Number of recorded draw elements, excluding the root svg element.
         [[nodiscard]] std::size_t element_count() const noexcept;
-        /// Return the complete SVG document.
-        ///
-        /// The string is self-contained and includes embedded glyph PNG data.
         [[nodiscard]] std::string svg() const;
-        /// Write the complete SVG document to disk.
         [[nodiscard]] bool write_svg(const std::string& path) const;
 
     private:
