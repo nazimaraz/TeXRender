@@ -1,5 +1,4 @@
-set(_texrender_default_microtex_source_dir "${CMAKE_CURRENT_LIST_DIR}/../../third_party/microtex")
-set(TEXRENDER_MICROTEX_SOURCE_DIR "${_texrender_default_microtex_source_dir}" CACHE PATH
+set(TEXRENDER_MICROTEX_SOURCE_DIR "${CMAKE_CURRENT_LIST_DIR}/../../third_party/microtex" CACHE PATH
         "Path to the MicroTeX source checkout used by texrender")
 set(_texrender_microtex_source_dir "${TEXRENDER_MICROTEX_SOURCE_DIR}")
 if (NOT IS_ABSOLUTE "${_texrender_microtex_source_dir}")
@@ -14,18 +13,14 @@ if (NOT EXISTS "${_texrender_microtex_source_dir}/CMakeLists.txt"
     return()
 endif ()
 
-set(MICROTEX_BUILD_PLATFORM_BACKENDS OFF CACHE BOOL "" FORCE)
-set(MICROTEX_OUTPUT_NAME microtex_core CACHE STRING "" FORCE)
-set(BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
+set(MICROTEX_OUTPUT_NAME microtex_core CACHE STRING "MicroTeX library output name")
 add_subdirectory("${_texrender_microtex_source_dir}" "${CMAKE_CURRENT_BINARY_DIR}/_deps/microtex-build" EXCLUDE_FROM_ALL)
 set(MICROTEX_TARGET LaTeX CACHE INTERNAL "MicroTeX CMake target used by texrender")
-if (TARGET ${MICROTEX_TARGET} AND MICROTEX_OUTPUT_NAME)
-    set_target_properties(${MICROTEX_TARGET} PROPERTIES OUTPUT_NAME "${MICROTEX_OUTPUT_NAME}")
-endif ()
 set(MICROTEX_SRC "${_texrender_microtex_source_dir}/src" CACHE INTERNAL "MicroTeX source directory")
 set(MICROTEX_RES_DIR "${_texrender_microtex_source_dir}/res" CACHE INTERNAL "MicroTeX resource directory")
-if (TARGET ${MICROTEX_TARGET})
-    set(MicroTeX_FOUND TRUE)
-else ()
+if (NOT TARGET ${MICROTEX_TARGET})
     set(MicroTeX_FOUND FALSE)
+    return()
 endif ()
+
+set(MicroTeX_FOUND TRUE)
