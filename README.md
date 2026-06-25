@@ -1,8 +1,6 @@
 # TeXRender
 
 [![CI](https://github.com/nazimaraz/TeXRender/actions/workflows/ci.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/nazimaraz/TeXRender/actions/workflows/codeql.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/codeql.yml)
-[![Static analysis](https://github.com/nazimaraz/TeXRender/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/nazimaraz/TeXRender/actions/workflows/static-analysis.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-brightgreen.svg)](CMakeLists.txt)
 
