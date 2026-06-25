@@ -2,21 +2,79 @@
 #include "core/document_state.hpp"
 #include "glyph_cache.hpp"
 #include "raster_size.hpp"
+#include "utils/utils.h"
 #include <mutex>
-#include <stdexcept>
+#include <vector>
 
 using namespace TeXRender;
 
-FtTextLayout::FtTextLayout(std::wstring text, tex::sptr<FtFont> font)
+namespace
+{
+    std::vector<char32_t> decode_utf8_lossy(const std::string& text)
+    {
+        auto out = std::vector<char32_t>{};
+        for (auto index = std::size_t{0}; index < text.size();)
+        {
+            const auto byte = static_cast<unsigned char>(text[index]);
+            if (byte < 0x80u)
+            {
+                out.push_back(byte);
+                ++index;
+            }
+            else if ((byte & 0xe0u) == 0xc0u && index + 1 < text.size())
+            {
+                out.push_back(((byte & 0x1fu) << 6u) | (static_cast<unsigned char>(text[index + 1]) & 0x3fu));
+                index += 2;
+            }
+            else if ((byte & 0xf0u) == 0xe0u && index + 2 < text.size())
+            {
+                out.push_back(((byte & 0x0fu) << 12u) | ((static_cast<unsigned char>(text[index + 1]) & 0x3fu) << 6u) |
+                    (static_cast<unsigned char>(text[index + 2]) & 0x3fu));
+                index += 3;
+            }
+            else if ((byte & 0xf8u) == 0xf0u && index + 3 < text.size())
+            {
+                out.push_back(((byte & 0x07u) << 18u) | ((static_cast<unsigned char>(text[index + 1]) & 0x3fu) << 12u) |
+                    ((static_cast<unsigned char>(text[index + 2]) & 0x3fu) << 6u) |
+                    (static_cast<unsigned char>(text[index + 3]) & 0x3fu));
+                index += 4;
+            }
+            else
+            {
+                out.push_back('?');
+                ++index;
+            }
+        }
+        return out;
+    }
+
+    class FtPlatformFactory final : public microtex::PlatformFactory
+    {
+    public:
+        microtex::sptr<microtex::Font> createFont(const std::string& file) override
+        {
+            return microtex::sptrOf<FtFont>(file.empty() ? detail::default_font_path() : file);
+        }
+
+        microtex::sptr<microtex::TextLayout> createTextLayout(
+            const std::string& src, microtex::FontStyle /*style*/, const float size) override
+        {
+            return microtex::sptrOf<FtTextLayout>(src, detail::default_font_path(), size);
+        }
+    };
+} // namespace
+
+FtTextLayout::FtTextLayout(std::string text, std::string font_path, const float font_size)
     : text_{std::move(text)}
-    , font_{std::move(font)}
+    , font_path_{std::move(font_path)}
+    , font_size_{font_size}
 {}
 
-void FtTextLayout::getBounds(tex::Rect& bounds)
+void FtTextLayout::getBounds(microtex::Rect& bounds)
 {
     const auto lock = std::scoped_lock{detail::render_mutex()};
     auto& cache = detail::shared_cache();
-    const auto pixel_size = detail::safe_raster_pixel_size(font_->getSize());
+    const auto pixel_size = detail::safe_raster_pixel_size(font_size_);
     if (pixel_size <= 0)
     {
         bounds.x = 0.f;
@@ -26,14 +84,14 @@ void FtTextLayout::getBounds(tex::Rect& bounds)
         return;
     }
 
-    const auto face_id = cache.face_for(font_->path());
+    const auto face_id = cache.face_for(font_path_);
 
     auto width = 0.f;
     auto ascent = 0;
     auto descent = 0;
-    for (const wchar_t wc : text_)
+    for (const auto codepoint : decode_utf8_lossy(text_))
     {
-        const auto* const g = cache.glyph(face_id, static_cast<char32_t>(wc), pixel_size);
+        const auto* const g = cache.glyph(face_id, codepoint, pixel_size);
         if (!g)
             continue;
 
@@ -48,17 +106,32 @@ void FtTextLayout::getBounds(tex::Rect& bounds)
     bounds.h = static_cast<float>(ascent + descent);
 }
 
-void FtTextLayout::draw(tex::Graphics2D& g2, const float x, const float y)
+void FtTextLayout::draw(microtex::Graphics2D& g2, const float x, const float y)
 {
-    g2.setFont(font_.get());
-    g2.drawText(text_, x, y);
+    g2.setFont(microtex::sptrOf<FtFont>(font_path_));
+    g2.setFontSize(font_size_);
+    auto pen_x = x;
+    for (const auto codepoint : decode_utf8_lossy(text_))
+    {
+        const auto* const glyph = detail::shared_cache().glyph(detail::shared_cache().face_for(font_path_), codepoint,
+            detail::safe_raster_pixel_size(font_size_));
+        if (!glyph)
+            continue;
+
+        // This fallback path is approximate; core math glyph rendering uses the
+        // font glyph ids passed directly by MicroTeX.
+        g2.drawGlyph(static_cast<microtex::u16>(codepoint), pen_x, y);
+        pen_x += glyph->advance;
+    }
 }
 
-tex::sptr<tex::TextLayout> tex::TextLayout::create(const std::wstring& src, const sptr<Font>& font)
+void TeXRender::detail::register_microtex_platform_factory()
 {
-    auto ft = std::dynamic_pointer_cast<FtFont>(font);
-    if (!ft)
-        throw std::invalid_argument("texrender: TextLayout requires a texrender FreeType font");
+    static auto registered = false;
+    if (registered)
+        return;
 
-    return sptrOf<FtTextLayout>(src, ft);
+    microtex::PlatformFactory::registerFactory("texrender-freetype", std::make_unique<FtPlatformFactory>());
+    microtex::PlatformFactory::activate("texrender-freetype");
+    registered = true;
 }

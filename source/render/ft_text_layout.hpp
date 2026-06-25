@@ -6,16 +6,17 @@
 
 namespace TeXRender
 {
-    class FtTextLayout final : public tex::TextLayout
+    class FtTextLayout final : public microtex::TextLayout
     {
     public:
-        FtTextLayout(std::wstring text, tex::sptr<FtFont> font);
+        FtTextLayout(std::string text, std::string font_path, float font_size);
 
-        void getBounds(tex::Rect& bounds) override;
-        void draw(tex::Graphics2D& g2, float x, float y) override;
+        void getBounds(microtex::Rect& bounds) override;
+        void draw(microtex::Graphics2D& g2, float x, float y) override;
 
     private:
-        std::wstring text_;
-        tex::sptr<FtFont> font_;
+        std::string text_;
+        std::string font_path_;
+        float font_size_;
     };
 } // namespace TeXRender

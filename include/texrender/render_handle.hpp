@@ -4,9 +4,9 @@
 #include <memory>
 #include "texrender/export.hpp"
 
-namespace tex
+namespace microtex
 {
-    class TeXRender;
+    class Render;
 }
 
 namespace TeXRender
@@ -37,9 +37,9 @@ namespace TeXRender
         TEXRENDER_EXPORT void draw(int x, int y) const;
 
     private:
-        RenderHandle(tex::TeXRender* render, std::shared_ptr<detail::DocumentState> state);
+        RenderHandle(microtex::Render* render, std::shared_ptr<detail::DocumentState> state);
 
         std::shared_ptr<detail::DocumentState> state_;
-        std::unique_ptr<tex::TeXRender> render_;
+        std::unique_ptr<microtex::Render> render_;
     };
 } // namespace TeXRender

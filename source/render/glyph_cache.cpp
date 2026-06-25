@@ -115,6 +115,17 @@ uint32_t GlyphCache::face_for(const std::string& path)
 
 const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_t codepoint, const int pixel_size)
 {
+    return load_glyph(face_id, static_cast<uint32_t>(codepoint), pixel_size, GlyphLoadMode::codepoint);
+}
+
+const GlyphCache::Glyph* GlyphCache::glyph_index(const uint32_t face_id, const uint32_t glyph_index, const int pixel_size)
+{
+    return load_glyph(face_id, glyph_index, pixel_size, GlyphLoadMode::glyph_index);
+}
+
+const GlyphCache::Glyph* GlyphCache::load_glyph(const uint32_t face_id, const uint32_t glyph_id, const int pixel_size,
+    const GlyphLoadMode mode)
+{
     if (face_id == 0 || pixel_size <= 0 || pixel_size > detail::max_raster_pixel_size)
         return nullptr;
 
@@ -122,7 +133,7 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
     if (face_it == faces_by_id_.end())
         return nullptr;
 
-    const auto lookup = GlyphLookup{face_id, codepoint, pixel_size};
+    const auto lookup = GlyphLookup{face_id, glyph_id, mode == GlyphLoadMode::glyph_index, pixel_size};
     auto id_it = glyph_ids_.find(lookup);
     const auto new_id = id_it == glyph_ids_.end();
     if (new_id)
@@ -148,10 +159,13 @@ const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_
 
     Glyph g;
     g.key = key;
-    if (FT_Load_Char(face, codepoint, FT_LOAD_RENDER) != 0)
+    const auto ft_error = mode == GlyphLoadMode::glyph_index
+        ? FT_Load_Glyph(face, static_cast<FT_UInt>(glyph_id), FT_LOAD_RENDER)
+        : FT_Load_Char(face, static_cast<FT_ULong>(glyph_id), FT_LOAD_RENDER);
+    if (ft_error != 0)
     {
         auto message = std::array<char, 64>{};
-        (void) std::snprintf(message.data(), message.size(), "failed to render glyph U+%04X", static_cast<uint32_t>(codepoint));
+        (void) std::snprintf(message.data(), message.size(), "failed to render glyph %u", glyph_id);
         detail::debug_log(message.data());
     }
     else

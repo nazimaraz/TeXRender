@@ -8,8 +8,7 @@
 #include <stdexcept>
 #include <utility>
 #include "core/document_state.hpp"
-#include "core/formula.h"
-#include "latex.h"
+#include "microtex.h"
 #include "render/glyph_cache.hpp"
 #include "utils/exceptions.h"
 
@@ -222,22 +221,11 @@ namespace
         return std::numeric_limits<int>::max() / 2;
     }
 
-    [[nodiscard]] tex::TeXRender* parse_latex(const std::string& latex, const RenderOptions& options)
+    [[nodiscard]] microtex::Render* parse_latex(const std::string& latex, const RenderOptions& options)
     {
-        const auto wide_latex = tex::utf82wide(latex);
-        const auto is_lined = wide_latex.rfind(L"$$", 0) != 0 && wide_latex.rfind(L"\\[", 0) != 0;
-        const auto align = is_lined ? tex::Alignment::left : tex::Alignment::center;
-
-        auto formula = tex::Formula{};
-        formula.setLaTeX(wide_latex);
-        auto builder = tex::TeXRenderBuilder{};
-        return builder.setStyle(tex::TexStyle::display)
-            .setTextSize(options.text_size)
-            .setWidth(tex::UnitType::pixel, static_cast<float>(effective_wrap_width(options)), align)
-            .setIsMaxWidth(is_lined)
-            .setLineSpace(tex::UnitType::pixel, 0.f)
-            .setForeground(options.argb)
-            .build(formula);
+        const auto fill_width = latex.rfind("$$", 0) != 0 && latex.rfind(R"(\[)", 0) != 0;
+        return microtex::MicroTeX::parse(latex, static_cast<float>(effective_wrap_width(options)), options.text_size, 0.f,
+            options.argb, fill_width, {true, microtex::TexStyle::display});
     }
 } // namespace
 
@@ -304,7 +292,7 @@ RenderResult LatexDocument::try_render_detailed(const std::string& latex, const 
         const auto lock = std::scoped_lock{detail::render_mutex()};
         auto* const parsed_render = parse_latex(latex, options);
         return RenderResult{RenderHandle{parsed_render, state_}};
-    } catch (const tex::ex_tex& error)
+    } catch (const microtex::ex_tex& error)
     {
         return RenderResult{RenderError{RenderErrorCode::parse_error, error.what()}};
     } catch (const std::exception& error)

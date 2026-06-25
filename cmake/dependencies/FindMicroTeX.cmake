@@ -7,18 +7,20 @@ if (NOT IS_ABSOLUTE "${_texrender_microtex_source_dir}")
 endif ()
 
 if (NOT EXISTS "${_texrender_microtex_source_dir}/CMakeLists.txt"
-        OR NOT EXISTS "${_texrender_microtex_source_dir}/src/latex.cpp"
-        OR NOT EXISTS "${_texrender_microtex_source_dir}/res/.clatexmath-res_root")
+        OR NOT EXISTS "${_texrender_microtex_source_dir}/lib/microtex.h"
+        OR NOT EXISTS "${_texrender_microtex_source_dir}/res/lm-math/latinmodern-math.clm2")
     set(MicroTeX_FOUND FALSE)
     return()
 endif ()
 
 option(TEXRENDER_MICROTEX_LOGS "Enable MicroTeX runtime debug logs" OFF)
 set(HAVE_LOG "${TEXRENDER_MICROTEX_LOGS}" CACHE BOOL "Enable MicroTeX runtime debug logs" FORCE)
-set(MICROTEX_OUTPUT_NAME microtex_core CACHE STRING "MicroTeX library output name")
+set(BUILD_STATIC ON CACHE BOOL "Build MicroTeX as a static library" FORCE)
+set(GRAPHICS_DEBUG OFF CACHE BOOL "Enable MicroTeX graphics debug helpers" FORCE)
+set(GLYPH_RENDER_TYPE 2 CACHE STRING "Render MicroTeX glyphs through platform fonts" FORCE)
 add_subdirectory("${_texrender_microtex_source_dir}" "${CMAKE_CURRENT_BINARY_DIR}/_deps/microtex-build" EXCLUDE_FROM_ALL)
-set(MICROTEX_TARGET LaTeX CACHE INTERNAL "MicroTeX CMake target used by texrender")
-set(MICROTEX_SRC "${_texrender_microtex_source_dir}/src" CACHE INTERNAL "MicroTeX source directory")
+set(MICROTEX_TARGET microtex CACHE INTERNAL "MicroTeX CMake target used by texrender")
+set(MICROTEX_SRC "${_texrender_microtex_source_dir}/lib" CACHE INTERNAL "MicroTeX source directory")
 set(MICROTEX_RES_DIR "${_texrender_microtex_source_dir}/res" CACHE INTERNAL "MicroTeX resource directory")
 if (NOT TARGET ${MICROTEX_TARGET})
     set(MicroTeX_FOUND FALSE)

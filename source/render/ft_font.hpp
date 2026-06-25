@@ -5,22 +5,16 @@
 
 namespace TeXRender
 {
-    class FtFont final : public tex::Font
+    class FtFont final : public microtex::Font
     {
     public:
-        FtFont(std::string family, std::string path, float size, int style = tex::PLAIN);
+        explicit FtFont(std::string path);
 
-        [[nodiscard]] float getSize() const override;
-        [[nodiscard]] tex::sptr<Font> deriveFont(int font_style) const override;
         [[nodiscard]] bool operator==(const Font& f) const override;
-        [[nodiscard]] bool operator!=(const Font& f) const override;
+        [[nodiscard]] bool operator!=(const Font& f) const;
         [[nodiscard]] const std::string& path() const;
-        [[nodiscard]] int style() const;
 
     private:
-        std::string family_;
         std::string path_;
-        float size_;
-        int style_;
     };
 } // namespace TeXRender

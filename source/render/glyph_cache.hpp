@@ -43,17 +43,26 @@ namespace TeXRender
         // cache and is only guaranteed valid until the next glyph() call, which
         // may evict the entry — consume it immediately, never store it.
         [[nodiscard]] const Glyph* glyph(uint32_t face_id, char32_t codepoint, int pixel_size);
+        [[nodiscard]] const Glyph* glyph_index(uint32_t face_id, uint32_t glyph_index, int pixel_size);
 
     private:
+        enum class GlyphLoadMode
+        {
+            codepoint,
+            glyph_index
+        };
+
         struct GlyphLookup
         {
             uint32_t face_id = 0;
-            char32_t codepoint = 0;
+            uint32_t glyph_id = 0;
+            bool is_index = false;
             int pixel_size = 0;
 
             [[nodiscard]] bool operator==(const GlyphLookup& other) const noexcept
             {
-                return face_id == other.face_id && codepoint == other.codepoint && pixel_size == other.pixel_size;
+                return face_id == other.face_id && glyph_id == other.glyph_id && is_index == other.is_index &&
+                    pixel_size == other.pixel_size;
             }
         };
 
@@ -62,7 +71,8 @@ namespace TeXRender
             [[nodiscard]] std::size_t operator()(const GlyphLookup& lookup) const noexcept
             {
                 auto seed = std::hash<uint32_t>{}(lookup.face_id);
-                seed ^= std::hash<uint32_t>{}(static_cast<uint32_t>(lookup.codepoint)) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
+                seed ^= std::hash<uint32_t>{}(lookup.glyph_id) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
+                seed ^= std::hash<bool>{}(lookup.is_index) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
                 seed ^= std::hash<int>{}(lookup.pixel_size) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
                 return seed;
             }
@@ -89,6 +99,8 @@ namespace TeXRender
         std::list<uint64_t> lru_;
         uint32_t next_face_id_ = 1;
         uint64_t next_glyph_key_ = 1;
+
+        [[nodiscard]] const Glyph* load_glyph(uint32_t face_id, uint32_t glyph_id, int pixel_size, GlyphLoadMode mode);
     };
 
     namespace detail

@@ -1,12 +1,12 @@
 #include "texrender/render_handle.hpp"
 #include "document_state.hpp"
-#include "render.h"
+#include "render/render.h"
 #include "render/graphics2d_adapter.hpp"
 #include <mutex>
 
 using namespace TeXRender;
 
-RenderHandle::RenderHandle(tex::TeXRender* render, std::shared_ptr<detail::DocumentState> state)
+RenderHandle::RenderHandle(microtex::Render* render, std::shared_ptr<detail::DocumentState> state)
     : state_{std::move(state)}
     , render_{render}
 {}

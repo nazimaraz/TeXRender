@@ -24,4 +24,5 @@ namespace TeXRender::detail
     };
 
     [[nodiscard]] std::recursive_mutex& render_mutex();
+    void register_microtex_platform_factory();
 } // namespace TeXRender::detail

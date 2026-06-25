@@ -1,7 +1,7 @@
 #include "document_state.hpp"
 #include <cstddef>
 #include <mutex>
-#include "latex.h"
+#include "microtex.h"
 #include "render/glyph_cache.hpp"
 #include "render/surface_factory.hpp"
 #include "texrender/latex_document.hpp"
@@ -22,7 +22,13 @@ namespace TeXRender::detail
         const auto lock = std::scoped_lock{g_mutex};
         if (!g_initialised)
         {
-            tex::LaTeX::init(res_root);
+            register_microtex_platform_factory();
+            const auto math_font = microtex::FontSrcFile{
+                res_root + "/lm-math/latinmodern-math.clm2",
+                res_root + "/lm-math/latinmodern-math.otf"
+            };
+            microtex::MicroTeX::init(math_font);
+            microtex::MicroTeX::setRenderGlyphUsePath(false);
             g_res_root = res_root;
             g_initialised = true;
         }
@@ -31,7 +37,7 @@ namespace TeXRender::detail
             debug_log("ignoring resource root '" + res_root + "'; MicroTeX is already initialised with '" + g_res_root + "'");
         }
 
-        set_default_font_path(g_res_root + "/fonts/latin/cmr10.ttf");
+        set_default_font_path(g_res_root + "/lm-math/latinmodern-math.otf");
         ++g_active_states;
     }
 
@@ -68,5 +74,7 @@ void TeXRender::shutdown() noexcept
         return;
     }
 
-    debug_log("shutdown is currently a no-op; MicroTeX state remains process-lifetime");
+    microtex::MicroTeX::release();
+    g_initialised = false;
+    g_res_root.clear();
 }
