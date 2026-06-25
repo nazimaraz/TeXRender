@@ -26,7 +26,7 @@ namespace TeXRender
             int left = 0;
             int top = 0;
             float advance = 0.f;
-            uint64_t key = 0;
+            std::uint64_t key = 0;
         };
 
         GlyphCache();
@@ -64,7 +64,7 @@ namespace TeXRender
             [[nodiscard]] bool operator==(const GlyphLookup& other) const noexcept
             {
                 return face_id == other.face_id && glyph_id == other.glyph_id && is_index == other.is_index &&
-                    pixel_size == other.pixel_size;
+                       pixel_size == other.pixel_size;
             }
         };
 
@@ -72,8 +72,8 @@ namespace TeXRender
         {
             [[nodiscard]] std::size_t operator()(const GlyphLookup& lookup) const noexcept
             {
-                auto seed = std::hash<uint32_t>{}(lookup.face_id);
-                seed ^= std::hash<uint32_t>{}(lookup.glyph_id) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
+                auto seed = std::hash<std::uint32_t>{}(lookup.face_id);
+                seed ^= std::hash<std::uint32_t>{}(lookup.glyph_id) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
                 seed ^= std::hash<bool>{}(lookup.is_index) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
                 seed ^= std::hash<int>{}(lookup.pixel_size) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
                 return seed;
@@ -90,15 +90,15 @@ namespace TeXRender
         {
             Glyph glyph;
             GlyphLookup lookup;
-            std::list<uint64_t>::iterator lru_it;
+            std::list<std::uint64_t>::iterator lru_it;
         };
 
         FT_LibraryRec_* library_{};
         std::unordered_map<std::string, FaceEntry> faces_;
-        std::unordered_map<uint32_t, FT_FaceRec_*> faces_by_id_;
-        std::unordered_map<uint64_t, CachedGlyph> glyphs_;
-        std::unordered_map<GlyphLookup, uint64_t, GlyphLookupHash> glyph_ids_;
-        std::list<uint64_t> lru_;
+        std::unordered_map<std::uint32_t, FT_FaceRec_*> faces_by_id_;
+        std::unordered_map<std::uint64_t, CachedGlyph> glyphs_;
+        std::unordered_map<GlyphLookup, std::uint64_t, GlyphLookupHash> glyph_ids_;
+        std::list<std::uint64_t> lru_;
         uint32_t next_face_id_ = 1;
         uint64_t next_glyph_key_ = 1;
 

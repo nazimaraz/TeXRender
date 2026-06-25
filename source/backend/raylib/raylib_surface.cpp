@@ -39,7 +39,7 @@ namespace
 } // namespace
 
 RaylibSurface::RaylibSurface()
-    : max_textures_{std::max<size_t>(1, cache_limits().max_gpu_textures)}
+    : max_textures_{std::max<std::size_t>(1, cache_limits().max_gpu_textures)}
 {}
 
 RaylibSurface::~RaylibSurface() noexcept
@@ -59,9 +59,9 @@ void RaylibSurface::unload() noexcept
     lru_.clear();
 }
 
-void RaylibSurface::set_max_textures(const std::size_t texture_limit)
+void RaylibSurface::set_max_textures(const std::size_t max_textures)
 {
-    max_textures_ = std::max<std::size_t>(1, texture_limit);
+    max_textures_ = std::max<std::size_t>(1, max_textures);
     evict_excess_textures();
 }
 
@@ -90,7 +90,7 @@ void RaylibSurface::evict_excess_textures()
     }
 }
 
-void RaylibSurface::set_color(const uint32_t argb)
+void RaylibSurface::set_color(const std::uint32_t argb)
 {
     color_ = to_raylib(argb);
 }
@@ -148,14 +148,15 @@ const Texture2D* RaylibSurface::texture_for(const GlyphBitmap& glyph)
         return &found->second.texture;
     }
 
-    auto rgba = std::vector<unsigned char>(static_cast<size_t>(glyph.width) * static_cast<size_t>(glyph.height) * 4u);
+    auto rgba = std::vector<unsigned char>(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
     for (auto row = 0; row < glyph.height; ++row)
     {
         for (auto col = 0; col < glyph.width; ++col)
         {
             const auto coverage =
-                glyph.buffer[static_cast<size_t>(row) * static_cast<size_t>(glyph.pitch) + static_cast<size_t>(col)];
-            const auto dst = (static_cast<size_t>(row) * static_cast<size_t>(glyph.width) + static_cast<size_t>(col)) * 4u;
+                glyph.buffer[static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch) + static_cast<std::size_t>(col)];
+            const auto dst =
+                (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
             rgba[dst + 0] = 255;
             rgba[dst + 1] = 255;
             rgba[dst + 2] = 255;
@@ -177,10 +178,8 @@ const Texture2D* RaylibSurface::texture_for(const GlyphBitmap& glyph)
     }
 
     lru_.push_front(glyph.key);
-    const auto emplaced = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()});
-    const auto it = emplaced.first;
+    const auto it = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()}).first;
     evict_excess_textures();
-
     return &it->second.texture;
 }
 

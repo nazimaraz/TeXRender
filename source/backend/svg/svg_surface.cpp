@@ -23,12 +23,12 @@ namespace
         unsigned char a = 255;
     };
 
-    [[nodiscard]] unsigned char channel(const uint32_t argb, const unsigned shift)
+    [[nodiscard]] unsigned char channel(const std::uint32_t argb, const unsigned shift)
     {
         return static_cast<unsigned char>((argb >> shift) & 0xffu);
     }
 
-    [[nodiscard]] Color color_from_argb(const uint32_t argb)
+    [[nodiscard]] Color color_from_argb(const std::uint32_t argb)
     {
         return Color{channel(argb, 16), channel(argb, 8), channel(argb, 0), channel(argb, 24)};
     }
@@ -41,7 +41,7 @@ namespace
         return output.str();
     }
 
-    [[nodiscard]] std::string paint_attributes(const uint32_t argb, const char* const paint_kind)
+    [[nodiscard]] std::string paint_attributes(const std::uint32_t argb, const char* const paint_kind)
     {
         const auto c = color_from_argb(argb);
         auto attrs = std::ostringstream{};
@@ -50,16 +50,17 @@ namespace
               << static_cast<int>(c.g) << std::setw(2) << static_cast<int>(c.b) << std::dec << '"';
         if (c.a != 255)
             attrs << ' ' << paint_kind << "-opacity=\"" << number(static_cast<float>(c.a) / 255.f) << '"';
+
         return attrs.str();
     }
 
-    void append_u16_le(std::vector<unsigned char>& output, const uint16_t value)
+    void append_u16_le(std::vector<unsigned char>& output, const std::uint16_t value)
     {
         output.push_back(static_cast<unsigned char>(value & 0xffu));
         output.push_back(static_cast<unsigned char>((value >> 8u) & 0xffu));
     }
 
-    void append_u32_be(std::vector<unsigned char>& output, const uint32_t value)
+    void append_u32_be(std::vector<unsigned char>& output, const std::uint32_t value)
     {
         output.push_back(static_cast<unsigned char>((value >> 24u) & 0xffu));
         output.push_back(static_cast<unsigned char>((value >> 16u) & 0xffu));
@@ -67,7 +68,7 @@ namespace
         output.push_back(static_cast<unsigned char>(value & 0xffu));
     }
 
-    [[nodiscard]] uint32_t crc32_update(uint32_t crc, const unsigned char byte)
+    [[nodiscard]] std::uint32_t crc32_update(std::uint32_t crc, const unsigned char byte)
     {
         crc ^= byte;
         for (auto bit = 0; bit < 8; ++bit)
@@ -75,10 +76,11 @@ namespace
             const auto mask = 0u - (crc & 1u);
             crc = (crc >> 1u) ^ (0xedb88320u & mask);
         }
+
         return crc;
     }
 
-    [[nodiscard]] uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
+    [[nodiscard]] std::uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
     {
         auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const uint32_t current, const char byte) {
             return crc32_update(current, static_cast<unsigned char>(byte));
@@ -89,7 +91,7 @@ namespace
         return crc ^ 0xffffffffu;
     }
 
-    [[nodiscard]] uint32_t adler32(const std::vector<unsigned char>& data)
+    [[nodiscard]] std::uint32_t adler32(const std::vector<unsigned char>& data)
     {
         auto a = 1u;
         auto b = 0u;
@@ -99,16 +101,17 @@ namespace
             a = (a + byte) % mod_adler;
             b = (b + a) % mod_adler;
         }
+
         return (b << 16u) | a;
     }
 
     [[nodiscard]] bool append_png_chunk(std::vector<unsigned char>& output, const std::string_view type,
         const std::vector<unsigned char>& data)
     {
-        if (type.size() != 4 || data.size() > std::numeric_limits<uint32_t>::max())
+        if (type.size() != 4 || data.size() > std::numeric_limits<std::uint32_t>::max())
             return false;
 
-        append_u32_be(output, static_cast<uint32_t>(data.size()));
+        append_u32_be(output, static_cast<std::uint32_t>(data.size()));
         output.insert(output.end(), type.begin(), type.end());
         output.insert(output.end(), data.begin(), data.end());
         append_u32_be(output, png_crc(type, data));
@@ -139,23 +142,22 @@ namespace
             return std::nullopt;
 
         const auto output_size = data.size() + blocks * 5u + zlib_overhead;
-        if (output_size > static_cast<std::size_t>(std::numeric_limits<uint32_t>::max()))
+        if (output_size > static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max()))
             return std::nullopt;
 
         auto output = std::vector<unsigned char>{};
         output.reserve(output_size);
         output.push_back(0x78u);
         output.push_back(0x01u);
-
         auto offset = std::size_t{0};
         while (offset < data.size())
         {
             const auto remaining = data.size() - offset;
-            const auto block_size = static_cast<uint16_t>(std::min<std::size_t>(remaining, 65'535u));
+            const auto block_size = static_cast<std::uint16_t>(std::min<std::size_t>(remaining, 65'535u));
             const auto final_block = offset + block_size == data.size();
             output.push_back(final_block ? 0x01u : 0x00u);
             append_u16_le(output, block_size);
-            append_u16_le(output, static_cast<uint16_t>(~block_size));
+            append_u16_le(output, static_cast<std::uint16_t>(~block_size));
             output.insert(output.end(), data.begin() + static_cast<std::ptrdiff_t>(offset),
                 data.begin() + static_cast<std::ptrdiff_t>(offset + block_size));
             offset += block_size;
@@ -173,10 +175,9 @@ namespace
             return std::nullopt;
 
         auto png = std::vector<unsigned char>{0x89u, 0x50u, 0x4eu, 0x47u, 0x0du, 0x0au, 0x1au, 0x0au};
-
         auto ihdr = std::vector<unsigned char>{};
-        append_u32_be(ihdr, static_cast<uint32_t>(width));
-        append_u32_be(ihdr, static_cast<uint32_t>(height));
+        append_u32_be(ihdr, static_cast<std::uint32_t>(width));
+        append_u32_be(ihdr, static_cast<std::uint32_t>(height));
         ihdr.push_back(8u);
         ihdr.push_back(6u);
         ihdr.push_back(0u);
@@ -201,6 +202,7 @@ namespace
             const auto begin = rgba.begin() + static_cast<std::ptrdiff_t>(static_cast<std::size_t>(y) * stride);
             scanlines.insert(scanlines.end(), begin, begin + static_cast<std::ptrdiff_t>(stride));
         }
+
         if (const auto idat = zlib_store(scanlines);
             !idat || !append_png_chunk(png, "IDAT", *idat) || !append_png_chunk(png, "IEND", {}))
             return std::nullopt;
@@ -213,29 +215,27 @@ namespace
         static constexpr auto table = std::string_view{"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"};
         auto output = std::string{};
         output.reserve((input.size() + 2u) / 3u * 4u);
-
         auto i = std::size_t{0};
         while (i < input.size())
         {
             const auto a = input[i++];
             const auto b = i < input.size() ? input[i++] : 0u;
             const auto c = i < input.size() ? input[i++] : 0u;
-            const auto triple = (static_cast<uint32_t>(a) << 16u) | (static_cast<uint32_t>(b) << 8u) | static_cast<uint32_t>(c);
-
+            const auto triple =
+                (static_cast<std::uint32_t>(a) << 16u) | (static_cast<std::uint32_t>(b) << 8u) | static_cast<std::uint32_t>(c);
             output.push_back(table[(triple >> 18u) & 0x3fu]);
             output.push_back(table[(triple >> 12u) & 0x3fu]);
             output.push_back(table[(triple >> 6u) & 0x3fu]);
             output.push_back(table[triple & 0x3fu]);
         }
 
-        // Each 3-byte group always emits 4 characters above (missing bytes encode
-        // as zero); convert the trailing characters of the final group to padding.
         if (const auto remainder = input.size() % 3u; remainder != 0u)
         {
             output[output.size() - 1u] = '=';
             if (remainder == 1u)
                 output[output.size() - 2u] = '=';
         }
+
         return output;
     }
 
@@ -255,12 +255,12 @@ namespace
     }
 } // namespace
 
-SvgSurface::SvgSurface(const int canvas_width, const int canvas_height)
+SvgSurface::SvgSurface(const int width, const int height)
 {
-    resize(canvas_width, canvas_height);
+    resize(width, height);
 }
 
-void SvgSurface::set_color(const uint32_t argb)
+void SvgSurface::set_color(const std::uint32_t argb)
 {
     color_ = argb;
 }
@@ -271,7 +271,7 @@ void SvgSurface::resize(const int canvas_width, const int canvas_height)
     height_ = std::max(0, canvas_height);
 }
 
-void SvgSurface::clear(const uint32_t argb)
+void SvgSurface::clear(const std::uint32_t argb)
 {
     elements_.clear();
     background_.reset();

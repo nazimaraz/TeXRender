@@ -21,7 +21,7 @@ namespace
         return static_cast<double>(radians) * (180.0 / 3.14159265358979323846);
     }
 
-    [[nodiscard]] unsigned char channel(const uint32_t argb, const unsigned shift)
+    [[nodiscard]] unsigned char channel(const std::uint32_t argb, const unsigned shift)
     {
         return static_cast<unsigned char>((argb >> shift) & 0xffu);
     }
@@ -86,8 +86,9 @@ Sdl2Surface::~Sdl2Surface() noexcept
 
 void Sdl2Surface::unload() noexcept
 {
-    for (const auto& entry : textures_)
-        SDL_DestroyTexture(entry.second.texture);
+    for (const auto& [_, texture] : textures_)
+        SDL_DestroyTexture(texture.texture);
+
     textures_.clear();
     lru_.clear();
 }
@@ -112,11 +113,12 @@ void Sdl2Surface::evict_excess_textures()
             SDL_DestroyTexture(victim->second.texture);
             textures_.erase(victim);
         }
+
         lru_.pop_back();
     }
 }
 
-void Sdl2Surface::set_color(const uint32_t argb)
+void Sdl2Surface::set_color(const std::uint32_t argb)
 {
     r_ = channel(argb, 16u);
     g_ = channel(argb, 8u);
@@ -250,12 +252,10 @@ SDL_Texture* Sdl2Surface::texture_for(const GlyphBitmap& glyph)
         }
 
         SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-
         lru_.push_front(glyph.key);
         const auto [it, inserted] = textures_.emplace(glyph.key, CachedTexture{texture, lru_.begin()});
         (void) inserted;
         evict_excess_textures();
-
         return it->second.texture;
     } catch (const std::exception& error)
     {
@@ -280,7 +280,6 @@ void Sdl2Surface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const 
 
     SDL_SetTextureColorMod(texture, r_, g_, b_);
     SDL_SetTextureAlphaMod(texture, a_);
-
     const auto dest = rect(pen_x + static_cast<float>(glyph.left), pen_y - static_cast<float>(glyph.top),
         static_cast<float>(glyph.width), static_cast<float>(glyph.height));
     const auto center = SDL_FPoint{static_cast<float>(-glyph.left), static_cast<float>(glyph.top)};

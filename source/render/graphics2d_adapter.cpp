@@ -131,15 +131,20 @@ bool Graphics2DAdapter::beginPath(microtex::i32 /*id*/)
     return false;
 }
 
-void Graphics2DAdapter::moveTo(float /*x*/, float /*y*/) {}
+void Graphics2DAdapter::moveTo(float /*x*/, float /*y*/)
+{}
 
-void Graphics2DAdapter::lineTo(float /*x*/, float /*y*/) {}
+void Graphics2DAdapter::lineTo(float /*x*/, float /*y*/)
+{}
 
-void Graphics2DAdapter::cubicTo(float /*x1*/, float /*y1*/, float /*x2*/, float /*y2*/, float /*x3*/, float /*y3*/) {}
+void Graphics2DAdapter::cubicTo(float /*x1*/, float /*y1*/, float /*x2*/, float /*y2*/, float /*x3*/, float /*y3*/)
+{}
 
-void Graphics2DAdapter::quadTo(float /*x1*/, float /*y1*/, float /*x2*/, float /*y2*/) {}
+void Graphics2DAdapter::quadTo(float /*x1*/, float /*y1*/, float /*x2*/, float /*y2*/)
+{}
 
-void Graphics2DAdapter::closePath() {}
+void Graphics2DAdapter::closePath()
+{}
 
 void Graphics2DAdapter::fillPath(microtex::i32 /*id*/)
 {

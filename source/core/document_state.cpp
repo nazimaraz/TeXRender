@@ -23,10 +23,8 @@ namespace TeXRender::detail
         if (!g_initialised)
         {
             register_microtex_platform_factory();
-            const auto math_font = microtex::FontSrcFile{
-                res_root + "/lm-math/latinmodern-math.clm2",
-                res_root + "/lm-math/latinmodern-math.otf"
-            };
+            const auto math_font =
+                microtex::FontSrcFile{res_root + "/lm-math/latinmodern-math.clm2", res_root + "/lm-math/latinmodern-math.otf"};
             microtex::MicroTeX::init(math_font);
             microtex::MicroTeX::setRenderGlyphUsePath(false);
             g_res_root = res_root;

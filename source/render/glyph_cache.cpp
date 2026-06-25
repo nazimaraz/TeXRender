@@ -124,7 +124,7 @@ uint32_t GlyphCache::glyph_index_for(const uint32_t face_id, const char32_t code
 
 const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_t codepoint, const int pixel_size)
 {
-    return load_glyph(face_id, static_cast<uint32_t>(codepoint), pixel_size, GlyphLoadMode::codepoint);
+    return load_glyph(face_id, static_cast<std::uint32_t>(codepoint), pixel_size, GlyphLoadMode::codepoint);
 }
 
 const GlyphCache::Glyph* GlyphCache::glyph_index(const uint32_t face_id, const uint32_t glyph_index, const int pixel_size)
@@ -159,18 +159,16 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const uint32_t face_id, const ui
     if (FT_Set_Pixel_Sizes(face, 0, static_cast<FT_UInt>(pixel_size)) != 0)
     {
         detail::debug_log("failed to set FreeType pixel size");
-        // Drop the id we just minted: it has no entry in glyphs_, so eviction
-        // (which prunes glyph_ids_ via committed glyphs) would never reclaim it.
         if (new_id)
             glyph_ids_.erase(lookup);
+
         return nullptr;
     }
 
     Glyph g;
     g.key = key;
-    const auto ft_error = mode == GlyphLoadMode::glyph_index
-        ? FT_Load_Glyph(face, static_cast<FT_UInt>(glyph_id), FT_LOAD_RENDER)
-        : FT_Load_Char(face, static_cast<FT_ULong>(glyph_id), FT_LOAD_RENDER);
+    const auto ft_error = mode == GlyphLoadMode::glyph_index ? FT_Load_Glyph(face, glyph_id, FT_LOAD_RENDER)
+                                                             : FT_Load_Char(face, glyph_id, FT_LOAD_RENDER);
     if (ft_error != 0)
     {
         auto message = std::array<char, 64>{};

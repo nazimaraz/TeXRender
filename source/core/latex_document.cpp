@@ -279,10 +279,6 @@ RenderResult LatexDocument::try_render_detailed(const std::string& latex, const 
     return try_render_detailed(latex, untrusted_options(text_size, argb, wrap_width));
 }
 
-// The noexcept is the non-throwing contract for untrusted input. The only way an
-// exception could escape is OOM while constructing an error message in a catch
-// handler, where std::terminate is an acceptable outcome rather than a leak.
-// NOLINTNEXTLINE(bugprone-exception-escape)
 RenderResult LatexDocument::try_render_detailed(const std::string& latex, const RenderOptions& options) const noexcept
 {
     try
@@ -302,9 +298,6 @@ RenderResult LatexDocument::try_render_detailed(const std::string& latex, const 
         return RenderResult{RenderError{RenderErrorCode::unexpected_failure, error.what()}};
     } catch (...)
     {
-        // try_render exists for arbitrary caller input, so even a failure that
-        // isn't a TeX error must not escape the noexcept boundary. Surface it
-        // via TEXRENDER_DEBUG=1 instead of crashing the caller.
         detail::debug_log("try_render_detailed: swallowed an unknown non-TeX failure");
         return RenderResult{RenderError{RenderErrorCode::unexpected_failure, "texrender: unknown render failure"}};
     }

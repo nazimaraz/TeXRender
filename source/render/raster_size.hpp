@@ -5,7 +5,7 @@
 
 namespace TeXRender::detail
 {
-    inline constexpr int max_raster_pixel_size = 8192;
+    inline constexpr auto max_raster_pixel_size = 8'192;
 
     [[nodiscard]] inline int safe_raster_pixel_size(const float text_size, const float scale = 1.f) noexcept
     {

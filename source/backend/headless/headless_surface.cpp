@@ -93,18 +93,18 @@ namespace
         return true;
     }
 
-    [[nodiscard]] unsigned char channel(const uint32_t argb, const unsigned shift)
+    [[nodiscard]] unsigned char channel(const std::uint32_t argb, const unsigned shift)
     {
         return static_cast<unsigned char>((argb >> shift) & 0xffu);
     }
 
-    void append_u16_le(std::vector<unsigned char>& output, const uint16_t value)
+    void append_u16_le(std::vector<unsigned char>& output, const std::uint16_t value)
     {
         output.push_back(static_cast<unsigned char>(value & 0xffu));
         output.push_back(static_cast<unsigned char>((value >> 8u) & 0xffu));
     }
 
-    void append_u32_be(std::vector<unsigned char>& output, const uint32_t value)
+    void append_u32_be(std::vector<unsigned char>& output, const std::uint32_t value)
     {
         output.push_back(static_cast<unsigned char>((value >> 24u) & 0xffu));
         output.push_back(static_cast<unsigned char>((value >> 16u) & 0xffu));
@@ -112,7 +112,7 @@ namespace
         output.push_back(static_cast<unsigned char>(value & 0xffu));
     }
 
-    void write_u32_be(std::ofstream& output, const uint32_t value)
+    void write_u32_be(std::ofstream& output, const std::uint32_t value)
     {
         const auto bytes = std::array<char, 4>{
             static_cast<char>((value >> 24u) & 0xffu),
@@ -120,10 +120,10 @@ namespace
             static_cast<char>((value >> 8u) & 0xffu),
             static_cast<char>(value & 0xffu),
         };
-        output.write(bytes.data(), static_cast<std::streamsize>(bytes.size()));
+        output.write(bytes.data(), bytes.size());
     }
 
-    [[nodiscard]] uint32_t crc32_update(uint32_t crc, const unsigned char byte)
+    [[nodiscard]] std::uint32_t crc32_update(std::uint32_t crc, const unsigned char byte)
     {
         crc ^= byte;
         for (auto bit = 0; bit < 8; ++bit)
@@ -131,15 +131,16 @@ namespace
             const auto mask = 0u - (crc & 1u);
             crc = (crc >> 1u) ^ (0xedb88320u & mask);
         }
+
         return crc;
     }
 
     [[nodiscard]] uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
     {
-        auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const uint32_t current, const char byte) {
+        auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const std::uint32_t current, const char byte) {
             return crc32_update(current, static_cast<unsigned char>(byte));
         });
-        crc = std::accumulate(data.begin(), data.end(), crc, [](const uint32_t current, const unsigned char byte) {
+        crc = std::accumulate(data.begin(), data.end(), crc, [](const std::uint32_t current, const unsigned char byte) {
             return crc32_update(current, byte);
         });
         return crc ^ 0xffffffffu;
@@ -155,6 +156,7 @@ namespace
             a = (a + byte) % mod_adler;
             b = (b + a) % mod_adler;
         }
+
         return (b << 16u) | a;
     }
 
@@ -167,14 +169,13 @@ namespace
             return std::nullopt;
 
         const auto output_size = data.size() + blocks * 5u + zlib_overhead;
-        if (output_size > static_cast<std::size_t>(std::numeric_limits<uint32_t>::max()))
+        if (output_size > static_cast<std::size_t>(std::numeric_limits<std::uint32_t>::max()))
             return std::nullopt;
 
         auto output = std::vector<unsigned char>{};
         output.reserve(output_size);
         output.push_back(0x78u);
         output.push_back(0x01u);
-
         auto offset = std::size_t{0};
         while (offset < data.size())
         {
@@ -195,10 +196,10 @@ namespace
 
     bool write_png_chunk(std::ofstream& file, const std::string_view type, const std::vector<unsigned char>& data)
     {
-        if (type.size() != 4 || data.size() > std::numeric_limits<uint32_t>::max())
+        if (type.size() != 4 || data.size() > std::numeric_limits<std::uint32_t>::max())
             return false;
 
-        write_u32_be(file, static_cast<uint32_t>(data.size()));
+        write_u32_be(file, static_cast<std::uint32_t>(data.size()));
         file.write(type.data(), static_cast<std::streamsize>(type.size()));
         if (!data.empty())
             file.write(reinterpret_cast<const char*>(data.data()), static_cast<std::streamsize>(data.size()));
@@ -384,10 +385,10 @@ void HeadlessSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, co
     }
 }
 
-size_t HeadlessSurface::covered_pixels() const noexcept
+std::size_t HeadlessSurface::covered_pixels() const noexcept
 {
-    auto count = size_t{0};
-    for (auto i = size_t{3}; i < pixels_.size(); i += 4)
+    auto count = std::size_t{0};
+    for (auto i = std::size_t{3}; i < pixels_.size(); i += 4)
         if (pixels_[i] != 0)
             ++count;
 
@@ -438,11 +439,10 @@ bool HeadlessSurface::write_png(const std::string& path) const
         static_cast<char>(0x0au),
     };
     file.write(signature.data(), signature.size());
-
     auto ihdr = std::vector<unsigned char>{};
     ihdr.reserve(13);
-    append_u32_be(ihdr, static_cast<uint32_t>(width_));
-    append_u32_be(ihdr, static_cast<uint32_t>(height_));
+    append_u32_be(ihdr, static_cast<std::uint32_t>(width_));
+    append_u32_be(ihdr, static_cast<std::uint32_t>(height_));
     ihdr.push_back(8u); // bit depth
     ihdr.push_back(6u); // RGBA
     ihdr.push_back(0u); // zlib/deflate

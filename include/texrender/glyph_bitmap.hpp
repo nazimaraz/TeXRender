@@ -12,6 +12,6 @@ namespace TeXRender
         int pitch = 0;
         int left = 0;
         int top = 0;
-        uint64_t key = 0;
+        std::uint64_t key = 0;
     };
 } // namespace TeXRender

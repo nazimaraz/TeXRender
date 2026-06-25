@@ -26,7 +26,7 @@ namespace TeXRender
         [[nodiscard]] int width() const noexcept;
         [[nodiscard]] int height() const noexcept;
         [[nodiscard]] const std::vector<unsigned char>& pixels() const noexcept;
-        [[nodiscard]] size_t covered_pixels() const noexcept;
+        [[nodiscard]] std::size_t covered_pixels() const noexcept;
         [[nodiscard]] bool write_ppm(const std::string& path) const;
         [[nodiscard]] bool write_png(const std::string& path) const;
 

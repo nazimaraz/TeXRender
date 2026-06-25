@@ -30,14 +30,14 @@ namespace
             else if ((byte & 0xf0u) == 0xe0u && index + 2 < text.size())
             {
                 out.push_back(((byte & 0x0fu) << 12u) | ((static_cast<unsigned char>(text[index + 1]) & 0x3fu) << 6u) |
-                    (static_cast<unsigned char>(text[index + 2]) & 0x3fu));
+                              (static_cast<unsigned char>(text[index + 2]) & 0x3fu));
                 index += 3;
             }
             else if ((byte & 0xf8u) == 0xf0u && index + 3 < text.size())
             {
                 out.push_back(((byte & 0x07u) << 18u) | ((static_cast<unsigned char>(text[index + 1]) & 0x3fu) << 12u) |
-                    ((static_cast<unsigned char>(text[index + 2]) & 0x3fu) << 6u) |
-                    (static_cast<unsigned char>(text[index + 3]) & 0x3fu));
+                              ((static_cast<unsigned char>(text[index + 2]) & 0x3fu) << 6u) |
+                              (static_cast<unsigned char>(text[index + 3]) & 0x3fu));
                 index += 4;
             }
             else
@@ -57,8 +57,8 @@ namespace
             return microtex::sptrOf<FtFont>(file.empty() ? detail::default_font_path() : file);
         }
 
-        microtex::sptr<microtex::TextLayout> createTextLayout(
-            const std::string& src, microtex::FontStyle /*style*/, const float size) override
+        microtex::sptr<microtex::TextLayout> createTextLayout(const std::string& src, microtex::FontStyle /*style*/,
+            const float size) override
         {
             return microtex::sptrOf<FtTextLayout>(src, detail::default_font_path(), size);
         }

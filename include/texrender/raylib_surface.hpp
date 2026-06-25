@@ -37,11 +37,11 @@ namespace TeXRender
         struct CachedTexture
         {
             Texture2D texture{};
-            std::list<uint64_t>::iterator lru_it{};
+            std::list<std::uint64_t>::iterator lru_it{};
         };
 
-        std::unordered_map<uint64_t, CachedTexture> textures_;
-        std::list<uint64_t> lru_;
+        std::unordered_map<std::uint64_t, CachedTexture> textures_;
+        std::list<std::uint64_t> lru_;
         std::size_t max_textures_ = 1024;
         Color color_{0, 0, 0, 255};
     };
