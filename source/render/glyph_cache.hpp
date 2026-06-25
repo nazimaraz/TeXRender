@@ -38,6 +38,7 @@ namespace TeXRender
         // Stable id for the font file at path; 0 if it cannot be loaded
         // (failures are cached, so retries are cheap).
         [[nodiscard]] uint32_t face_for(const std::string& path);
+        [[nodiscard]] uint32_t glyph_index_for(uint32_t face_id, char32_t codepoint) const;
 
         // Rasterise (or fetch) one glyph. The returned pointer is owned by the
         // cache and is only guaranteed valid until the next glyph() call, which

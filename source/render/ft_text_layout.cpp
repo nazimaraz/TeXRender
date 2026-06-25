@@ -3,6 +3,7 @@
 #include "glyph_cache.hpp"
 #include "raster_size.hpp"
 #include "utils/utils.h"
+#include <limits>
 #include <mutex>
 #include <vector>
 
@@ -110,17 +111,21 @@ void FtTextLayout::draw(microtex::Graphics2D& g2, const float x, const float y)
 {
     g2.setFont(microtex::sptrOf<FtFont>(font_path_));
     g2.setFontSize(font_size_);
+    const auto pixel_size = detail::safe_raster_pixel_size(font_size_);
+    auto& cache = detail::shared_cache();
+    const auto face_id = cache.face_for(font_path_);
     auto pen_x = x;
     for (const auto codepoint : decode_utf8_lossy(text_))
     {
-        const auto* const glyph = detail::shared_cache().glyph(detail::shared_cache().face_for(font_path_), codepoint,
-            detail::safe_raster_pixel_size(font_size_));
+        const auto glyph_index = cache.glyph_index_for(face_id, codepoint);
+        if (glyph_index == 0 || glyph_index > std::numeric_limits<microtex::u16>::max())
+            continue;
+
+        const auto* const glyph = cache.glyph_index(face_id, glyph_index, pixel_size);
         if (!glyph)
             continue;
 
-        // This fallback path is approximate; core math glyph rendering uses the
-        // font glyph ids passed directly by MicroTeX.
-        g2.drawGlyph(static_cast<microtex::u16>(codepoint), pen_x, y);
+        g2.drawGlyph(static_cast<microtex::u16>(glyph_index), pen_x, y);
         pen_x += glyph->advance;
     }
 }
