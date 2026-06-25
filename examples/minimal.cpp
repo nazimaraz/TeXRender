@@ -2,25 +2,21 @@
 #include "texrender/latex_document.hpp"
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "res"
+#   define TEXRENDER_RES_DIR "res"
 #endif
 
 int main()
 {
     InitWindow(640, 360, "TeXRender");
     SetTargetFPS(60);
-    // Scope the document/handle so they are destroyed (freeing GPU glyph textures)
-    // while the window is still alive, before CloseWindow().
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
+    const auto formula = document.render(R"(e^{i\pi} + 1 = 0)", 60.f, 0xff000000);
+    while (!WindowShouldClose())
     {
-        const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
-        const auto formula = document.render(R"(e^{i\pi} + 1 = 0)", 60.f, 0xff000000);
-        while (!WindowShouldClose())
-        {
-            BeginDrawing();
-            ClearBackground(RAYWHITE);
-            formula.draw((GetScreenWidth() - formula.width()) / 2, (GetScreenHeight() - formula.height()) / 2);
-            EndDrawing();
-        }
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        formula.draw((GetScreenWidth() - formula.width()) / 2, (GetScreenHeight() - formula.height()) / 2);
+        EndDrawing();
     }
 
     CloseWindow();

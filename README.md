@@ -20,20 +20,6 @@ into:
 
 ![realtime signal demo](docs/realtime-signal.gif)
 
-## Current Status
-
-This project is still pre-1.0. The public API is intentionally small and usable,
-but source compatibility may still change while the renderer settles.
-
-The MicroTeX submodule points at the original upstream repository:
-
-```text
-https://github.com/NanoMichael/MicroTeX.git
-```
-
-and currently uses the `openmath` code path, not the older MicroTeX `master`
-layout.
-
 ## Quick Start
 
 ```sh
@@ -91,21 +77,19 @@ available to user code, even when the default backend is `raylib` or `sdl2`.
 int main()
 {
     InitWindow(640, 360, "TeXRender");
-
+    SetTargetFPS(60);
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
+    const auto formula = document.render(R"(e^{i\pi} + 1 = 0)", 60.f, 0xff000000);
+    while (!WindowShouldClose())
     {
-        TeXRender::LatexDocument document(TEXRENDER_RES_DIR);
-        auto formula = document.render(R"(\sqrt{\frac{a^2+b^2}{c}})", 50.f, 0xff000000);
-
-        while (!WindowShouldClose())
-        {
-            BeginDrawing();
-            ClearBackground(RAYWHITE);
-            formula.draw(40, 40);
-            EndDrawing();
-        }
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        formula.draw((GetScreenWidth() - formula.width()) / 2, (GetScreenHeight() - formula.height()) / 2);
+        EndDrawing();
     }
 
     CloseWindow();
+    return 0;
 }
 ```
 
