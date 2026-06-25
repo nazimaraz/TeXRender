@@ -55,6 +55,27 @@ use system versions, but they are not required for the normal submodule-based
 build. The raylib and SDL2 dependencies are needed only when their backends are
 selected, and they can also come from initialized submodules.
 
+## Use From CMake
+
+Add TeXRender to your project as a submodule, then include it with
+`add_subdirectory`:
+
+```sh
+git submodule add https://github.com/nazimaraz/TeXRender.git third_party/texrender
+git submodule update --init --recursive
+```
+
+```cmake
+add_subdirectory(third_party/texrender)
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE texrender::texrender)
+texrender_copy_resources(my_app)
+```
+
+`texrender_copy_resources(my_app)` copies the MicroTeX resources next to
+`my_app` and defines `TEXRENDER_RES_DIR` for that target.
+
 ## CMake Options
 
 ```text
