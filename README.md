@@ -37,7 +37,7 @@ cmake -S . -B build-raylib -DTEXRENDER_BACKEND=raylib
 cmake --build build-raylib -j
 ./build-raylib/texrender_minimal
 ./build-raylib/texrender_realtime_values
-./build-raylib/texrender_live
+./build-raylib/live_edit
 ```
 
 Build the WebAssembly demo with Emscripten:
@@ -226,7 +226,7 @@ The main examples are:
 
 - `examples/minimal.cpp`: smallest raylib window example
 - `examples/realtime_values.cpp`: animated raylib formulas
-- `examples/live_edit.cpp`: raylib live editor
+- `examples/live_edit.cpp`: raylib controls-style live editor with caret editing
 - `examples/raylib_controls.cpp`: native raylib version of the WebAssembly controls demo
 - `examples/offscreen.cpp`: render one formula to PNG or PPM
 - `examples/headless_batch.cpp`: render several formulas offscreen

@@ -1,13 +1,13 @@
+#include <algorithm>
 #include <array>
+#include <cstdint>
+#include <cstdio>
 #include <cstdlib>
 #include <optional>
-#include <string_view>
+#include <string>
+#include <utility>
 #include <raylib.h>
-#include "texrender/latex_document.hpp"
-
-#ifdef __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#endif
+#include <texrender/latex_document.hpp>
 
 #ifndef TEXRENDER_RES_DIR
 #define TEXRENDER_RES_DIR "res"
@@ -15,20 +15,61 @@
 
 namespace
 {
-    constexpr auto k_background = Color{250, 250, 250, 255};
-    constexpr auto k_panel = Color{238, 238, 244, 255};
-    constexpr auto k_ink = Color{26, 26, 46, 255};
-    constexpr auto k_muted = Color{120, 120, 130, 255};
-    constexpr auto k_ok = Color{40, 150, 90, 255};
-    constexpr auto k_error = Color{200, 60, 60, 255};
-    constexpr auto k_foreground = std::uint32_t{0xff1a1a2e};
-    constexpr auto k_presets = std::array{
-        R"(e^{i\pi} + 1 = 0)",
-        R"(\sqrt{\frac{a^2+b^2}{c}})",
-        R"(\int_{0}^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2})",
-        R"(\sum_{i=1}^{n} i = \frac{n(n+1)}{2})",
-        R"(\frac{\partial}{\partial t}\,\Psi = \hat{H}\,\Psi)",
+    constexpr auto background = Color{247, 247, 244, 255};
+    constexpr auto panel = Color{255, 255, 255, 255};
+    constexpr auto canvas = Color{255, 255, 255, 255};
+    constexpr auto border = Color{222, 222, 216, 255};
+    constexpr auto border_active = Color{35, 87, 198, 255};
+    constexpr auto text = Color{32, 33, 36, 255};
+    constexpr auto muted = Color{96, 99, 104, 255};
+    constexpr auto error = Color{179, 38, 30, 255};
+    constexpr auto button = Color{35, 87, 198, 255};
+    constexpr auto button_hover = Color{24, 74, 180, 255};
+
+    enum class Focus
+    {
+        latex,
+        size,
+        wrap
     };
+
+    struct ColorChoice
+    {
+        const char* name;
+        std::uint32_t argb;
+        Color raylib;
+    };
+
+    constexpr auto colors = std::array{
+        ColorChoice{"Ink", 0xff1a1a2e, Color{26, 26, 46, 255}},
+        ColorChoice{"Blue", 0xff2357c6, Color{35, 87, 198, 255}},
+        ColorChoice{"Green", 0xff266c5b, Color{38, 108, 91, 255}},
+        ColorChoice{"Red", 0xffb3261e, Color{179, 38, 30, 255}},
+    };
+
+    struct DemoState
+    {
+        TeXRender::LatexDocument document{TEXRENDER_RES_DIR};
+        std::string latex{R"(\int_0^1 x^2\,dx = \frac{1}{3})"};
+        std::string size_text{"72"};
+        std::string wrap_text{"360"};
+        std::size_t latex_caret{latex.size()};
+        std::size_t size_caret{size_text.size()};
+        std::size_t wrap_caret{wrap_text.size()};
+        int latex_scroll{0};
+        int size_scroll{0};
+        int wrap_scroll{0};
+        std::size_t color_index = 0;
+        Focus focus = Focus::latex;
+        std::optional<TeXRender::RenderHandle> formula;
+        std::string status{"Ready"};
+        bool has_error = false;
+    };
+
+    [[nodiscard]] bool contains(const Rectangle rect, const Vector2 point)
+    {
+        return CheckCollisionPointRec(point, rect);
+    }
 
     [[nodiscard]] std::size_t prev_boundary(const std::string& source, std::size_t pos)
     {
@@ -54,234 +95,345 @@ namespace
         return pos;
     }
 
-    void insert_codepoint(std::string& source, std::size_t& caret, const int codepoint)
-    {
-        auto size = 0;
-        const auto* const utf8 = CodepointToUTF8(codepoint, &size);
-        source.insert(caret, utf8, static_cast<std::size_t>(size));
-        caret += static_cast<std::size_t>(size);
-    }
-
-    void erase_before(std::string& source, std::size_t& caret)
-    {
-        if (caret == 0)
-            return;
-
-        const auto start = prev_boundary(source, caret);
-        source.erase(start, caret - start);
-        caret = start;
-    }
-
     [[nodiscard]] bool key_repeats(const int key)
     {
         return IsKeyPressed(key) || IsKeyPressedRepeat(key);
     }
 
-    // All mutable state lives here (not in main's locals) so the per-frame
-    // function can run under both drivers: a native while-loop, and the
-    // browser's requestAnimationFrame via emscripten_set_main_loop — which
-    // returns from main immediately, killing any locals.
-    struct EditorState
+    bool insert_codepoint(std::string& source, std::size_t& caret, const int codepoint, const std::size_t max_size)
     {
-        TeXRender::LatexDocument document{TEXRENDER_RES_DIR};
-        std::string source{k_presets[0]};
-        std::size_t caret{source.size()};
-        std::size_t preset{0};
-        float text_size{64.f};
-        int caret_scroll{0};
-        std::optional<TeXRender::RenderHandle> formula{};
-        bool valid{true};
-    };
+        auto size = 0;
+        const auto* const utf8 = CodepointToUTF8(codepoint, &size);
+        if (size <= 0 || source.size() + static_cast<std::size_t>(size) > max_size)
+            return false;
 
-    std::optional<EditorState> g_editor;
-
-    void apply_environment_overrides(EditorState& ed)
-    {
-        if (const auto* const source = std::getenv("TEXRENDER_LIVE_SOURCE"); source != nullptr)
-        {
-            ed.source = source;
-            ed.caret = ed.source.size();
-            ed.preset = 0;
-            ed.caret_scroll = 0;
-        }
-
-        if (const auto* const text_size = std::getenv("TEXRENDER_LIVE_TEXT_SIZE"); text_size != nullptr)
-        {
-            const auto parsed = std::strtof(text_size, nullptr);
-            if (parsed >= 12.f && parsed <= 200.f)
-                ed.text_size = parsed;
-        }
+        caret = std::min(caret, source.size());
+        source.insert(caret, utf8, static_cast<std::size_t>(size));
+        caret += static_cast<std::size_t>(size);
+        return true;
     }
 
-    void rebuild()
+    bool erase_before(std::string& source, std::size_t& caret)
     {
-        auto& ed = *g_editor;
-        if (ed.source.empty())
+        if (caret == 0)
+            return false;
+
+        const auto start = prev_boundary(source, caret);
+        source.erase(start, caret - start);
+        caret = start;
+        return true;
+    }
+
+    bool erase_at(std::string& source, std::size_t& caret)
+    {
+        if (caret >= source.size())
+            return false;
+
+        const auto end = next_boundary(source, caret);
+        source.erase(caret, end - caret);
+        return true;
+    }
+
+    [[nodiscard]] int parse_int(const std::string& value, const int fallback)
+    {
+        if (value.empty())
+            return fallback;
+
+        auto parsed = fallback;
+        if (std::sscanf(value.c_str(), "%d", &parsed) != 1)
+            return fallback;
+
+        return parsed;
+    }
+
+    [[nodiscard]] float text_size(const DemoState& state)
+    {
+        return static_cast<float>(std::clamp(parse_int(state.size_text, 72), 8, 256));
+    }
+
+    [[nodiscard]] int wrap_width(const DemoState& state)
+    {
+        return std::clamp(parse_int(state.wrap_text, 0), 0, 4096);
+    }
+
+    [[nodiscard]] TeXRender::RenderOptions render_options(const DemoState& state)
+    {
+        auto options = TeXRender::RenderOptions{};
+        options.text_size = text_size(state);
+        options.argb = colors[state.color_index].argb;
+        options.wrap_width = wrap_width(state);
+        options.max_input_bytes = TeXRender::RenderOptions::default_untrusted_input_limit;
+        options.max_text_size = TeXRender::RenderOptions::default_untrusted_max_text_size;
+        options.max_wrap_width = TeXRender::RenderOptions::default_untrusted_max_wrap_width;
+        return options;
+    }
+
+    void render_formula(DemoState& state)
+    {
+        auto result = state.document.try_render_detailed(state.latex, render_options(state));
+        if (!result)
         {
-            ed.formula.reset();
-            ed.valid = true;
+            state.status = result.error().message.empty() ? "Render failed" : result.error().message;
+            state.has_error = true;
             return;
         }
 
-        if (auto rendered = ed.document.try_render(ed.source, ed.text_size, k_foreground))
-        {
-            ed.formula = std::move(*rendered);
-            ed.valid = true;
-        }
-        else
-        {
-            ed.valid = false;
-        }
+        state.formula = std::move(result).value();
+        state.status = "Ready: " + std::to_string(state.formula->width()) + " x " + std::to_string(state.formula->height());
+        state.has_error = false;
     }
 
-    void draw_scene()
+    [[nodiscard]] std::string& focused_value(DemoState& state)
     {
-        auto& ed = *g_editor;
-        ClearBackground(k_background);
-        constexpr auto margin = 24;
-        constexpr auto panel_h = 64;
-        const auto panel_w = GetScreenWidth() - 2 * margin;
-        DrawRectangle(margin, margin, panel_w, panel_h, k_panel);
-        DrawRectangleLines(margin, margin, panel_w, panel_h, ed.valid ? k_ok : k_error);
-        constexpr auto font_size = 24;
-        constexpr auto text_x = margin + 16;
-        constexpr auto text_y = margin + (panel_h - font_size) / 2;
-        const auto inner_w = panel_w - 32;
-        const auto caret_px = MeasureText(ed.source.substr(0, ed.caret).c_str(), font_size);
-        if (const auto caret_limit = inner_w - 4; caret_px - ed.caret_scroll > caret_limit)
-            ed.caret_scroll = caret_px - caret_limit;
+        if (state.focus == Focus::size)
+            return state.size_text;
 
-        if (caret_px - ed.caret_scroll < 0)
-            ed.caret_scroll = caret_px;
+        if (state.focus == Focus::wrap)
+            return state.wrap_text;
 
-        ed.caret_scroll = std::max(ed.caret_scroll, 0);
-        BeginScissorMode(text_x, margin, inner_w, panel_h);
-        DrawText(ed.source.c_str(), text_x - ed.caret_scroll, text_y, font_size, k_ink);
-        if (static_cast<int>(GetTime() * 2.) % 2 == 0)
-            DrawRectangle(text_x - ed.caret_scroll + caret_px, text_y, 2, font_size, k_ink);
-
-        EndScissorMode();
-        using namespace std::string_view_literals;
-        auto status = "empty"sv;
-        if (!ed.source.empty())
-            status = ed.valid ? "rendered"sv : "parse error — showing last valid formula"sv;
-
-        DrawText(status.data(), margin, margin + panel_h + 8, 18, ed.valid ? k_ok : k_error);
-        if (ed.formula)
-        {
-            constexpr auto top = margin + panel_h + 48;
-            const auto x = std::max(margin, (GetScreenWidth() - ed.formula->width()) / 2);
-            const auto y = std::max(top, top + (GetScreenHeight() - top - ed.formula->height()) / 2);
-            ed.formula->draw(x, y);
-        }
-        else if (ed.source.empty())
-        {
-            DrawText("type a LaTeX formula…", margin, GetScreenHeight() / 2, 22, k_muted);
-        }
-
-#ifdef __EMSCRIPTEN__
-        constexpr auto hint = "type    <- ->: caret    BACKSPACE: delete    TAB: preset    UP/DOWN: size";
-#else
-        constexpr auto hint = "type    <- ->: caret    BACKSPACE: delete    TAB: preset    UP/DOWN: size    ESC: quit";
-#endif
-        DrawText(hint, margin, GetScreenHeight() - 30, 18, k_muted);
+        return state.latex;
     }
 
-    void update_draw_frame()
+    [[nodiscard]] std::size_t& focused_caret(DemoState& state)
     {
-        auto& ed = *g_editor;
+        if (state.focus == Focus::size)
+            return state.size_caret;
+
+        if (state.focus == Focus::wrap)
+            return state.wrap_caret;
+
+        return state.latex_caret;
+    }
+
+    [[nodiscard]] std::size_t focused_max_size(const DemoState& state)
+    {
+        if (state.focus == Focus::size)
+            return 3;
+
+        if (state.focus == Focus::wrap)
+            return 4;
+
+        return 512;
+    }
+
+    [[nodiscard]] bool focused_accepts_codepoint(const DemoState& state, const int codepoint)
+    {
+        if (state.focus == Focus::latex)
+            return codepoint >= 32;
+
+        return codepoint >= '0' && codepoint <= '9';
+    }
+
+    void handle_text_input(DemoState& state)
+    {
+        auto& active = focused_value(state);
+        auto& caret = focused_caret(state);
+        caret = std::min(caret, active.size());
+
         auto dirty = false;
         for (auto codepoint = GetCharPressed(); codepoint != 0; codepoint = GetCharPressed())
         {
-            if (codepoint >= 32)
+            if (focused_accepts_codepoint(state, codepoint))
+                dirty = insert_codepoint(active, caret, codepoint, focused_max_size(state)) || dirty;
+        }
+
+        if (key_repeats(KEY_BACKSPACE))
+            dirty = erase_before(active, caret) || dirty;
+
+        if (key_repeats(KEY_DELETE))
+            dirty = erase_at(active, caret) || dirty;
+
+        if (key_repeats(KEY_LEFT))
+            caret = prev_boundary(active, caret);
+
+        if (key_repeats(KEY_RIGHT))
+            caret = next_boundary(active, caret);
+
+        if (IsKeyPressed(KEY_HOME))
+            caret = 0;
+
+        if (IsKeyPressed(KEY_END))
+            caret = active.size();
+
+        if (dirty)
+            render_formula(state);
+    }
+
+    [[nodiscard]] std::size_t caret_from_mouse(
+        const std::string& value, const Rectangle rect, const int font_size, const int scroll, const float mouse_x)
+    {
+        const auto local_x = static_cast<int>(mouse_x - rect.x - 10.f) + scroll;
+        if (local_x <= 0)
+            return 0;
+
+        auto best = value.size();
+        auto best_distance = std::abs(MeasureText(value.c_str(), font_size) - local_x);
+        for (auto pos = std::size_t{0}; pos < value.size(); pos = next_boundary(value, pos))
+        {
+            const auto width = MeasureText(value.substr(0, pos).c_str(), font_size);
+            const auto distance = std::abs(width - local_x);
+            if (distance < best_distance)
             {
-                insert_codepoint(ed.source, ed.caret, codepoint);
-                dirty = true;
+                best = pos;
+                best_distance = distance;
             }
         }
 
-        if (key_repeats(KEY_BACKSPACE) && ed.caret > 0)
+        return best;
+    }
+
+    void draw_label(const char* label, const int x, const int y)
+    {
+        DrawText(label, x, y, 14, muted);
+    }
+
+    void draw_field(
+        const Rectangle rect, const std::string& value, const bool active, std::size_t caret, int& scroll, const int font_size = 18)
+    {
+        DrawRectangleRounded(rect, 0.08f, 8, panel);
+        DrawRectangleRoundedLinesEx(rect, 0.08f, 8, 1.f, active ? border_active : border);
+
+        caret = std::min(caret, value.size());
+        const auto inner_x = static_cast<int>(rect.x + 10.f);
+        const auto inner_y = static_cast<int>(rect.y);
+        const auto inner_w = static_cast<int>(rect.width - 20.f);
+        const auto caret_px = MeasureText(value.substr(0, caret).c_str(), font_size);
+        if (caret_px - scroll > inner_w - 4)
+            scroll = caret_px - (inner_w - 4);
+
+        if (caret_px - scroll < 0)
+            scroll = caret_px;
+
+        scroll = std::max(scroll, 0);
+        const auto text_y = static_cast<int>(rect.y + (rect.height - static_cast<float>(font_size)) / 2.f);
+
+        BeginScissorMode(inner_x, inner_y, inner_w, static_cast<int>(rect.height));
+        DrawText(value.c_str(), inner_x - scroll, text_y, font_size, text);
+        if (active && static_cast<int>(GetTime() * 2.0) % 2 == 0)
+            DrawRectangle(inner_x - scroll + caret_px, text_y, 2, font_size, text);
+
+        EndScissorMode();
+    }
+
+    void draw_button(const Rectangle rect, const char* label)
+    {
+        const auto mouse = GetMousePosition();
+        DrawRectangleRounded(rect, 0.12f, 10, contains(rect, mouse) ? button_hover : button);
+        const auto font_size = 18;
+        const auto text_width = MeasureText(label, font_size);
+        DrawText(label, static_cast<int>(rect.x + (rect.width - text_width) / 2), static_cast<int>(rect.y + 12), font_size, WHITE);
+    }
+
+    void draw_ui(DemoState& state)
+    {
+        ClearBackground(background);
+        constexpr auto left_width = 420.f;
+        DrawRectangleRec(Rectangle{0.f, 0.f, left_width, static_cast<float>(GetScreenHeight())}, panel);
+        DrawLine(static_cast<int>(left_width), 0, static_cast<int>(left_width), GetScreenHeight(), border);
+
+        DrawText("TeXRender live_edit", 28, 28, 24, text);
+        DrawText("Native executable", 28, 60, 18, muted);
+
+        const auto latex_rect = Rectangle{28.f, 112.f, 364.f, 150.f};
+        const auto size_rect = Rectangle{28.f, 306.f, 170.f, 40.f};
+        const auto wrap_rect = Rectangle{222.f, 306.f, 170.f, 40.f};
+        const auto render_rect = Rectangle{28.f, 438.f, 364.f, 42.f};
+
+        draw_label("LaTeX", 28, 90);
+        draw_field(latex_rect, state.latex, state.focus == Focus::latex, state.latex_caret, state.latex_scroll, 18);
+
+        draw_label("Size", 28, 284);
+        draw_field(size_rect, state.size_text, state.focus == Focus::size, state.size_caret, state.size_scroll);
+
+        draw_label("Wrap width", 222, 284);
+        draw_field(wrap_rect, state.wrap_text, state.focus == Focus::wrap, state.wrap_caret, state.wrap_scroll);
+
+        draw_label("Color", 28, 366);
+        for (auto i = std::size_t{0}; i < colors.size(); ++i)
         {
-            erase_before(ed.source, ed.caret);
-            dirty = true;
+            const auto rect = Rectangle{28.f + static_cast<float>(i) * 48.f, 390.f, 34.f, 34.f};
+            DrawRectangleRounded(rect, 0.18f, 8, colors[i].raylib);
+            DrawRectangleRoundedLinesEx(rect, 0.18f, 8, i == state.color_index ? 3.f : 1.f, i == state.color_index ? text : border);
         }
 
-        if (key_repeats(KEY_LEFT))
-            ed.caret = prev_boundary(ed.source, ed.caret);
+        draw_button(render_rect, "Render");
+        DrawText(state.status.c_str(), 28, 500, 16, state.has_error ? error : muted);
 
-        if (key_repeats(KEY_RIGHT))
-            ed.caret = next_boundary(ed.source, ed.caret);
+        const auto output = Rectangle{452.f, 32.f, static_cast<float>(GetScreenWidth()) - 484.f, static_cast<float>(GetScreenHeight()) - 64.f};
+        DrawRectangleRounded(output, 0.025f, 12, canvas);
+        DrawRectangleRoundedLinesEx(output, 0.025f, 12, 1.f, border);
 
-        if (IsKeyPressed(KEY_HOME))
-            ed.caret = 0;
-
-        if (IsKeyPressed(KEY_END))
-            ed.caret = ed.source.size();
-
-        if (IsKeyPressed(KEY_TAB))
+        if (state.formula)
         {
-            ed.preset = (ed.preset + 1) % k_presets.size();
-            ed.source = k_presets[ed.preset];
-            ed.caret = ed.source.size();
-            dirty = true;
+            const auto x = static_cast<int>(output.x + std::max(24.f, (output.width - static_cast<float>(state.formula->width())) / 2.f));
+            const auto y = static_cast<int>(output.y + std::max(24.f, (output.height - static_cast<float>(state.formula->height())) / 2.f));
+            state.formula->draw(x, y);
+        }
+    }
+
+    void handle_mouse(DemoState& state)
+    {
+        if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+            return;
+
+        const auto mouse = GetMousePosition();
+        const auto latex_rect = Rectangle{28.f, 112.f, 364.f, 150.f};
+        const auto size_rect = Rectangle{28.f, 306.f, 170.f, 40.f};
+        const auto wrap_rect = Rectangle{222.f, 306.f, 170.f, 40.f};
+        const auto render_rect = Rectangle{28.f, 438.f, 364.f, 42.f};
+
+        if (contains(latex_rect, mouse))
+        {
+            state.focus = Focus::latex;
+            state.latex_caret = caret_from_mouse(state.latex, latex_rect, 18, state.latex_scroll, mouse.x);
+        }
+        else if (contains(size_rect, mouse))
+        {
+            state.focus = Focus::size;
+            state.size_caret = caret_from_mouse(state.size_text, size_rect, 18, state.size_scroll, mouse.x);
+        }
+        else if (contains(wrap_rect, mouse))
+        {
+            state.focus = Focus::wrap;
+            state.wrap_caret = caret_from_mouse(state.wrap_text, wrap_rect, 18, state.wrap_scroll, mouse.x);
+        }
+        else if (contains(render_rect, mouse))
+        {
+            render_formula(state);
         }
 
-        if (IsKeyPressed(KEY_UP))
+        for (auto i = std::size_t{0}; i < colors.size(); ++i)
         {
-            ed.text_size = ed.text_size + 4.f > 200.f ? 200.f : ed.text_size + 4.f;
-            dirty = true;
+            const auto rect = Rectangle{28.f + static_cast<float>(i) * 48.f, 390.f, 34.f, 34.f};
+            if (contains(rect, mouse))
+            {
+                state.color_index = i;
+                render_formula(state);
+                break;
+            }
         }
-
-        if (IsKeyPressed(KEY_DOWN))
-        {
-            ed.text_size = ed.text_size - 4.f < 12.f ? 12.f : ed.text_size - 4.f;
-            dirty = true;
-        }
-
-        if (dirty)
-            rebuild();
-
-        BeginDrawing();
-        draw_scene();
-        EndDrawing();
     }
 } // namespace
 
 int main()
 {
-    InitWindow(1000, 560, "TeXRender — live editor");
-    g_editor.emplace();
-    apply_environment_overrides(*g_editor);
-    rebuild();
+    InitWindow(1100, 620, "TeXRender live_edit");
+    SetTargetFPS(60);
 
-    if (const auto* const shot = std::getenv("TEXRENDER_SCREENSHOT"))
+    auto state = DemoState{};
+    render_formula(state);
+
+    while (!WindowShouldClose())
     {
-        const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-        BeginTextureMode(target);
-        draw_scene();
-        EndTextureMode();
-        auto image = LoadImageFromTexture(target.texture);
-        ImageFlipVertical(&image);
-        ExportImage(image, shot);
-        UnloadImage(image);
-        UnloadRenderTexture(target);
-        g_editor.reset();
-        CloseWindow();
-        return 0;
+        handle_mouse(state);
+        handle_text_input(state);
+
+        BeginDrawing();
+        draw_ui(state);
+        EndDrawing();
     }
 
-#ifdef __EMSCRIPTEN__
-    // The browser paces frames via requestAnimationFrame; this never returns
-    // (the page owns the app's lifetime, so there is no teardown path).
-    emscripten_set_main_loop(update_draw_frame, 0, 1);
-#else
-    SetTargetFPS(60);
-    while (!WindowShouldClose())
-        update_draw_frame();
-
-    // Free the GPU glyph textures while the window is still alive.
-    g_editor.reset();
+    state.formula.reset();
     CloseWindow();
-#endif
     return 0;
 }
