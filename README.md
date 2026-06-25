@@ -67,15 +67,9 @@ packages, then falls back to the pinned submodules when
 `TEXRENDER_USE_SUBMODULE_DEPENDENCIES=ON` (the default).
 
 Installed packages are optional. They can make configure/build faster or let you
-use system versions:
-
-```sh
-brew install freetype tinyxml2
-```
-
-Add `raylib` or `sdl2` only if you want those GUI backends from installed
-packages. Otherwise, initialize the matching submodules and CMake can build them
-from source.
+use system versions, but they are not required for the normal submodule-based
+build. The raylib and SDL2 dependencies are needed only when their backends are
+selected, and they can also come from initialized submodules.
 
 ## CMake Options
 
