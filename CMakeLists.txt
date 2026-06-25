@@ -87,6 +87,7 @@ if (TEXRENDER_BUILD_EXAMPLES)
                 texrender_realtime_values examples/realtime_values.cpp
                 texrender_live examples/live_edit.cpp
                 texrender_raylib_overlay examples/raylib_overlay.cpp
+                texrender_raylib_controls examples/raylib_controls.cpp
         )
     elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
         list(APPEND TEXRENDER_EXAMPLES texrender_sdl2_minimal examples/sdl2_minimal.cpp)

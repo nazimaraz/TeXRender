@@ -227,6 +227,7 @@ The main examples are:
 - `examples/minimal.cpp`: smallest raylib window example
 - `examples/realtime_values.cpp`: animated raylib formulas
 - `examples/live_edit.cpp`: raylib live editor
+- `examples/raylib_controls.cpp`: native raylib version of the WebAssembly controls demo
 - `examples/offscreen.cpp`: render one formula to PNG or PPM
 - `examples/headless_batch.cpp`: render several formulas offscreen
 - `examples/svg_export.cpp`: write SVG output
