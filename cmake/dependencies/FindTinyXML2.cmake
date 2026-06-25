@@ -1,4 +1,6 @@
-find_package(tinyxml2 CONFIG QUIET)
+if (NOT EMSCRIPTEN)
+    find_package(tinyxml2 CONFIG QUIET)
+endif ()
 if (NOT tinyxml2_FOUND)
     set(tinyxml2_BUILD_TESTING OFF CACHE BOOL "" FORCE)
     texrender_add_submodule_dependency(

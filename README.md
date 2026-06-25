@@ -40,6 +40,26 @@ cmake --build build-raylib -j
 ./build-raylib/texrender_live
 ```
 
+Build the WebAssembly demo with Emscripten:
+
+```sh
+emcmake cmake -S . -B build-wasm -DCMAKE_BUILD_TYPE=Release
+cmake --build build-wasm --target texrender_wasm -j
+python3 -m http.server 8000 --directory build-wasm/wasm
+```
+
+Then open `http://localhost:8000`.
+
+Build the raylib WebAssembly demo:
+
+```sh
+emcmake cmake -S . -B build-wasm-raylib -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=raylib
+cmake --build build-wasm-raylib --target texrender_wasm_raylib -j
+python3 -m http.server 8001 --directory build-wasm-raylib/wasm-raylib
+```
+
+Then open `http://localhost:8001`.
+
 ## Requirements
 
 - CMake 3.21+
@@ -82,12 +102,15 @@ texrender_copy_resources(my_app)
 TEXRENDER_BACKEND=headless|svg|raylib|sdl2
 TEXRENDER_BUILD_EXAMPLES=ON|OFF
 TEXRENDER_BUILD_TESTS=ON|OFF
+TEXRENDER_BUILD_WASM_EXAMPLE=ON|OFF
 TEXRENDER_USE_SUBMODULE_DEPENDENCIES=ON|OFF
 TEXRENDER_MICROTEX_LOGS=ON|OFF
 ```
 
 The default backend is `headless`. `HeadlessSurface` and `SvgSurface` are always
 available to user code, even when the default backend is `raylib` or `sdl2`.
+`TEXRENDER_BUILD_WASM_EXAMPLE` is enabled automatically only when configuring
+with Emscripten.
 
 ## Basic Usage
 
@@ -210,6 +233,7 @@ The main examples are:
 - `examples/formula_label_widget.cpp`: baseline/layout helper example
 - `examples/custom_surface.cpp`: minimal custom backend
 - `examples/sdl2_minimal.cpp`: SDL2 renderer example
+- `examples/wasm/`: SVG and raylib WebAssembly demos
 - `examples/untrusted_worker.cpp`: process-boundary pattern for untrusted input
 
 ## How It Works

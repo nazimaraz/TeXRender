@@ -6,8 +6,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(TEXRENDER_BACKEND "headless" CACHE STRING "Rendering backend to build (headless, svg, raylib, sdl2)")
 set_property(CACHE TEXRENDER_BACKEND PROPERTY STRINGS raylib headless svg sdl2)
-option(TEXRENDER_BUILD_EXAMPLES "Build the example applications" ${PROJECT_IS_TOP_LEVEL})
-option(TEXRENDER_BUILD_TESTS "Build texrender smoke tests" ${PROJECT_IS_TOP_LEVEL})
+set(TEXRENDER_BUILD_EXAMPLES_DEFAULT "${PROJECT_IS_TOP_LEVEL}")
+set(TEXRENDER_BUILD_TESTS_DEFAULT "${PROJECT_IS_TOP_LEVEL}")
+if (EMSCRIPTEN)
+    set(TEXRENDER_BUILD_EXAMPLES_DEFAULT OFF)
+    set(TEXRENDER_BUILD_TESTS_DEFAULT OFF)
+endif ()
+option(TEXRENDER_BUILD_EXAMPLES "Build the example applications" ${TEXRENDER_BUILD_EXAMPLES_DEFAULT})
+option(TEXRENDER_BUILD_TESTS "Build texrender smoke tests" ${TEXRENDER_BUILD_TESTS_DEFAULT})
+unset(TEXRENDER_BUILD_EXAMPLES_DEFAULT)
+unset(TEXRENDER_BUILD_TESTS_DEFAULT)
+set(TEXRENDER_BUILD_WASM_EXAMPLE_DEFAULT OFF)
+if (PROJECT_IS_TOP_LEVEL AND EMSCRIPTEN)
+    set(TEXRENDER_BUILD_WASM_EXAMPLE_DEFAULT ON)
+endif ()
+option(TEXRENDER_BUILD_WASM_EXAMPLE "Build the WebAssembly browser example when using Emscripten" ${TEXRENDER_BUILD_WASM_EXAMPLE_DEFAULT})
+unset(TEXRENDER_BUILD_WASM_EXAMPLE_DEFAULT)
 option(TEXRENDER_USE_SUBMODULE_DEPENDENCIES "Use third_party dependency submodules when packages are not installed" ON)
 include(cmake/Dependencies.cmake)
 set(TEXRENDER_RESOURCE_DIR "${MICROTEX_RES_DIR}" CACHE INTERNAL "texrender MicroTeX resource directory")
@@ -85,6 +99,69 @@ if (TEXRENDER_BUILD_EXAMPLES)
         set_target_properties(${example_name} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
         texrender_copy_resources(${example_name})
     endwhile ()
+endif ()
+
+if (TEXRENDER_BUILD_WASM_EXAMPLE)
+    if (NOT EMSCRIPTEN)
+        message(FATAL_ERROR "TEXRENDER_BUILD_WASM_EXAMPLE requires the Emscripten toolchain")
+    endif ()
+
+    set(TEXRENDER_WASM_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/wasm")
+    add_executable(texrender_wasm examples/wasm/texrender_wasm.cpp)
+    target_link_libraries(texrender_wasm PRIVATE texrender::texrender)
+    set_target_properties(texrender_wasm PROPERTIES
+            CXX_STANDARD 17
+            CXX_STANDARD_REQUIRED ON
+            RUNTIME_OUTPUT_DIRECTORY "${TEXRENDER_WASM_OUTPUT_DIR}"
+            SUFFIX ".js"
+    )
+    target_link_options(texrender_wasm PRIVATE
+            "--no-entry"
+            "--preload-file" "${TEXRENDER_RESOURCE_DIR}@/texrender-res"
+            "-sALLOW_MEMORY_GROWTH=1"
+            "-sFILESYSTEM=1"
+            "-sMODULARIZE=1"
+            "-sEXPORT_NAME=createTeXRenderModule"
+            "-sEXPORTED_FUNCTIONS=['_texrender_render_svg','_texrender_last_error']"
+            "-sEXPORTED_RUNTIME_METHODS=['cwrap']"
+    )
+    add_custom_command(TARGET texrender_wasm POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${CMAKE_CURRENT_SOURCE_DIR}/examples/wasm/index.html"
+                    "${TEXRENDER_WASM_OUTPUT_DIR}/index.html"
+            COMMENT "Copying texrender WebAssembly example page"
+            VERBATIM
+    )
+
+    if (TEXRENDER_BACKEND STREQUAL "raylib")
+        set(TEXRENDER_WASM_RAYLIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/wasm-raylib")
+        add_executable(texrender_wasm_raylib examples/wasm/raylib_wasm.cpp)
+        target_link_libraries(texrender_wasm_raylib PRIVATE texrender::texrender)
+        target_compile_definitions(texrender_wasm_raylib PRIVATE "TEXRENDER_RES_DIR=\"/texrender-res\"")
+        set_target_properties(texrender_wasm_raylib PROPERTIES
+                CXX_STANDARD 17
+                CXX_STANDARD_REQUIRED ON
+                RUNTIME_OUTPUT_DIRECTORY "${TEXRENDER_WASM_RAYLIB_OUTPUT_DIR}"
+                SUFFIX ".js"
+        )
+        target_link_options(texrender_wasm_raylib PRIVATE
+                "--preload-file" "${TEXRENDER_RESOURCE_DIR}@/texrender-res"
+                "-sALLOW_MEMORY_GROWTH=1"
+                "-sFILESYSTEM=1"
+                "-sMODULARIZE=1"
+                "-sEXPORT_NAME=createTeXRenderRaylibModule"
+                "-sEXPORTED_FUNCTIONS=['_main','_texrender_raylib_render','_texrender_raylib_last_error','_texrender_raylib_width','_texrender_raylib_height']"
+                "-sEXPORTED_RUNTIME_METHODS=['cwrap']"
+                "-sASYNCIFY"
+        )
+        add_custom_command(TARGET texrender_wasm_raylib POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${CMAKE_CURRENT_SOURCE_DIR}/examples/wasm/raylib.html"
+                        "${TEXRENDER_WASM_RAYLIB_OUTPUT_DIR}/index.html"
+                COMMENT "Copying texrender raylib WebAssembly example page"
+                VERBATIM
+        )
+    endif ()
 endif ()
 
 if (TEXRENDER_BUILD_TESTS)

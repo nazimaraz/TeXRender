@@ -224,7 +224,8 @@ namespace
     [[nodiscard]] microtex::Render* parse_latex(const std::string& latex, const RenderOptions& options)
     {
         const auto fill_width = latex.rfind("$$", 0) != 0 && latex.rfind(R"(\[)", 0) != 0;
-        return microtex::MicroTeX::parse(latex, static_cast<float>(effective_wrap_width(options)), options.text_size, 0.f,
+        const auto line_space = options.wrap_width > 0 ? options.text_size * 0.25f : 0.f;
+        return microtex::MicroTeX::parse(latex, static_cast<float>(effective_wrap_width(options)), options.text_size, line_space,
             options.argb, fill_width, {true, microtex::TexStyle::display});
     }
 } // namespace
