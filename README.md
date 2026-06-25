@@ -60,20 +60,22 @@ cmake --build build-raylib -j
 
 - CMake 3.21+
 - C++17 compiler
-- Git submodules initialized
-- FreeType
-- TinyXML2, currently still resolved by the CMake dependency layer
-- raylib only when `TEXRENDER_BACKEND=raylib`
-- SDL2 only when `TEXRENDER_BACKEND=sdl2`
+- Git submodules initialized with `git submodule update --init --recursive`
 
-On macOS, this is usually enough for the non-GUI path:
+That is enough for the normal source build. TeXRender first looks for installed
+packages, then falls back to the pinned submodules when
+`TEXRENDER_USE_SUBMODULE_DEPENDENCIES=ON` (the default).
+
+Installed packages are optional. They can make configure/build faster or let you
+use system versions:
 
 ```sh
 brew install freetype tinyxml2
 ```
 
-Add `raylib` or `sdl2` if you want those installed-package backends. If an
-installed package is not found, the project can use the matching submodule.
+Add `raylib` or `sdl2` only if you want those GUI backends from installed
+packages. Otherwise, initialize the matching submodules and CMake can build them
+from source.
 
 ## CMake Options
 
