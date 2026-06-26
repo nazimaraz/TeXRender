@@ -1,9 +1,3 @@
-// Minimal custom backend: count MicroTeX draw calls without drawing pixels.
-//
-// This is useful as a starting point for integrating texrender with an engine that
-// has its own command buffer or renderer. Real backends translate these methods
-// to their graphics API; the parser, layout, transforms, and glyph rasterization
-// stay inside TeXRender.
 #include <cstdint>
 #include <cstdio>
 #include <memory>
@@ -13,7 +7,7 @@
 #include <texrender/latex_document.hpp>
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "res"
+#   define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -22,7 +16,7 @@ namespace
     class CountingSurface final : public TeXRender::IDrawSurface
     {
     public:
-        void set_color(std::uint32_t argb) override
+        void set_color(const std::uint32_t argb) override
         {
             last_color = argb;
             ++colors;
@@ -74,15 +68,12 @@ namespace
 int main()
 {
     auto owned = std::make_unique<CountingSurface>();
-    auto* const stats = owned.get();
+    const auto* const stats = owned.get();
     const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
     const auto formula = document.render(R"(\frac{a^2+b^2}{c})", 48.f, 0xff223344);
-
     formula.draw(0, 0);
-
     std::printf("formula: %dx%d baseline %.1f\n", formula.width(), formula.height(), formula.baseline());
     std::printf("draw calls: colors=%d lines=%d rects=%d glyphs=%d covered=%zu last_color=0x%08x\n", stats->colors, stats->lines,
         stats->rects, stats->glyphs, stats->covered_pixels, stats->last_color);
-
     return stats->glyphs > 0 ? 0 : 1;
 }

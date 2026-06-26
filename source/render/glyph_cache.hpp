@@ -36,14 +36,8 @@ namespace TeXRender
         GlyphCache& operator=(GlyphCache&&) = delete;
         ~GlyphCache();
 
-        // Stable id for the font file at path; 0 if it cannot be loaded
-        // (failures are cached, so retries are cheap).
         [[nodiscard]] std::uint32_t face_for(const std::string& path);
         [[nodiscard]] std::uint32_t glyph_index_for(std::uint32_t face_id, char32_t codepoint) const;
-
-        // Rasterise (or fetch) one glyph. The returned pointer is owned by the
-        // cache and is only guaranteed valid until the next glyph() call, which
-        // may evict the entry — consume it immediately, never store it.
         [[nodiscard]] const Glyph* glyph(std::uint32_t face_id, char32_t codepoint, int pixel_size);
         [[nodiscard]] const Glyph* glyph_index(std::uint32_t face_id, std::uint32_t glyph_index, int pixel_size);
 
@@ -93,6 +87,8 @@ namespace TeXRender
             std::list<std::uint64_t>::iterator lru_it;
         };
 
+        [[nodiscard]] const Glyph* load_glyph(std::uint32_t face_id, std::uint32_t glyph_id, int pixel_size, GlyphLoadMode mode);
+
         FT_LibraryRec_* library_{};
         std::unordered_map<std::string, FaceEntry> faces_;
         std::unordered_map<std::uint32_t, FT_FaceRec_*> faces_by_id_;
@@ -101,8 +97,6 @@ namespace TeXRender
         std::list<std::uint64_t> lru_;
         std::uint32_t next_face_id_ = 1;
         std::uint64_t next_glyph_key_ = 1;
-
-        [[nodiscard]] const Glyph* load_glyph(std::uint32_t face_id, std::uint32_t glyph_id, int pixel_size, GlyphLoadMode mode);
     };
 
     namespace detail

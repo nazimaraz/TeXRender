@@ -10,7 +10,7 @@
 #include <texrender/latex_document.hpp>
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "res"
+#   define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -100,7 +100,7 @@ namespace
         return IsKeyPressed(key) || IsKeyPressedRepeat(key);
     }
 
-    bool insert_codepoint(std::string& source, std::size_t& caret, const int codepoint, const std::size_t max_size)
+    [[nodiscard]] bool insert_codepoint(std::string& source, std::size_t& caret, const int codepoint, const std::size_t max_size)
     {
         auto size = 0;
         const auto* const utf8 = CodepointToUTF8(codepoint, &size);
@@ -113,7 +113,7 @@ namespace
         return true;
     }
 
-    bool erase_before(std::string& source, std::size_t& caret)
+    [[nodiscard]] bool erase_before(std::string& source, std::size_t& caret)
     {
         if (caret == 0)
             return false;
@@ -124,7 +124,7 @@ namespace
         return true;
     }
 
-    bool erase_at(std::string& source, std::size_t& caret)
+    [[nodiscard]] bool erase_at(std::string& source, const std::size_t caret)
     {
         if (caret >= source.size())
             return false;
@@ -259,8 +259,8 @@ namespace
             render_formula(state);
     }
 
-    [[nodiscard]] std::size_t caret_from_mouse(
-        const std::string& value, const Rectangle rect, const int font_size, const int scroll, const float mouse_x)
+    [[nodiscard]] std::size_t caret_from_mouse(const std::string& value, const Rectangle rect, const int font_size,
+        const int scroll, const float mouse_x)
     {
         const auto local_x = static_cast<int>(mouse_x - rect.x - 10.f) + scroll;
         if (local_x <= 0)
@@ -287,12 +287,11 @@ namespace
         DrawText(label, x, y, 14, muted);
     }
 
-    void draw_field(
-        const Rectangle rect, const std::string& value, const bool active, std::size_t caret, int& scroll, const int font_size = 18)
+    void draw_field(const Rectangle rect, const std::string& value, const bool active, std::size_t caret, int& scroll,
+        const int font_size = 18)
     {
         DrawRectangleRounded(rect, 0.08f, 8, panel);
         DrawRectangleRoundedLinesEx(rect, 0.08f, 8, 1.f, active ? border_active : border);
-
         caret = std::min(caret, value.size());
         const auto inner_x = static_cast<int>(rect.x + 10.f);
         const auto inner_y = static_cast<int>(rect.y);
@@ -306,7 +305,6 @@ namespace
 
         scroll = std::max(scroll, 0);
         const auto text_y = static_cast<int>(rect.y + (rect.height - static_cast<float>(font_size)) / 2.f);
-
         BeginScissorMode(inner_x, inner_y, inner_w, static_cast<int>(rect.height));
         DrawText(value.c_str(), inner_x - scroll, text_y, font_size, text);
         if (active && static_cast<int>(GetTime() * 2.0) % 2 == 0)
@@ -330,24 +328,18 @@ namespace
         constexpr auto left_width = 420.f;
         DrawRectangleRec(Rectangle{0.f, 0.f, left_width, static_cast<float>(GetScreenHeight())}, panel);
         DrawLine(static_cast<int>(left_width), 0, static_cast<int>(left_width), GetScreenHeight(), border);
-
         DrawText("TeXRender live_edit", 28, 28, 24, text);
         DrawText("Native executable", 28, 60, 18, muted);
-
-        const auto latex_rect = Rectangle{28.f, 112.f, 364.f, 150.f};
-        const auto size_rect = Rectangle{28.f, 306.f, 170.f, 40.f};
-        const auto wrap_rect = Rectangle{222.f, 306.f, 170.f, 40.f};
-        const auto render_rect = Rectangle{28.f, 438.f, 364.f, 42.f};
-
+        constexpr auto latex_rect = Rectangle{28.f, 112.f, 364.f, 150.f};
+        constexpr auto size_rect = Rectangle{28.f, 306.f, 170.f, 40.f};
+        constexpr auto wrap_rect = Rectangle{222.f, 306.f, 170.f, 40.f};
+        constexpr auto render_rect = Rectangle{28.f, 438.f, 364.f, 42.f};
         draw_label("LaTeX", 28, 90);
         draw_field(latex_rect, state.latex, state.focus == Focus::latex, state.latex_caret, state.latex_scroll, 18);
-
         draw_label("Size", 28, 284);
         draw_field(size_rect, state.size_text, state.focus == Focus::size, state.size_caret, state.size_scroll);
-
         draw_label("Wrap width", 222, 284);
         draw_field(wrap_rect, state.wrap_text, state.focus == Focus::wrap, state.wrap_caret, state.wrap_scroll);
-
         draw_label("Color", 28, 366);
         for (auto i = std::size_t{0}; i < colors.size(); ++i)
         {
@@ -358,15 +350,16 @@ namespace
 
         draw_button(render_rect, "Render");
         DrawText(state.status.c_str(), 28, 500, 16, state.has_error ? error : muted);
-
-        const auto output = Rectangle{452.f, 32.f, static_cast<float>(GetScreenWidth()) - 484.f, static_cast<float>(GetScreenHeight()) - 64.f};
+        const auto output =
+            Rectangle{452.f, 32.f, static_cast<float>(GetScreenWidth()) - 484.f, static_cast<float>(GetScreenHeight()) - 64.f};
         DrawRectangleRounded(output, 0.025f, 12, canvas);
         DrawRectangleRoundedLinesEx(output, 0.025f, 12, 1.f, border);
-
         if (state.formula)
         {
-            const auto x = static_cast<int>(output.x + std::max(24.f, (output.width - static_cast<float>(state.formula->width())) / 2.f));
-            const auto y = static_cast<int>(output.y + std::max(24.f, (output.height - static_cast<float>(state.formula->height())) / 2.f));
+            const auto x =
+                static_cast<int>(output.x + std::max(24.f, (output.width - static_cast<float>(state.formula->width())) / 2.f));
+            const auto y =
+                static_cast<int>(output.y + std::max(24.f, (output.height - static_cast<float>(state.formula->height())) / 2.f));
             state.formula->draw(x, y);
         }
     }
@@ -381,7 +374,6 @@ namespace
         const auto size_rect = Rectangle{28.f, 306.f, 170.f, 40.f};
         const auto wrap_rect = Rectangle{222.f, 306.f, 170.f, 40.f};
         const auto render_rect = Rectangle{28.f, 438.f, 364.f, 42.f};
-
         if (contains(latex_rect, mouse))
         {
             state.focus = Focus::latex;
@@ -404,8 +396,7 @@ namespace
 
         for (auto i = std::size_t{0}; i < colors.size(); ++i)
         {
-            const auto rect = Rectangle{28.f + static_cast<float>(i) * 48.f, 390.f, 34.f, 34.f};
-            if (contains(rect, mouse))
+            if (const auto rect = Rectangle{28.f + static_cast<float>(i) * 48.f, 390.f, 34.f, 34.f}; contains(rect, mouse))
             {
                 state.color_index = i;
                 render_formula(state);
@@ -419,15 +410,12 @@ int main()
 {
     InitWindow(1100, 620, "TeXRender live_edit");
     SetTargetFPS(60);
-
     auto state = DemoState{};
     render_formula(state);
-
     while (!WindowShouldClose())
     {
         handle_mouse(state);
         handle_text_input(state);
-
         BeginDrawing();
         draw_ui(state);
         EndDrawing();

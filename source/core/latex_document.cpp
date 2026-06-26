@@ -241,7 +241,8 @@ IDrawSurface& LatexDocument::surface() const
     return *state_->surface();
 }
 
-RenderHandle LatexDocument::render(const std::string& latex, const float text_size, const std::uint32_t argb, const int wrap_width) const
+RenderHandle LatexDocument::render(const std::string& latex, const float text_size, const std::uint32_t argb,
+    const int wrap_width) const
 {
     auto options = RenderOptions{};
     options.text_size = text_size;

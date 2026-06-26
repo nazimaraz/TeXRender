@@ -15,20 +15,18 @@ using namespace TeXRender;
 
 namespace
 {
-    std::string& mutable_default_font_path()
+    [[nodiscard]] std::string& mutable_default_font_path()
     {
         static auto path = std::string{};
         return path;
     }
 
-    std::mutex& default_font_path_mutex()
+    [[nodiscard]] std::mutex& default_font_path_mutex()
     {
         static auto mutex = std::mutex{};
         return mutex;
     }
 
-    // Copy a freshly rendered FreeType slot into a cache Glyph. Always records the
-    // advance/bearings; only fills pixels for a sane, non-empty, in-range bitmap.
     void decode_glyph_bitmap(GlyphCache::Glyph& g, const FT_GlyphSlotRec_& slot)
     {
         const auto& bmp = slot.bitmap;
@@ -54,9 +52,6 @@ namespace
             return;
 
         g.pixels.resize(pitch * height);
-        // FT_LOAD_RENDER produces down-flow bitmaps (pitch > 0) today, but handle
-        // up-flow too: there the top image row sits at the end of the buffer and the
-        // negative bmp.pitch walks backwards from it.
         const auto* const top_row = bmp.pitch < 0 ? bmp.buffer + static_cast<std::ptrdiff_t>(g.height - 1) * g.pitch : bmp.buffer;
         for (auto row = 0; row < g.height; ++row)
         {
@@ -181,14 +176,14 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const std::uint32_t face_id, con
     }
 
     lru_.push_front(key);
-    const auto emplaced = glyphs_.emplace(key, CachedGlyph{std::move(g), lookup, lru_.begin()});
-    const auto it = emplaced.first;
+    const auto it = glyphs_.emplace(key, CachedGlyph{std::move(g), lookup, lru_.begin()}).first;
     const auto max_glyphs = std::max<std::size_t>(1, cache_limits().max_cpu_glyphs);
-    while (glyphs_.size() > max_glyphs)
+    for (auto excess = glyphs_.size(); excess > max_glyphs; --excess)
     {
         const auto oldest = lru_.back();
         if (const auto old_glyph = glyphs_.find(oldest); old_glyph != glyphs_.end())
             glyph_ids_.erase(old_glyph->second.lookup);
+
         glyphs_.erase(oldest);
         lru_.pop_back();
     }

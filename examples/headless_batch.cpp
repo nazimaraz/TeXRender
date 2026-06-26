@@ -6,10 +6,10 @@
 #include <texrender/latex_document.hpp>
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "res"
+#   define TEXRENDER_RES_DIR "res"
 #endif
 
-int main(int argc, char** argv)
+int main(const int argc, char** argv)
 {
     auto formulas = std::vector<std::string>{};
     for (auto i = 1; i < argc; ++i)
@@ -37,8 +37,7 @@ int main(int argc, char** argv)
         options.max_input_bytes = 8192;
         options.max_text_size = 128.f;
         options.max_wrap_width = 1200;
-
-        auto formula = document.try_render(latex, options);
+        const auto formula = document.try_render(latex, options);
         if (!formula)
         {
             std::cerr << "Skipping invalid formula: " << latex << '\n';
@@ -49,7 +48,6 @@ int main(int argc, char** argv)
         canvas->resize(formula->width() + 2 * margin, formula->height() + 2 * margin);
         canvas->clear(0xffffffff);
         formula->draw(margin, margin);
-
         const auto output = "formula-" + std::to_string(index++) + ".png";
         if (!canvas->write_png(output))
         {

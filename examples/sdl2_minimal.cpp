@@ -4,7 +4,7 @@
 #include <texrender/sdl2_surface.hpp>
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "res"
+#   define TEXRENDER_RES_DIR "res"
 #endif
 
 int main()

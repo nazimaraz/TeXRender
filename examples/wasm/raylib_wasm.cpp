@@ -9,7 +9,7 @@
 #include <texrender/latex_document.hpp>
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "/texrender-res"
+#   define TEXRENDER_RES_DIR "/texrender-res"
 #endif
 
 namespace
@@ -23,8 +23,7 @@ namespace
     std::optional<TeXRender::RenderHandle> g_formula;
     std::string g_error;
 
-    [[nodiscard]] TeXRender::RenderOptions render_options(
-        const float text_size, const std::uint32_t argb, const int wrap_width)
+    [[nodiscard]] TeXRender::RenderOptions render_options(const float text_size, const std::uint32_t argb, const int wrap_width)
     {
         auto options = TeXRender::RenderOptions{};
         options.text_size = text_size;
@@ -52,61 +51,60 @@ namespace
     }
 } // namespace
 
-extern "C"
+extern "C" {
+EMSCRIPTEN_KEEPALIVE int texrender_raylib_render(const char* latex, const float text_size, const std::uint32_t argb,
+    const int wrap_width)
 {
-    EMSCRIPTEN_KEEPALIVE int texrender_raylib_render(
-        const char* latex, const float text_size, const std::uint32_t argb, const int wrap_width)
+    if (latex == nullptr)
     {
-        if (latex == nullptr)
+        g_error = "texrender: latex input is null";
+        g_formula.reset();
+        return 0;
+    }
+
+    try
+    {
+        if (!g_document)
+            g_document = std::make_unique<TeXRender::LatexDocument>(TEXRENDER_RES_DIR);
+
+        auto result = g_document->try_render_detailed(latex, render_options(text_size, argb, wrap_width));
+        if (!result)
         {
-            g_error = "texrender: latex input is null";
+            g_error = result.error().message;
             g_formula.reset();
             return 0;
         }
 
-        try
-        {
-            if (!g_document)
-                g_document = std::make_unique<TeXRender::LatexDocument>(TEXRENDER_RES_DIR);
-
-            auto result = g_document->try_render_detailed(latex, render_options(text_size, argb, wrap_width));
-            if (!result)
-            {
-                g_error = result.error().message;
-                g_formula.reset();
-                return 0;
-            }
-
-            g_error.clear();
-            g_formula = std::move(result).value();
-            return 1;
-        } catch (const std::exception& error)
-        {
-            g_error = error.what();
-            g_formula.reset();
-            return 0;
-        } catch (...)
-        {
-            g_error = "texrender: unknown render failure";
-            g_formula.reset();
-            return 0;
-        }
-    }
-
-    EMSCRIPTEN_KEEPALIVE const char* texrender_raylib_last_error()
+        g_error.clear();
+        g_formula = std::move(result).value();
+        return 1;
+    } catch (const std::exception& error)
     {
-        return g_error.c_str();
-    }
-
-    EMSCRIPTEN_KEEPALIVE int texrender_raylib_width()
+        g_error = error.what();
+        g_formula.reset();
+        return 0;
+    } catch (...)
     {
-        return g_formula ? g_formula->width() : 0;
+        g_error = "texrender: unknown render failure";
+        g_formula.reset();
+        return 0;
     }
+}
 
-    EMSCRIPTEN_KEEPALIVE int texrender_raylib_height()
-    {
-        return g_formula ? g_formula->height() : 0;
-    }
+EMSCRIPTEN_KEEPALIVE const char* texrender_raylib_last_error()
+{
+    return g_error.c_str();
+}
+
+EMSCRIPTEN_KEEPALIVE int texrender_raylib_width()
+{
+    return g_formula ? g_formula->width() : 0;
+}
+
+EMSCRIPTEN_KEEPALIVE int texrender_raylib_height()
+{
+    return g_formula ? g_formula->height() : 0;
+}
 }
 
 int main()

@@ -86,7 +86,6 @@ void FtTextLayout::getBounds(microtex::Rect& bounds)
     }
 
     const auto face_id = cache.face_for(font_path_);
-
     auto width = 0.f;
     auto ascent = 0;
     auto descent = 0;
@@ -130,7 +129,7 @@ void FtTextLayout::draw(microtex::Graphics2D& g2, const float x, const float y)
     }
 }
 
-void TeXRender::detail::register_microtex_platform_factory()
+void detail::register_microtex_platform_factory()
 {
     static auto registered = false;
     if (registered)

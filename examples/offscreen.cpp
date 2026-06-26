@@ -10,7 +10,7 @@
 #include <texrender/latex_document.hpp>
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "res"
+#   define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
@@ -21,7 +21,7 @@ namespace
     }
 } // namespace
 
-int main(int argc, char** argv)
+int main(const int argc, char** argv)
 {
     const auto latex = std::string{argc > 1 ? argv[1] : R"(\int_{0}^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2})"};
     const auto out = std::string{argc > 2 ? argv[2] : "formula.png"};

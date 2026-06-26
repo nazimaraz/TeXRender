@@ -8,10 +8,10 @@
 #include <texrender/svg_surface.hpp>
 
 #ifndef TEXRENDER_RES_DIR
-#define TEXRENDER_RES_DIR "res"
+#   define TEXRENDER_RES_DIR "res"
 #endif
 
-int main(int argc, char** argv)
+int main(const int argc, char** argv)
 {
     const auto latex = std::string{argc > 1 ? argv[1] : R"(\sqrt{\frac{a^2+b^2}{c}})"};
     const auto out = std::string{argc > 2 ? argv[2] : "formula.svg"};

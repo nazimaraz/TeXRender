@@ -46,7 +46,10 @@ int main()
         R"(\text{OpenMath smoke test})",
     };
 
-    return std::all_of(formulas.begin(), formulas.end(), [&](const std::string_view latex) {
-        return render_non_empty(document, *canvas, latex);
-    }) ? 0 : 1;
+    return std::all_of(formulas.begin(), formulas.end(),
+               [&](const std::string_view latex) {
+                   return render_non_empty(document, *canvas, latex);
+               })
+               ? 0
+               : 1;
 }
