@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cstdint>
 #include <exception>
 #include <memory>
 #include <string>
@@ -11,7 +10,6 @@ namespace
 {
     constexpr auto resource_root = "/texrender-res";
     constexpr auto margin = 16;
-
     std::string g_svg;
     std::string g_error;
 
@@ -39,7 +37,7 @@ extern "C" {
 EMSCRIPTEN_KEEPALIVE const char* texrender_render_svg(const char* latex, const float text_size, const std::uint32_t argb,
     const int wrap_width)
 {
-    if (latex == nullptr)
+    if (!latex)
         return fail("texrender: latex input is null");
 
     try
@@ -56,7 +54,6 @@ EMSCRIPTEN_KEEPALIVE const char* texrender_render_svg(const char* latex, const f
         surface.resize(width, height);
         surface.clear();
         result->draw(margin, margin);
-
         g_error.clear();
         g_svg = surface.svg();
         return g_svg.c_str();

@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cstdint>
 #include <exception>
 #include <memory>
 #include <optional>
@@ -7,7 +6,6 @@
 #include <raylib.h>
 #include <emscripten/emscripten.h>
 #include <texrender/latex_document.hpp>
-
 #ifndef TEXRENDER_RES_DIR
 #   define TEXRENDER_RES_DIR "/texrender-res"
 #endif
@@ -18,7 +16,6 @@ namespace
     constexpr auto canvas_height = 540;
     constexpr auto canvas_background = Color{255, 255, 255, 255};
     constexpr auto formula_argb = std::uint32_t{0xff1a1a2e};
-
     std::unique_ptr<TeXRender::LatexDocument> g_document;
     std::optional<TeXRender::RenderHandle> g_formula;
     std::string g_error;
@@ -39,7 +36,6 @@ namespace
     {
         BeginDrawing();
         ClearBackground(canvas_background);
-
         if (g_formula)
         {
             const auto x = std::max(16, (GetScreenWidth() - g_formula->width()) / 2);
@@ -55,7 +51,7 @@ extern "C" {
 EMSCRIPTEN_KEEPALIVE int texrender_raylib_render(const char* latex, const float text_size, const std::uint32_t argb,
     const int wrap_width)
 {
-    if (latex == nullptr)
+    if (!latex)
     {
         g_error = "texrender: latex input is null";
         g_formula.reset();
@@ -112,6 +108,6 @@ int main()
     InitWindow(canvas_width, canvas_height, "TeXRender raylib WebAssembly");
     SetTargetFPS(60);
     texrender_raylib_render(R"(\int_0^1 x^2\,dx = \frac{1}{3})", 72.f, formula_argb, 360);
-    emscripten_set_main_loop(draw_frame, 0, 1);
+    emscripten_set_main_loop(draw_frame, 0, true);
     return 0;
 }

@@ -1,18 +1,14 @@
-#include <cstdint>
-#include <cstdio>
 #include <memory>
 #include <cstddef>
 #include <texrender/draw_surface.hpp>
 #include <texrender/glyph_bitmap.hpp>
 #include <texrender/latex_document.hpp>
-
 #ifndef TEXRENDER_RES_DIR
 #   define TEXRENDER_RES_DIR "res"
 #endif
 
 namespace
 {
-    //! [custom-surface]
     class CountingSurface final : public TeXRender::IDrawSurface
     {
     public:
@@ -61,8 +57,6 @@ namespace
         int glyphs = 0;
         std::size_t covered_pixels = 0;
     };
-
-    //! [custom-surface]
 } // namespace
 
 int main()
