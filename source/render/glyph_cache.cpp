@@ -65,7 +65,7 @@ GlyphCache::GlyphCache()
 {
     if (FT_Init_FreeType(&library_) != 0)
     {
-        library_ = nullptr; // face_for() then yields 0 and glyphs stay null
+        library_ = nullptr;
         detail::debug_log("failed to initialise FreeType; no glyph will render");
     }
 }
@@ -146,7 +146,7 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const std::uint32_t face_id, con
     const auto key = id_it->second;
     if (const auto cached = glyphs_.find(key); cached != glyphs_.end())
     {
-        lru_.splice(lru_.begin(), lru_, cached->second.lru_it); // mark most-recently-used
+        lru_.splice(lru_.begin(), lru_, cached->second.lru_it);
         return &cached->second.glyph;
     }
 
