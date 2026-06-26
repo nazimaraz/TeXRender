@@ -31,9 +31,9 @@ namespace TeXRender
         [[nodiscard]] bool write_svg(const std::string& path) const;
 
     private:
-        int width_ = 0;
-        int height_ = 0;
-        std::uint32_t color_ = 0xff000000;
+        int width_{0};
+        int height_{0};
+        std::uint32_t color_{0xff000000};
         std::optional<std::uint32_t> background_;
         std::vector<std::string> elements_;
     };

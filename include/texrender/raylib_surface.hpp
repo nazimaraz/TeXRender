@@ -42,7 +42,7 @@ namespace TeXRender
 
         std::unordered_map<std::uint64_t, CachedTexture> textures_;
         std::list<std::uint64_t> lru_;
-        std::size_t max_textures_ = 1024;
+        std::size_t max_textures_{1024};
         Color color_{0, 0, 0, 255};
     };
 } // namespace TeXRender

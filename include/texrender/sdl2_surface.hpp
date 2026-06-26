@@ -42,17 +42,17 @@ namespace TeXRender
 
         struct CachedTexture
         {
-            SDL_Texture* texture = nullptr;
+            SDL_Texture* texture{};
             std::list<std::uint64_t>::iterator lru_it;
         };
 
-        SDL_Renderer* renderer_ = nullptr;
+        SDL_Renderer* renderer_{};
         std::unordered_map<std::uint64_t, CachedTexture> textures_;
         std::list<std::uint64_t> lru_;
-        std::size_t max_textures_ = 1024;
-        std::uint8_t r_ = 0;
-        std::uint8_t g_ = 0;
-        std::uint8_t b_ = 0;
-        std::uint8_t a_ = 255;
+        std::size_t max_textures_{1024};
+        std::uint8_t r_{0};
+        std::uint8_t g_{0};
+        std::uint8_t b_{0};
+        std::uint8_t a_{255};
     };
 } // namespace TeXRender

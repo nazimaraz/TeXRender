@@ -24,12 +24,12 @@ namespace TeXRender
         static constexpr auto default_untrusted_max_text_size = 512.f;
         static constexpr auto no_wrap_width_limit = 0;
         static constexpr auto default_untrusted_max_wrap_width = 32'768;
-        float text_size = 48.f;
-        std::uint32_t argb = 0xff000000;
-        int wrap_width = 0;
-        std::size_t max_input_bytes = no_input_limit;
-        float max_text_size = no_text_size_limit;
-        int max_wrap_width = no_wrap_width_limit;
+        float text_size{48.f};
+        std::uint32_t argb{0xff000000};
+        int wrap_width{0};
+        std::size_t max_input_bytes{no_input_limit};
+        float max_text_size{no_text_size_limit};
+        int max_wrap_width{no_wrap_width_limit};
     };
 
     enum class RenderErrorCode : std::uint8_t

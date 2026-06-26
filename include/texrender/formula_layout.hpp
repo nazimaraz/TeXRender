@@ -9,10 +9,10 @@ namespace TeXRender
 {
     struct FormulaBox
     {
-        int width = 0;
-        int height = 0;
-        int depth = 0;
-        float baseline = 0.f;
+        int width{0};
+        int height{0};
+        int depth{0};
+        float baseline{0.f};
     };
 
     enum class FormulaAnchor : std::uint8_t

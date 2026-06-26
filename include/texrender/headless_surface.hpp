@@ -30,12 +30,12 @@ namespace TeXRender
         [[nodiscard]] bool write_png(const std::string& path) const;
 
     private:
-        int width_ = 0;
-        int height_ = 0;
+        int width_{0};
+        int height_{0};
         std::vector<unsigned char> pixels_;
-        unsigned char r_ = 0;
-        unsigned char g_ = 0;
-        unsigned char b_ = 0;
-        unsigned char a_ = 255;
+        unsigned char r_{0};
+        unsigned char g_{0};
+        unsigned char b_{0};
+        unsigned char a_{255};
     };
 } // namespace TeXRender
