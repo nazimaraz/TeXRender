@@ -15,7 +15,7 @@ namespace TeXRender
         float baseline = 0.f;
     };
 
-    enum class FormulaAnchor
+    enum class FormulaAnchor : std::uint8_t
     {
         top,
         baseline,

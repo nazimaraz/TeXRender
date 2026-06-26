@@ -25,7 +25,7 @@ namespace TeXRender
     public:
         TEXRENDER_EXPORT ~RenderHandle() noexcept;
         TEXRENDER_EXPORT RenderHandle(RenderHandle&&) noexcept;
-        TEXRENDER_EXPORT RenderHandle& operator=(RenderHandle&&) noexcept;
+        TEXRENDER_EXPORT RenderHandle& operator=(RenderHandle&& other) noexcept;
         RenderHandle(const RenderHandle&) = delete;
         RenderHandle& operator=(const RenderHandle&) = delete;
 

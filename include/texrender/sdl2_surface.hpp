@@ -33,7 +33,7 @@ namespace TeXRender
         void fill_round_rect(float x, float y, float w, float h, float rx, float ry) override;
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
         void unload() noexcept;
-        void set_max_textures(std::size_t max_textures);
+        void set_max_textures(std::size_t texture_limit);
         [[nodiscard]] std::size_t max_textures() const noexcept;
 
     private:
@@ -43,7 +43,7 @@ namespace TeXRender
         struct CachedTexture
         {
             SDL_Texture* texture = nullptr;
-            std::list<std::uint64_t>::iterator lru_it{};
+            std::list<std::uint64_t>::iterator lru_it;
         };
 
         SDL_Renderer* renderer_ = nullptr;

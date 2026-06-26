@@ -32,7 +32,7 @@ namespace TeXRender
         int max_wrap_width = no_wrap_width_limit;
     };
 
-    enum class RenderErrorCode
+    enum class RenderErrorCode : std::uint8_t
     {
         none,
         invalid_options,
