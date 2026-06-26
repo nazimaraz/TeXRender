@@ -2,7 +2,6 @@
 #include <SDL.h>
 #include <texrender/latex_document.hpp>
 #include <texrender/sdl2_surface.hpp>
-
 #ifndef TEXRENDER_RES_DIR
 #   define TEXRENDER_RES_DIR "res"
 #endif
@@ -34,33 +33,27 @@ int main()
     }
 
     TeXRender::set_default_sdl_renderer(renderer);
-
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
+    const auto formula = document.render(R"(\sum_{n=1}^{\infty}\frac{1}{n^2}=\frac{\pi^2}{6})", 46.f, 0xff101820);
+    auto running = true;
+    while (running)
     {
-        const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
-        const auto formula = document.render(R"(\sum_{n=1}^{\infty}\frac{1}{n^2}=\frac{\pi^2}{6})", 46.f, 0xff101820);
-
-        auto running = true;
-        while (running)
+        auto event = SDL_Event{};
+        while (SDL_PollEvent(&event) != 0)
         {
-            auto event = SDL_Event{};
-            while (SDL_PollEvent(&event) != 0)
-            {
-                if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
-                    running = false;
-            }
-
-            int width = 0;
-            int height = 0;
-            SDL_GetRendererOutputSize(renderer, &width, &height);
-            SDL_SetRenderDrawColor(renderer, 246, 247, 251, 255);
-            SDL_RenderClear(renderer);
-
-            const auto x = (width - formula.width()) / 2;
-            const auto y = (height - formula.height()) / 2;
-            formula.draw(x, y);
-
-            SDL_RenderPresent(renderer);
+            if (event.type == SDL_QUIT || (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
+                running = false;
         }
+
+        auto width = 0;
+        auto height = 0;
+        SDL_GetRendererOutputSize(renderer, &width, &height);
+        SDL_SetRenderDrawColor(renderer, 246, 247, 251, 255);
+        SDL_RenderClear(renderer);
+        const auto x = (width - formula.width()) / 2;
+        const auto y = (height - formula.height()) / 2;
+        formula.draw(x, y);
+        SDL_RenderPresent(renderer);
     }
 
     TeXRender::set_default_sdl_renderer(nullptr);

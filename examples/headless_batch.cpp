@@ -4,7 +4,6 @@
 #include <vector>
 #include <texrender/headless_surface.hpp>
 #include <texrender/latex_document.hpp>
-
 #ifndef TEXRENDER_RES_DIR
 #   define TEXRENDER_RES_DIR "res"
 #endif

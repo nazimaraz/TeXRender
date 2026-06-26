@@ -1,15 +1,12 @@
 #include <array>
 #include <cmath>
-#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <optional>
 #include <string>
 #include <utility>
 #include <raylib.h>
-#include <texrender/formula_layout.hpp>
 #include <texrender/latex_document.hpp>
-
 #ifndef TEXRENDER_RES_DIR
 #   define TEXRENDER_RES_DIR "res"
 #endif
@@ -55,8 +52,8 @@ namespace
 
     private:
         const TeXRender::LatexDocument& document_;
-        float text_size_ = 48.f;
-        std::uint32_t color_ = 0xff000000;
+        float text_size_{48.f};
+        std::uint32_t color_{0xff000000};
         std::string latex_;
         std::optional<TeXRender::RenderHandle> handle_;
     };
@@ -144,10 +141,8 @@ namespace
     {
         DrawRectangleRounded(area, 0.08f, 12, Color{248, 250, 252, 255});
         DrawRectangleLinesEx(area, 1.f, Color{226, 232, 240, 255});
-
         const auto center_y = area.y + area.height * 0.5f;
         DrawLineEx(Vector2{area.x + 12.f, center_y}, Vector2{area.x + area.width - 12.f, center_y}, 1.f, Color{203, 213, 225, 255});
-
         auto previous_real = Vector2{};
         auto previous_imaginary = Vector2{};
         constexpr auto samples = 220;
@@ -190,6 +185,7 @@ namespace
             if (end != value)
                 return static_cast<int>(parsed);
         }
+
         return fallback;
     }
 
@@ -202,12 +198,10 @@ namespace
             if (end != value)
                 return parsed;
         }
+
         return fallback;
     }
 
-    // FPS readout in the top-right corner. The caller supplies the rate: GetFPS()
-    // for the live window, or a measured render rate for the GIF recorder. Drawn
-    // outside draw_frame so single-frame screenshot exports stay clean.
     void draw_fps_overlay(const int fps)
     {
         auto label = std::array<char, 16>{};
@@ -226,137 +220,129 @@ int main()
 {
     InitWindow(1180, 650, "TeXRender realtime values");
     SetTargetFPS(0);
-
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
+    auto symbolic_complex_formula = RuntimeFormula{document, 28.f, k_formula_color};
+    auto complex_formula = RuntimeFormula{document, 34.f, k_formula_color};
+    auto symbolic_euler_formula = RuntimeFormula{document, 25.f, k_formula_color};
+    auto euler_formula = RuntimeFormula{document, 24.f, k_formula_color};
+    auto variables_formula = RuntimeFormula{document, 23.f, k_formula_color};
+    symbolic_complex_formula.set_latex(symbolic_complex_signal_tex());
+    symbolic_euler_formula.set_latex(symbolic_euler_signal_tex());
+    const auto draw_frame = [&](const double clock) {
+        const auto amplitude = amplitude_at(clock);
+        const auto frequency = frequency_at();
+        const auto phase = phase_offset_at(clock);
+        const auto time = signal_time_at(clock);
+        const auto angle = 2.0 * k_pi * frequency * time + phase;
+        const auto real = amplitude * std::cos(angle);
+        const auto imaginary = amplitude * std::sin(angle);
+        const auto amplitude_text = format_number(amplitude);
+        const auto frequency_text = format_number(frequency);
+        const auto phase_text = format_number(phase);
+        const auto phase_term = signed_value_tex(phase);
+        const auto time_text = format_number(time);
+        const auto real_text = format_number(real);
+        const auto imaginary_term = imaginary_term_tex(imaginary);
+        complex_formula.set_latex(complex_signal_tex(amplitude_text, frequency_text, time_text, phase_term));
+        euler_formula.set_latex(euler_signal_tex(amplitude_text, frequency_text, time_text, phase_term, real_text, imaginary_term));
+        variables_formula.set_latex(variables_tex(amplitude_text, frequency_text, time_text, phase_text));
+        ClearBackground(k_background);
+        DrawText("Realtime complex signal", 32, 30, 28, k_text);
+        DrawText("Signal variables, symbolic form, live substitution, and real/imaginary traces.", 32, 66, 18, k_muted);
+        const auto panel = Rectangle{48.f, 118.f, static_cast<float>(GetScreenWidth() - 96), 520.f};
+        DrawRectangleRounded(panel, 0.05f, 12, k_panel);
+        DrawRectangleLinesEx(panel, 2.f, Color{218, 223, 230, 255});
+        DrawText("variables", 86, 135, 16, k_muted);
+        DrawText("model", 86, 206, 16, k_muted);
+        DrawText("substitution", 86, 282, 16, k_muted);
+        DrawText("Euler form", 86, 370, 16, k_muted);
+        DrawText("result", 86, 445, 16, k_muted);
+        DrawText("waveform", 86, 500, 16, k_muted);
+        variables_formula.draw_centered(GetScreenWidth() / 2, 158);
+        symbolic_complex_formula.draw_centered(GetScreenWidth() / 2, 228);
+        complex_formula.draw_centered(GetScreenWidth() / 2, 303);
+        symbolic_euler_formula.draw_centered(GetScreenWidth() / 2, 392);
+        euler_formula.draw_centered(GetScreenWidth() / 2, 468);
+        draw_signal_trace(Rectangle{86.f, 525.f, static_cast<float>(GetScreenWidth() - 172), 104.f}, amplitude, frequency, angle);
+    };
+    const auto export_screenshot = [&](const char* const path, const double clock) {
+        const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+        BeginTextureMode(target);
+        draw_frame(clock);
+        EndTextureMode();
+        auto image = LoadImageFromTexture(target.texture);
+        ImageFlipVertical(&image);
+        ExportImage(image, path);
+        UnloadImage(image);
+        UnloadRenderTexture(target);
+    };
+    if (const auto* const gif_dir = std::getenv("TEXRENDER_SIGNAL_GIF_DIR"))
     {
-        const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
-
-        auto symbolic_complex_formula = RuntimeFormula{document, 28.f, k_formula_color};
-        auto complex_formula = RuntimeFormula{document, 34.f, k_formula_color};
-        auto symbolic_euler_formula = RuntimeFormula{document, 25.f, k_formula_color};
-        auto euler_formula = RuntimeFormula{document, 24.f, k_formula_color};
-        auto variables_formula = RuntimeFormula{document, 23.f, k_formula_color};
-        symbolic_complex_formula.set_latex(symbolic_complex_signal_tex());
-        symbolic_euler_formula.set_latex(symbolic_euler_signal_tex());
-        const auto draw_frame = [&](const double clock) {
-            const auto amplitude = amplitude_at(clock);
-            const auto frequency = frequency_at();
-            const auto phase = phase_offset_at(clock);
-            const auto time = signal_time_at(clock);
-            const auto angle = 2.0 * k_pi * frequency * time + phase;
-            const auto real = amplitude * std::cos(angle);
-            const auto imaginary = amplitude * std::sin(angle);
-            const auto amplitude_text = format_number(amplitude);
-            const auto frequency_text = format_number(frequency);
-            const auto phase_text = format_number(phase);
-            const auto phase_term = signed_value_tex(phase);
-            const auto time_text = format_number(time);
-            const auto real_text = format_number(real);
-            const auto imaginary_term = imaginary_term_tex(imaginary);
-            complex_formula.set_latex(complex_signal_tex(amplitude_text, frequency_text, time_text, phase_term));
-            euler_formula.set_latex(euler_signal_tex(amplitude_text, frequency_text, time_text, phase_term, real_text,
-                imaginary_term));
-            variables_formula.set_latex(variables_tex(amplitude_text, frequency_text, time_text, phase_text));
-            ClearBackground(k_background);
-            DrawText("Realtime complex signal", 32, 30, 28, k_text);
-            DrawText("Signal variables, symbolic form, live substitution, and real/imaginary traces.", 32, 66, 18, k_muted);
-            const auto panel = Rectangle{48.f, 118.f, static_cast<float>(GetScreenWidth() - 96), 520.f};
-            DrawRectangleRounded(panel, 0.05f, 12, k_panel);
-            DrawRectangleLinesEx(panel, 2.f, Color{218, 223, 230, 255});
-            DrawText("variables", 86, 135, 16, k_muted);
-            DrawText("model", 86, 206, 16, k_muted);
-            DrawText("substitution", 86, 282, 16, k_muted);
-            DrawText("Euler form", 86, 370, 16, k_muted);
-            DrawText("result", 86, 445, 16, k_muted);
-            DrawText("waveform", 86, 500, 16, k_muted);
-
-            variables_formula.draw_centered(GetScreenWidth() / 2, 158);
-            symbolic_complex_formula.draw_centered(GetScreenWidth() / 2, 228);
-            complex_formula.draw_centered(GetScreenWidth() / 2, 303);
-            symbolic_euler_formula.draw_centered(GetScreenWidth() / 2, 392);
-            euler_formula.draw_centered(GetScreenWidth() / 2, 468);
-            draw_signal_trace(Rectangle{86.f, 525.f, static_cast<float>(GetScreenWidth() - 172), 104.f}, amplitude, frequency,
-                angle);
-        };
-
-        const auto export_screenshot = [&](const char* const path, const double clock) {
-            const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+        const auto frames = env_int("TEXRENDER_SIGNAL_GIF_FRAMES", 48);
+        const auto start = env_double("TEXRENDER_SIGNAL_GIF_START", 2.0);
+        const auto step = env_double("TEXRENDER_SIGNAL_GIF_STEP", 0.18);
+        const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
+        for (auto warmup = 0; warmup < 8; ++warmup)
+        {
             BeginTextureMode(target);
-            draw_frame(clock);
+            draw_frame(start + step * static_cast<double>(warmup));
             EndTextureMode();
+        }
+
+        auto ema_ms = 0.0;
+        for (auto i = 0; i < frames; ++i)
+        {
+            const auto clock = start + step * static_cast<double>(i);
+            BeginTextureMode(target);
+            const auto begin = GetTime();
+            draw_frame(clock);
+            const auto frame_ms = (GetTime() - begin) * 1000.0;
+            ema_ms = i == 0 ? frame_ms : ema_ms * 0.8 + frame_ms * 0.2;
+            draw_fps_overlay(ema_ms > 0.0 ? static_cast<int>(1000.0 / ema_ms + 0.5) : 0);
+            EndTextureMode();
+
             auto image = LoadImageFromTexture(target.texture);
             ImageFlipVertical(&image);
-            ExportImage(image, path);
+            auto path = std::array<char, 1024>{};
+            std::snprintf(path.data(), path.size(), "%s/frame%03d.png", gif_dir, i + 1);
+            ExportImage(image, path.data());
             UnloadImage(image);
-            UnloadRenderTexture(target);
-        };
-
-        if (const auto* const gif_dir = std::getenv("TEXRENDER_SIGNAL_GIF_DIR"))
-        {
-            const auto frames = env_int("TEXRENDER_SIGNAL_GIF_FRAMES", 48);
-            const auto start = env_double("TEXRENDER_SIGNAL_GIF_START", 2.0);
-            const auto step = env_double("TEXRENDER_SIGNAL_GIF_STEP", 0.18);
-            const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-
-            // Prime glyph and layout caches so the measured rate reflects steady state.
-            for (auto warmup = 0; warmup < 8; ++warmup)
-            {
-                BeginTextureMode(target);
-                draw_frame(start + step * static_cast<double>(warmup));
-                EndTextureMode();
-            }
-
-            // Each frame re-parses and re-lays out all five formulas. Time that work
-            // (exponential moving average) and overlay it, so the GIF advertises the
-            // library's real render throughput rather than a vsync-capped number.
-            auto ema_ms = 0.0;
-            for (auto i = 0; i < frames; ++i)
-            {
-                const auto clock = start + step * static_cast<double>(i);
-                BeginTextureMode(target);
-                const auto begin = GetTime();
-                draw_frame(clock);
-                const auto frame_ms = (GetTime() - begin) * 1000.0;
-                ema_ms = i == 0 ? frame_ms : ema_ms * 0.8 + frame_ms * 0.2;
-                draw_fps_overlay(ema_ms > 0.0 ? static_cast<int>(1000.0 / ema_ms + 0.5) : 0);
-                EndTextureMode();
-
-                auto image = LoadImageFromTexture(target.texture);
-                ImageFlipVertical(&image);
-                auto path = std::array<char, 1024>{};
-                std::snprintf(path.data(), path.size(), "%s/frame%03d.png", gif_dir, i + 1);
-                ExportImage(image, path.data());
-                UnloadImage(image);
-            }
-
-            UnloadRenderTexture(target);
         }
-        else if (const auto* const shot = std::getenv("TEXRENDER_SIGNAL_SCREENSHOT"))
-        {
-            auto capture_clock = 4.0;
-            if (const auto* const clock_env = std::getenv("TEXRENDER_SIGNAL_CLOCK"))
-            {
-                char* end{};
-                const auto parsed = std::strtod(clock_env, &end);
-                if (end != clock_env)
-                    capture_clock = parsed;
-            }
 
-            export_screenshot(shot, capture_clock);
-        }
-        else if (const auto* const shot = std::getenv("TEXRENDER_SCREENSHOT"))
+        UnloadRenderTexture(target);
+        CloseWindow();
+        return 0;
+    }
+
+    if (const auto* const screenshot = std::getenv("TEXRENDER_SIGNAL_SCREENSHOT"))
+    {
+        auto capture_clock = 4.0;
+        if (const auto* const clock_env = std::getenv("TEXRENDER_SIGNAL_CLOCK"))
         {
-            export_screenshot(shot, 4.0);
+            char* end{};
+            const auto parsed = std::strtod(clock_env, &end);
+            if (end != clock_env)
+                capture_clock = parsed;
         }
-        else
-        {
-            while (!WindowShouldClose())
-            {
-                BeginDrawing();
-                draw_frame(GetTime());
-                draw_fps_overlay(GetFPS());
-                EndDrawing();
-            }
-        }
+
+        export_screenshot(screenshot, capture_clock);
+        CloseWindow();
+        return 0;
+    }
+
+    if (const auto* const screenshot = std::getenv("TEXRENDER_SCREENSHOT"))
+    {
+        export_screenshot(screenshot, 4.0);
+        CloseWindow();
+        return 0;
+    }
+
+    while (!WindowShouldClose())
+    {
+        BeginDrawing();
+        draw_frame(GetTime());
+        draw_fps_overlay(GetFPS());
+        EndDrawing();
     }
 
     CloseWindow();

@@ -1,12 +1,10 @@
 #include <cstddef>
-#include <cstdint>
 #include <exception>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <texrender/headless_surface.hpp>
 #include <texrender/latex_document.hpp>
-
 #ifndef TEXRENDER_RES_DIR
 #   define TEXRENDER_RES_DIR "res"
 #endif
@@ -37,7 +35,6 @@ namespace
     {
         auto result = StdinReadResult{};
         result.input.reserve(k_max_input_bytes);
-
         for (auto ch = char{}; std::cin.get(ch);)
         {
             if (result.input.size() == k_max_input_bytes)
@@ -90,7 +87,6 @@ int main(const int argc, char** argv)
         auto owned = std::make_unique<TeXRender::HeadlessSurface>();
         auto* const canvas = owned.get();
         const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
-
         auto result = document.try_render_detailed(read_result.input, worker_options());
         if (!result)
         {
@@ -108,7 +104,6 @@ int main(const int argc, char** argv)
         canvas->resize(result->width() + 2 * margin, result->height() + 2 * margin);
         canvas->clear(0xffffffff);
         result->draw(margin, margin);
-
         if (!canvas->write_png(argv[1]))
         {
             std::cerr << "write_error\n";

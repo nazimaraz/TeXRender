@@ -1,6 +1,5 @@
 #include <raylib.h>
 #include "texrender/latex_document.hpp"
-
 #ifndef TEXRENDER_RES_DIR
 #   define TEXRENDER_RES_DIR "res"
 #endif
