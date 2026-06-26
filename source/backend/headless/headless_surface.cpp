@@ -135,7 +135,7 @@ namespace
         return crc;
     }
 
-    [[nodiscard]] uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
+    [[nodiscard]] std::uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
     {
         auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const std::uint32_t current, const char byte) {
             return crc32_update(current, static_cast<unsigned char>(byte));
@@ -146,7 +146,7 @@ namespace
         return crc ^ 0xffffffffu;
     }
 
-    [[nodiscard]] uint32_t adler32(const std::vector<unsigned char>& data)
+    [[nodiscard]] std::uint32_t adler32(const std::vector<unsigned char>& data)
     {
         auto a = 1u;
         auto b = 0u;
@@ -180,7 +180,7 @@ namespace
         while (offset < data.size())
         {
             const auto remaining = data.size() - offset;
-            const auto block_size = static_cast<std::uint16_t>(std::min<size_t>(remaining, 65'535u));
+            const auto block_size = static_cast<std::uint16_t>(std::min<std::size_t>(remaining, 65'535u));
             const auto final_block = offset + block_size == data.size();
             output.push_back(final_block ? 0x01u : 0x00u);
             append_u16_le(output, block_size);
@@ -215,7 +215,7 @@ namespace
             return;
 
         const auto src_alpha = std::clamp(coverage, 0.f, 1.f) * (static_cast<float>(a) / 255.f);
-        const auto idx = (static_cast<size_t>(y) * static_cast<size_t>(width) + static_cast<size_t>(x)) * 4u;
+        const auto idx = (static_cast<std::size_t>(y) * static_cast<std::size_t>(width) + static_cast<std::size_t>(x)) * 4u;
         const auto dst_alpha = static_cast<float>(pixels[idx + 3]) / 255.f;
         const auto out_alpha = src_alpha + dst_alpha * (1.f - src_alpha);
         if (out_alpha <= 0.f)
@@ -246,7 +246,7 @@ void HeadlessSurface::resize(const int canvas_width, const int canvas_height)
 {
     const auto new_width = std::max(0, canvas_width);
     const auto new_height = std::max(0, canvas_height);
-    auto byte_count = size_t{0};
+    auto byte_count = std::size_t{0};
     if (!pixel_byte_count(new_width, new_height, pixels_.max_size(), byte_count))
     {
         width_ = 0;
@@ -372,7 +372,7 @@ void HeadlessSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, co
 
     for (auto row = 0; row < glyph.height; ++row)
     {
-        const auto* const src = glyph.buffer + static_cast<size_t>(row) * static_cast<size_t>(glyph.pitch);
+        const auto* const src = glyph.buffer + static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch);
         for (auto col = 0; col < glyph.width; ++col)
         {
             const auto x = origin_x + static_cast<double>(col);
@@ -406,7 +406,7 @@ bool HeadlessSurface::write_ppm(const std::string& path) const
 
     file.imbue(std::locale::classic());
     file << "P6\n" << width_ << ' ' << height_ << "\n255\n";
-    for (auto i = size_t{0}; i + 3 < pixels_.size(); i += 4)
+    for (auto i = std::size_t{0}; i + 3 < pixels_.size(); i += 4)
     {
         const auto rgb = std::array<char, 3>{
             static_cast<char>(pixels_[i + 0]),
@@ -452,19 +452,19 @@ bool HeadlessSurface::write_png(const std::string& path) const
         return false;
 
     auto scanlines = std::vector<unsigned char>{};
-    const auto stride = static_cast<size_t>(width_) * 4u;
-    if (stride == std::numeric_limits<size_t>::max())
+    const auto stride = static_cast<std::size_t>(width_) * 4u;
+    if (stride == std::numeric_limits<std::size_t>::max())
         return false;
 
     const auto row_size = stride + 1u;
-    if (static_cast<size_t>(height_) > scanlines.max_size() / row_size)
+    if (static_cast<std::size_t>(height_) > scanlines.max_size() / row_size)
         return false;
 
-    scanlines.reserve(row_size * static_cast<size_t>(height_));
+    scanlines.reserve(row_size * static_cast<std::size_t>(height_));
     for (auto y = 0; y < height_; ++y)
     {
         scanlines.push_back(0u); // filter type 0
-        const auto row_begin = pixels_.begin() + static_cast<std::ptrdiff_t>(static_cast<size_t>(y) * stride);
+        const auto row_begin = pixels_.begin() + static_cast<std::ptrdiff_t>(static_cast<std::size_t>(y) * stride);
         scanlines.insert(scanlines.end(), row_begin, row_begin + static_cast<std::ptrdiff_t>(stride));
     }
 

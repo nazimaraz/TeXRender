@@ -22,7 +22,7 @@ namespace
     class CountingSurface final : public TeXRender::IDrawSurface
     {
     public:
-        void set_color(uint32_t argb) override
+        void set_color(std::uint32_t argb) override
         {
             last_color = argb;
             ++colors;
@@ -60,7 +60,7 @@ namespace
                 covered_pixels += static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height);
         }
 
-        uint32_t last_color = 0;
+        std::uint32_t last_color = 0;
         int colors = 0;
         int lines = 0;
         int rects = 0;

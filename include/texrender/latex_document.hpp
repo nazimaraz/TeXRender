@@ -138,12 +138,12 @@ namespace TeXRender
         ~LatexDocument() noexcept;
 
         [[nodiscard]] IDrawSurface& surface() const;
-        [[nodiscard]] RenderHandle render(const std::string& latex, float text_size, uint32_t argb, int wrap_width = 0) const;
+        [[nodiscard]] RenderHandle render(const std::string& latex, float text_size, std::uint32_t argb, int wrap_width = 0) const;
         [[nodiscard]] RenderHandle render(const std::string& latex, const RenderOptions& options) const;
-        [[nodiscard]] std::optional<RenderHandle> try_render(const std::string& latex, float text_size, uint32_t argb,
+        [[nodiscard]] std::optional<RenderHandle> try_render(const std::string& latex, float text_size, std::uint32_t argb,
             int wrap_width = 0) const noexcept;
         [[nodiscard]] std::optional<RenderHandle> try_render(const std::string& latex, const RenderOptions& options) const noexcept;
-        [[nodiscard]] RenderResult try_render_detailed(const std::string& latex, float text_size, uint32_t argb,
+        [[nodiscard]] RenderResult try_render_detailed(const std::string& latex, float text_size, std::uint32_t argb,
             int wrap_width = 0) const noexcept;
         [[nodiscard]] RenderResult try_render_detailed(const std::string& latex, const RenderOptions& options) const noexcept;
 

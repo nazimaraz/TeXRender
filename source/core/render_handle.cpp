@@ -58,7 +58,7 @@ float RenderHandle::baseline() const noexcept
     return render_->getBaseline();
 }
 
-void RenderHandle::set_foreground(const uint32_t argb) const
+void RenderHandle::set_foreground(const std::uint32_t argb) const
 {
     if (!render_)
         return;

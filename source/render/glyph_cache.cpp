@@ -48,8 +48,8 @@ namespace
         if (g.width <= 0 || g.height <= 0 || g.pitch < g.width || !bmp.buffer)
             return;
 
-        const auto pitch = static_cast<size_t>(g.pitch);
-        const auto height = static_cast<size_t>(g.height);
+        const auto pitch = static_cast<std::size_t>(g.pitch);
+        const auto height = static_cast<std::size_t>(g.height);
         if (height > g.pixels.max_size() / pitch)
             return;
 
@@ -91,7 +91,7 @@ GlyphCache::~GlyphCache()
     FT_Done_FreeType(library_);
 }
 
-uint32_t GlyphCache::face_for(const std::string& path)
+std::uint32_t GlyphCache::face_for(const std::string& path)
 {
     if (path.empty() || !library_)
         return 0;
@@ -113,7 +113,7 @@ uint32_t GlyphCache::face_for(const std::string& path)
     return id;
 }
 
-uint32_t GlyphCache::glyph_index_for(const uint32_t face_id, const char32_t codepoint) const
+std::uint32_t GlyphCache::glyph_index_for(const std::uint32_t face_id, const char32_t codepoint) const
 {
     const auto face_it = faces_by_id_.find(face_id);
     if (face_it == faces_by_id_.end())
@@ -122,17 +122,17 @@ uint32_t GlyphCache::glyph_index_for(const uint32_t face_id, const char32_t code
     return FT_Get_Char_Index(face_it->second, static_cast<FT_ULong>(codepoint));
 }
 
-const GlyphCache::Glyph* GlyphCache::glyph(const uint32_t face_id, const char32_t codepoint, const int pixel_size)
+const GlyphCache::Glyph* GlyphCache::glyph(const std::uint32_t face_id, const char32_t codepoint, const int pixel_size)
 {
     return load_glyph(face_id, static_cast<std::uint32_t>(codepoint), pixel_size, GlyphLoadMode::codepoint);
 }
 
-const GlyphCache::Glyph* GlyphCache::glyph_index(const uint32_t face_id, const uint32_t glyph_index, const int pixel_size)
+const GlyphCache::Glyph* GlyphCache::glyph_index(const std::uint32_t face_id, const std::uint32_t glyph_index, const int pixel_size)
 {
     return load_glyph(face_id, glyph_index, pixel_size, GlyphLoadMode::glyph_index);
 }
 
-const GlyphCache::Glyph* GlyphCache::load_glyph(const uint32_t face_id, const uint32_t glyph_id, const int pixel_size,
+const GlyphCache::Glyph* GlyphCache::load_glyph(const std::uint32_t face_id, const std::uint32_t glyph_id, const int pixel_size,
     const GlyphLoadMode mode)
 {
     if (face_id == 0 || pixel_size <= 0 || pixel_size > detail::max_raster_pixel_size)
@@ -183,7 +183,7 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const uint32_t face_id, const ui
     lru_.push_front(key);
     const auto emplaced = glyphs_.emplace(key, CachedGlyph{std::move(g), lookup, lru_.begin()});
     const auto it = emplaced.first;
-    const auto max_glyphs = std::max<size_t>(1, cache_limits().max_cpu_glyphs);
+    const auto max_glyphs = std::max<std::size_t>(1, cache_limits().max_cpu_glyphs);
     while (glyphs_.size() > max_glyphs)
     {
         const auto oldest = lru_.back();

@@ -82,10 +82,10 @@ namespace
 
     [[nodiscard]] std::uint32_t png_crc(const std::string_view type, const std::vector<unsigned char>& data)
     {
-        auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const uint32_t current, const char byte) {
+        auto crc = std::accumulate(type.begin(), type.end(), 0xffffffffu, [](const std::uint32_t current, const char byte) {
             return crc32_update(current, static_cast<unsigned char>(byte));
         });
-        crc = std::accumulate(data.begin(), data.end(), crc, [](const uint32_t current, const unsigned char byte) {
+        crc = std::accumulate(data.begin(), data.end(), crc, [](const std::uint32_t current, const unsigned char byte) {
             return crc32_update(current, byte);
         });
         return crc ^ 0xffffffffu;

@@ -19,7 +19,7 @@ namespace
     class FormulaLabel
     {
     public:
-        FormulaLabel(const TeXRender::LatexDocument& document, std::string latex, const float text_size, const uint32_t color)
+        FormulaLabel(const TeXRender::LatexDocument& document, std::string latex, const float text_size, const std::uint32_t color)
             : document_{document}
             , latex_{std::move(latex)}
             , text_size_{text_size}
@@ -56,7 +56,7 @@ namespace
         const TeXRender::LatexDocument& document_;
         std::string latex_;
         float text_size_ = 48.f;
-        uint32_t color_ = 0xff000000;
+        std::uint32_t color_ = 0xff000000;
         std::optional<TeXRender::RenderHandle> formula_;
     };
 } // namespace

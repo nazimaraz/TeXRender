@@ -38,14 +38,14 @@ namespace TeXRender
 
         // Stable id for the font file at path; 0 if it cannot be loaded
         // (failures are cached, so retries are cheap).
-        [[nodiscard]] uint32_t face_for(const std::string& path);
-        [[nodiscard]] uint32_t glyph_index_for(uint32_t face_id, char32_t codepoint) const;
+        [[nodiscard]] std::uint32_t face_for(const std::string& path);
+        [[nodiscard]] std::uint32_t glyph_index_for(std::uint32_t face_id, char32_t codepoint) const;
 
         // Rasterise (or fetch) one glyph. The returned pointer is owned by the
         // cache and is only guaranteed valid until the next glyph() call, which
         // may evict the entry — consume it immediately, never store it.
-        [[nodiscard]] const Glyph* glyph(uint32_t face_id, char32_t codepoint, int pixel_size);
-        [[nodiscard]] const Glyph* glyph_index(uint32_t face_id, uint32_t glyph_index, int pixel_size);
+        [[nodiscard]] const Glyph* glyph(std::uint32_t face_id, char32_t codepoint, int pixel_size);
+        [[nodiscard]] const Glyph* glyph_index(std::uint32_t face_id, std::uint32_t glyph_index, int pixel_size);
 
     private:
         enum class GlyphLoadMode
@@ -56,8 +56,8 @@ namespace TeXRender
 
         struct GlyphLookup
         {
-            uint32_t face_id = 0;
-            uint32_t glyph_id = 0;
+            std::uint32_t face_id = 0;
+            std::uint32_t glyph_id = 0;
             bool is_index = false;
             int pixel_size = 0;
 
@@ -83,7 +83,7 @@ namespace TeXRender
         struct FaceEntry
         {
             FT_FaceRec_* face{};
-            uint32_t id = 0;
+            std::uint32_t id = 0;
         };
 
         struct CachedGlyph
@@ -99,10 +99,10 @@ namespace TeXRender
         std::unordered_map<std::uint64_t, CachedGlyph> glyphs_;
         std::unordered_map<GlyphLookup, std::uint64_t, GlyphLookupHash> glyph_ids_;
         std::list<std::uint64_t> lru_;
-        uint32_t next_face_id_ = 1;
-        uint64_t next_glyph_key_ = 1;
+        std::uint32_t next_face_id_ = 1;
+        std::uint64_t next_glyph_key_ = 1;
 
-        [[nodiscard]] const Glyph* load_glyph(uint32_t face_id, uint32_t glyph_id, int pixel_size, GlyphLoadMode mode);
+        [[nodiscard]] const Glyph* load_glyph(std::uint32_t face_id, std::uint32_t glyph_id, int pixel_size, GlyphLoadMode mode);
     };
 
     namespace detail

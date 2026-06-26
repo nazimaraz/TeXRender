@@ -16,7 +16,7 @@ namespace
     std::string g_error;
 
     [[nodiscard]] TeXRender::RenderOptions render_options(
-        const float text_size, const uint32_t argb, const int wrap_width)
+        const float text_size, const std::uint32_t argb, const int wrap_width)
     {
         auto options = TeXRender::RenderOptions{};
         options.text_size = text_size;
@@ -39,7 +39,7 @@ namespace
 extern "C"
 {
     EMSCRIPTEN_KEEPALIVE const char* texrender_render_svg(
-        const char* latex, const float text_size, const uint32_t argb, const int wrap_width)
+        const char* latex, const float text_size, const std::uint32_t argb, const int wrap_width)
     {
         if (latex == nullptr)
             return fail("texrender: latex input is null");

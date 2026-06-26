@@ -16,7 +16,7 @@ using namespace TeXRender;
 
 namespace
 {
-    [[nodiscard]] RenderOptions untrusted_options(const float text_size, const uint32_t argb, const int wrap_width)
+    [[nodiscard]] RenderOptions untrusted_options(const float text_size, const std::uint32_t argb, const int wrap_width)
     {
         auto options = RenderOptions{};
         options.text_size = text_size;
@@ -241,7 +241,7 @@ IDrawSurface& LatexDocument::surface() const
     return *state_->surface();
 }
 
-RenderHandle LatexDocument::render(const std::string& latex, const float text_size, const uint32_t argb, const int wrap_width) const
+RenderHandle LatexDocument::render(const std::string& latex, const float text_size, const std::uint32_t argb, const int wrap_width) const
 {
     auto options = RenderOptions{};
     options.text_size = text_size;
@@ -260,7 +260,7 @@ RenderHandle LatexDocument::render(const std::string& latex, const RenderOptions
     return {render, state_};
 }
 
-std::optional<RenderHandle> LatexDocument::try_render(const std::string& latex, const float text_size, const uint32_t argb,
+std::optional<RenderHandle> LatexDocument::try_render(const std::string& latex, const float text_size, const std::uint32_t argb,
     const int wrap_width) const noexcept
 {
     auto result = try_render_detailed(latex, text_size, argb, wrap_width);
@@ -273,7 +273,7 @@ std::optional<RenderHandle> LatexDocument::try_render(const std::string& latex, 
     return std::move(result).into_optional();
 }
 
-RenderResult LatexDocument::try_render_detailed(const std::string& latex, const float text_size, const uint32_t argb,
+RenderResult LatexDocument::try_render_detailed(const std::string& latex, const float text_size, const std::uint32_t argb,
     const int wrap_width) const noexcept
 {
     return try_render_detailed(latex, untrusted_options(text_size, argb, wrap_width));

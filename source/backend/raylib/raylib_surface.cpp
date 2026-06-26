@@ -17,7 +17,7 @@ namespace
         return radians * (180.f / 3.14159265358979323846f);
     }
 
-    [[nodiscard]] Color to_raylib(const uint32_t argb)
+    [[nodiscard]] Color to_raylib(const std::uint32_t argb)
     {
         return {
             static_cast<unsigned char>((argb >> 16) & 0xff),

@@ -33,7 +33,7 @@ namespace TeXRender
         [[nodiscard]] TEXRENDER_EXPORT int height() const noexcept;
         [[nodiscard]] TEXRENDER_EXPORT int depth() const noexcept;
         [[nodiscard]] TEXRENDER_EXPORT float baseline() const noexcept;
-        TEXRENDER_EXPORT void set_foreground(uint32_t argb) const;
+        TEXRENDER_EXPORT void set_foreground(std::uint32_t argb) const;
         TEXRENDER_EXPORT void draw(int x, int y) const;
 
     private:

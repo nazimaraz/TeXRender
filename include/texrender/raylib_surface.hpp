@@ -19,7 +19,7 @@ namespace TeXRender
         RaylibSurface& operator=(RaylibSurface&&) = delete;
         ~RaylibSurface() noexcept override;
 
-        void set_color(uint32_t argb) override;
+        void set_color(std::uint32_t argb) override;
         void draw_line(float x1, float y1, float x2, float y2, float width) override;
         void draw_rect(float x, float y, float w, float h, float width) override;
         void fill_rect(float x, float y, float w, float h) override;
