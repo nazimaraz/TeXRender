@@ -349,13 +349,14 @@ void HeadlessSurface::draw_line(const float x1, const float y1, const float x2, 
     }
 }
 
-void HeadlessSurface::draw_round_rect(const float x, const float y, const float w, const float h, float, float,
-    const float stroke_width)
+void HeadlessSurface::draw_round_rect(const float x, const float y, const float w, const float h, const float /*rx*/,
+    const float /*ry*/, const float width)
 {
-    draw_rect(x, y, w, h, stroke_width);
+    draw_rect(x, y, w, h, width);
 }
 
-void HeadlessSurface::fill_round_rect(const float x, const float y, const float w, const float h, float, float)
+void HeadlessSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float /*rx*/,
+    const float /*ry*/)
 {
     fill_rect(x, y, w, h);
 }

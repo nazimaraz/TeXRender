@@ -1,10 +1,10 @@
 #include "glyph_cache.hpp"
 #include <algorithm>
-#include <array>
 #include <cstddef>
 #include <cstdio>
 #include <limits>
 #include <mutex>
+#include <string>
 #include <string_view>
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -164,16 +164,10 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const std::uint32_t face_id, con
     g.key = key;
     const auto ft_error = mode == GlyphLoadMode::glyph_index ? FT_Load_Glyph(face, glyph_id, FT_LOAD_RENDER)
                                                              : FT_Load_Char(face, glyph_id, FT_LOAD_RENDER);
-    if (ft_error != 0)
-    {
-        auto message = std::array<char, 64>{};
-        (void) std::snprintf(message.data(), message.size(), "failed to render glyph %u", glyph_id);
-        detail::debug_log(message.data());
-    }
+    if (ft_error)
+        detail::debug_log(std::string{"failed to render glyph "} + std::to_string(glyph_id));
     else
-    {
         decode_glyph_bitmap(g, *face->glyph);
-    }
 
     lru_.push_front(key);
     const auto it = glyphs_.emplace(key, CachedGlyph{std::move(g), lookup, lru_.begin()}).first;

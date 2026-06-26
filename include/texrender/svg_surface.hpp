@@ -16,10 +16,10 @@ namespace TeXRender
         SvgSurface(int width, int height);
 
         void set_color(std::uint32_t argb) override;
-        void draw_line(float x1, float y1, float x2, float y2, float width) override;
-        void draw_rect(float x, float y, float w, float h, float width) override;
+        void draw_line(float x1, float y1, float x2, float y2, float stroke_width) override;
+        void draw_rect(float x, float y, float w, float h, float stroke_width) override;
         void fill_rect(float x, float y, float w, float h) override;
-        void draw_round_rect(float x, float y, float w, float h, float rx, float ry, float width) override;
+        void draw_round_rect(float x, float y, float w, float h, float rx, float ry, float stroke_width) override;
         void fill_round_rect(float x, float y, float w, float h, float rx, float ry) override;
         void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) override;
         void resize(int width, int height);

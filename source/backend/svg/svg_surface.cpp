@@ -265,10 +265,10 @@ void SvgSurface::set_color(const std::uint32_t argb)
     color_ = argb;
 }
 
-void SvgSurface::resize(const int canvas_width, const int canvas_height)
+void SvgSurface::resize(const int width, const int height)
 {
-    width_ = std::max(0, canvas_width);
-    height_ = std::max(0, canvas_height);
+    width_ = std::max(0, width);
+    height_ = std::max(0, height);
 }
 
 void SvgSurface::clear(const std::uint32_t argb)
@@ -392,11 +392,11 @@ std::string SvgSurface::svg() const
         << width_ << ' ' << height_ << "\">";
     out << '\n';
     if (background_)
-    {
-        out << "  <rect width=\"100%\" height=\"100%\" " << paint_attributes(*background_, "fill") << "/>\n";
-    }
+        out << R"(  <rect width="100%" height="100%" )" << paint_attributes(*background_, "fill") << R"(/>)" << '\n';
+
     for (const auto& element : elements_)
         out << "  " << element << '\n';
+
     out << "</svg>\n";
     return out.str();
 }
