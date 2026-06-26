@@ -38,14 +38,12 @@ int main()
     auto owned = std::make_unique<TeXRender::HeadlessSurface>();
     auto* const canvas = owned.get();
     const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
-
     const auto formulas = {
         R"(\int_0^\infty e^{-x^2}\,dx=\frac{\sqrt{\pi}}{2})",
         R"(\frac{a+b}{\sqrt{c}}+\sum_{n=1}^{5} n^2)",
         R"(\mathrm{Energy}=mc^2)",
         R"(\text{OpenMath smoke test})",
     };
-
     return std::all_of(formulas.begin(), formulas.end(),
                [&](const std::string_view latex) {
                    return render_non_empty(document, *canvas, latex);
