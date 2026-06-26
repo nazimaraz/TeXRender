@@ -1,7 +1,5 @@
 #include <algorithm>
 #include <array>
-#include <cstdint>
-#include <cstdio>
 #include <cstdlib>
 #include <optional>
 #include <string>
@@ -28,42 +26,45 @@ namespace
 
     enum class Focus
     {
-        latex,
-        size,
-        wrap
+        none,
+        latex
     };
+
+    constexpr auto min_text_size = 8;
+    constexpr auto max_text_size = 256;
+    constexpr auto default_text_size = 72;
+    constexpr auto min_wrap_width = 0;
+    constexpr auto max_wrap_width = 4096;
+    constexpr auto default_wrap_width = 360;
 
     struct ColorChoice
     {
-        const char* name;
         std::uint32_t argb;
         Color raylib;
     };
 
     constexpr auto colors = std::array{
-        ColorChoice{"Ink", 0xff1a1a2e, Color{26, 26, 46, 255}},
-        ColorChoice{"Blue", 0xff2357c6, Color{35, 87, 198, 255}},
-        ColorChoice{"Green", 0xff266c5b, Color{38, 108, 91, 255}},
-        ColorChoice{"Red", 0xffb3261e, Color{179, 38, 30, 255}},
+        ColorChoice{0xff1a1a2e, Color{26, 26, 46, 255}}, // Ink
+        ColorChoice{0xff2357c6, Color{35, 87, 198, 255}}, // Blue
+        ColorChoice{0xff266c5b, Color{38, 108, 91, 255}}, // Green
+        ColorChoice{0xffb3261e, Color{179, 38, 30, 255}} // Red
     };
 
     struct DemoState
     {
         TeXRender::LatexDocument document{TEXRENDER_RES_DIR};
         std::string latex{R"(\int_0^1 x^2\,dx = \frac{1}{3})"};
-        std::string size_text{"72"};
-        std::string wrap_text{"360"};
+        int size{default_text_size};
+        int wrap_width{default_wrap_width};
         std::size_t latex_caret{latex.size()};
-        std::size_t size_caret{size_text.size()};
-        std::size_t wrap_caret{wrap_text.size()};
         int latex_scroll{0};
-        int size_scroll{0};
-        int wrap_scroll{0};
         std::size_t color_index = 0;
         Focus focus = Focus::latex;
         std::optional<TeXRender::RenderHandle> formula;
         std::string status{"Ready"};
         bool has_error = false;
+        bool dragging_size = false;
+        bool dragging_wrap = false;
     };
 
     [[nodiscard]] bool contains(const Rectangle rect, const Vector2 point)
@@ -134,26 +135,14 @@ namespace
         return true;
     }
 
-    [[nodiscard]] int parse_int(const std::string& value, const int fallback)
-    {
-        if (value.empty())
-            return fallback;
-
-        auto parsed = fallback;
-        if (std::sscanf(value.c_str(), "%d", &parsed) != 1)
-            return fallback;
-
-        return parsed;
-    }
-
     [[nodiscard]] float text_size(const DemoState& state)
     {
-        return static_cast<float>(std::clamp(parse_int(state.size_text, 72), 8, 256));
+        return static_cast<float>(std::clamp(state.size, min_text_size, max_text_size));
     }
 
     [[nodiscard]] int wrap_width(const DemoState& state)
     {
-        return std::clamp(parse_int(state.wrap_text, 0), 0, 4096);
+        return std::clamp(state.wrap_width, min_wrap_width, max_wrap_width);
     }
 
     [[nodiscard]] TeXRender::RenderOptions render_options(const DemoState& state)
@@ -185,34 +174,16 @@ namespace
 
     [[nodiscard]] std::string& focused_value(DemoState& state)
     {
-        if (state.focus == Focus::size)
-            return state.size_text;
-
-        if (state.focus == Focus::wrap)
-            return state.wrap_text;
-
         return state.latex;
     }
 
     [[nodiscard]] std::size_t& focused_caret(DemoState& state)
     {
-        if (state.focus == Focus::size)
-            return state.size_caret;
-
-        if (state.focus == Focus::wrap)
-            return state.wrap_caret;
-
         return state.latex_caret;
     }
 
     [[nodiscard]] std::size_t focused_max_size(const DemoState& state)
     {
-        if (state.focus == Focus::size)
-            return 3;
-
-        if (state.focus == Focus::wrap)
-            return 4;
-
         return 512;
     }
 
@@ -226,6 +197,14 @@ namespace
 
     void handle_text_input(DemoState& state)
     {
+        if (state.focus == Focus::none)
+        {
+            while (GetCharPressed() != 0)
+            {
+            }
+            return;
+        }
+
         auto& active = focused_value(state);
         auto& caret = focused_caret(state);
         caret = std::min(caret, active.size());
@@ -322,6 +301,82 @@ namespace
         DrawText(label, static_cast<int>(rect.x + (rect.width - text_width) / 2), static_cast<int>(rect.y + 12), font_size, WHITE);
     }
 
+    [[nodiscard]] int size_from_slider(const Rectangle rect, const float mouse_x)
+    {
+        const auto track_x = rect.x + 16.f;
+        const auto track_width = rect.width - 32.f;
+        const auto t = std::clamp((mouse_x - track_x) / track_width, 0.f, 1.f);
+        return min_text_size + static_cast<int>(t * static_cast<float>(max_text_size - min_text_size) + 0.5f);
+    }
+
+    [[nodiscard]] int wrap_from_slider(const Rectangle rect, const float mouse_x)
+    {
+        const auto track_x = rect.x + 16.f;
+        const auto track_width = rect.width - 32.f;
+        const auto t = std::clamp((mouse_x - track_x) / track_width, 0.f, 1.f);
+        return min_wrap_width + static_cast<int>(t * static_cast<float>(max_wrap_width - min_wrap_width) + 0.5f);
+    }
+
+    void draw_size_slider(const Rectangle rect, const int value, const bool active)
+    {
+        DrawRectangleRounded(rect, 0.08f, 8, panel);
+        DrawRectangleRoundedLinesEx(rect, 0.08f, 8, 1.f, active ? border_active : border);
+
+        const auto clamped = std::clamp(value, min_text_size, max_text_size);
+        const auto value_text = std::to_string(clamped);
+        DrawText(value_text.c_str(), static_cast<int>(rect.x + 10.f), static_cast<int>(rect.y + 6.f), 16, text);
+
+        const auto track_x = rect.x + 16.f;
+        const auto track_width = rect.width - 32.f;
+        const auto track_y = rect.y + 29.f;
+        const auto t = static_cast<float>(clamped - min_text_size) / static_cast<float>(max_text_size - min_text_size);
+        const auto knob_x = track_x + t * track_width;
+        DrawLineEx(Vector2{track_x, track_y}, Vector2{track_x + track_width, track_y}, 4.f, border);
+        DrawLineEx(Vector2{track_x, track_y}, Vector2{knob_x, track_y}, 4.f, button);
+        DrawCircleV(Vector2{knob_x, track_y}, 8.f, active ? button_hover : button);
+        DrawCircleLines(static_cast<int>(knob_x), static_cast<int>(track_y), 8.f, panel);
+    }
+
+    void update_size_from_slider(DemoState& state, const Rectangle rect, const float mouse_x)
+    {
+        const auto next = size_from_slider(rect, mouse_x);
+        if (next == state.size)
+            return;
+
+        state.size = next;
+        render_formula(state);
+    }
+
+    void draw_wrap_slider(const Rectangle rect, const int value, const bool active)
+    {
+        DrawRectangleRounded(rect, 0.08f, 8, panel);
+        DrawRectangleRoundedLinesEx(rect, 0.08f, 8, 1.f, active ? border_active : border);
+
+        const auto clamped = std::clamp(value, min_wrap_width, max_wrap_width);
+        const auto value_text = std::to_string(clamped);
+        DrawText(value_text.c_str(), static_cast<int>(rect.x + 10.f), static_cast<int>(rect.y + 6.f), 16, text);
+
+        const auto track_x = rect.x + 16.f;
+        const auto track_width = rect.width - 32.f;
+        const auto track_y = rect.y + 29.f;
+        const auto t = static_cast<float>(clamped - min_wrap_width) / static_cast<float>(max_wrap_width - min_wrap_width);
+        const auto knob_x = track_x + t * track_width;
+        DrawLineEx(Vector2{track_x, track_y}, Vector2{track_x + track_width, track_y}, 4.f, border);
+        DrawLineEx(Vector2{track_x, track_y}, Vector2{knob_x, track_y}, 4.f, button);
+        DrawCircleV(Vector2{knob_x, track_y}, 8.f, active ? button_hover : button);
+        DrawCircleLines(static_cast<int>(knob_x), static_cast<int>(track_y), 8.f, panel);
+    }
+
+    void update_wrap_from_slider(DemoState& state, const Rectangle rect, const float mouse_x)
+    {
+        const auto next = wrap_from_slider(rect, mouse_x);
+        if (next == state.wrap_width)
+            return;
+
+        state.wrap_width = next;
+        render_formula(state);
+    }
+
     void draw_ui(DemoState& state)
     {
         ClearBackground(background);
@@ -337,9 +392,9 @@ namespace
         draw_label("LaTeX", 28, 90);
         draw_field(latex_rect, state.latex, state.focus == Focus::latex, state.latex_caret, state.latex_scroll, 18);
         draw_label("Size", 28, 284);
-        draw_field(size_rect, state.size_text, state.focus == Focus::size, state.size_caret, state.size_scroll);
+        draw_size_slider(size_rect, state.size, state.dragging_size);
         draw_label("Wrap width", 222, 284);
-        draw_field(wrap_rect, state.wrap_text, state.focus == Focus::wrap, state.wrap_caret, state.wrap_scroll);
+        draw_wrap_slider(wrap_rect, state.wrap_width, state.dragging_wrap);
         draw_label("Color", 28, 366);
         for (auto i = std::size_t{0}; i < colors.size(); ++i)
         {
@@ -366,13 +421,26 @@ namespace
 
     void handle_mouse(DemoState& state)
     {
+        const auto mouse = GetMousePosition();
+        const auto size_rect = Rectangle{28.f, 306.f, 170.f, 40.f};
+        const auto wrap_rect = Rectangle{222.f, 306.f, 170.f, 40.f};
+
+        if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT))
+        {
+            state.dragging_size = false;
+            state.dragging_wrap = false;
+        }
+
+        if (state.dragging_size && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            update_size_from_slider(state, size_rect, mouse.x);
+
+        if (state.dragging_wrap && IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+            update_wrap_from_slider(state, wrap_rect, mouse.x);
+
         if (!IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
             return;
 
-        const auto mouse = GetMousePosition();
         const auto latex_rect = Rectangle{28.f, 112.f, 364.f, 150.f};
-        const auto size_rect = Rectangle{28.f, 306.f, 170.f, 40.f};
-        const auto wrap_rect = Rectangle{222.f, 306.f, 170.f, 40.f};
         const auto render_rect = Rectangle{28.f, 438.f, 364.f, 42.f};
         if (contains(latex_rect, mouse))
         {
@@ -381,16 +449,19 @@ namespace
         }
         else if (contains(size_rect, mouse))
         {
-            state.focus = Focus::size;
-            state.size_caret = caret_from_mouse(state.size_text, size_rect, 18, state.size_scroll, mouse.x);
+            state.focus = Focus::none;
+            state.dragging_size = true;
+            update_size_from_slider(state, size_rect, mouse.x);
         }
         else if (contains(wrap_rect, mouse))
         {
-            state.focus = Focus::wrap;
-            state.wrap_caret = caret_from_mouse(state.wrap_text, wrap_rect, 18, state.wrap_scroll, mouse.x);
+            state.focus = Focus::none;
+            state.dragging_wrap = true;
+            update_wrap_from_slider(state, wrap_rect, mouse.x);
         }
         else if (contains(render_rect, mouse))
         {
+            state.focus = Focus::none;
             render_formula(state);
         }
 
@@ -398,6 +469,7 @@ namespace
         {
             if (const auto rect = Rectangle{28.f + static_cast<float>(i) * 48.f, 390.f, 34.f, 34.f}; contains(rect, mouse))
             {
+                state.focus = Focus::none;
                 state.color_index = i;
                 render_formula(state);
                 break;
