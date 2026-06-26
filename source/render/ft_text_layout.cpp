@@ -1,5 +1,6 @@
 #include "ft_text_layout.hpp"
 #include "core/document_state.hpp"
+#include "ft_font.hpp"
 #include "glyph_cache.hpp"
 #include "raster_size.hpp"
 #include "utils/utils.h"
@@ -16,8 +17,7 @@ namespace
         auto out = std::vector<char32_t>{};
         for (auto index = std::size_t{0}; index < text.size();)
         {
-            const auto byte = static_cast<unsigned char>(text[index]);
-            if (byte < 0x80u)
+            if (const auto byte = static_cast<unsigned char>(text[index]); byte < 0x80u)
             {
                 out.push_back(byte);
                 ++index;

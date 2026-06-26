@@ -114,12 +114,12 @@ std::uint32_t GlyphCache::glyph_index_for(const std::uint32_t face_id, const cha
     if (face_it == faces_by_id_.end())
         return 0;
 
-    return FT_Get_Char_Index(face_it->second, static_cast<FT_ULong>(codepoint));
+    return FT_Get_Char_Index(face_it->second, codepoint);
 }
 
 const GlyphCache::Glyph* GlyphCache::glyph(const std::uint32_t face_id, const char32_t codepoint, const int pixel_size)
 {
-    return load_glyph(face_id, static_cast<std::uint32_t>(codepoint), pixel_size, GlyphLoadMode::codepoint);
+    return load_glyph(face_id, codepoint, pixel_size, GlyphLoadMode::codepoint);
 }
 
 const GlyphCache::Glyph* GlyphCache::glyph_index(const std::uint32_t face_id, const std::uint32_t glyph_index, const int pixel_size)

@@ -242,10 +242,10 @@ void HeadlessSurface::set_color(const std::uint32_t argb)
     b_ = channel(argb, 0);
 }
 
-void HeadlessSurface::resize(const int canvas_width, const int canvas_height)
+void HeadlessSurface::resize(const int width, const int height)
 {
-    const auto new_width = std::max(0, canvas_width);
-    const auto new_height = std::max(0, canvas_height);
+    const auto new_width = std::max(0, width);
+    const auto new_height = std::max(0, height);
     auto byte_count = std::size_t{0};
     if (!pixel_byte_count(new_width, new_height, pixels_.max_size(), byte_count))
     {
@@ -312,23 +312,23 @@ void HeadlessSurface::fill_rect(const float x, const float y, const float w, con
     }
 }
 
-void HeadlessSurface::draw_rect(const float x, const float y, const float w, const float h, const float stroke_width)
+void HeadlessSurface::draw_rect(const float x, const float y, const float w, const float h, const float width)
 {
-    const auto t = std::max(1.f, stroke_width);
+    const auto t = std::max(1.f, width);
     fill_rect(x, y, w, t); // top
     fill_rect(x, y + h - t, w, t); // bottom
     fill_rect(x, y, t, h); // left
     fill_rect(x + w - t, y, t, h); // right
 }
 
-void HeadlessSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float stroke_width)
+void HeadlessSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float width)
 {
     if (width_ <= 0 || height_ <= 0 || !std::isfinite(x1) || !std::isfinite(y1) || !std::isfinite(x2) || !std::isfinite(y2) ||
-        !std::isfinite(stroke_width))
+        !std::isfinite(width))
         return;
 
     const auto max_thickness = static_cast<float>(static_cast<double>(std::max(width_, height_)) * 2.0 + 2.0);
-    const auto thickness = std::clamp(stroke_width, 1.f, max_thickness);
+    const auto thickness = std::clamp(width, 1.f, max_thickness);
     const auto half = static_cast<double>(thickness) / 2.0;
     auto clipped_x1 = static_cast<double>(x1);
     auto clipped_y1 = static_cast<double>(y1);

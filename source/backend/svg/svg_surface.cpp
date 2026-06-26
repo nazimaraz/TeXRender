@@ -340,7 +340,7 @@ void SvgSurface::fill_round_rect(const float x, const float y, const float w, co
         return;
 
     elements_.push_back("<rect x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + number(w) + "\" height=\"" + number(h) +
-                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" " + ::paint_attributes(color_, "fill") + "/>");
+                        "\" rx=\"" + number(rx) + "\" ry=\"" + number(ry) + "\" " + paint_attributes(color_, "fill") + "/>");
 }
 
 void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const float pen_y, const float angle)

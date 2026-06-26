@@ -2,7 +2,6 @@
 
 #include <string>
 #include "graphic/graphic.h"
-#include "render/ft_font.hpp"
 
 namespace TeXRender
 {

@@ -1,6 +1,5 @@
 #include "graphics2d_adapter.hpp"
 #include <algorithm>
-#include <cmath>
 #include "ft_font.hpp"
 #include "raster_size.hpp"
 

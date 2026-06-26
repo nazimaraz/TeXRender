@@ -55,7 +55,7 @@ namespace TeXRender
         microtex::color color_ = microtex::black;
         microtex::Stroke stroke_;
         std::vector<float> dash_;
-        microtex::sptr<microtex::Font> font_{};
+        microtex::sptr<microtex::Font> font_;
         float font_size_ = 12.f;
     };
 } // namespace TeXRender

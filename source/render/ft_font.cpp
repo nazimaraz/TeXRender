@@ -15,11 +15,6 @@ bool FtFont::operator==(const Font& f) const
     return other && path_ == other->path_;
 }
 
-bool FtFont::operator!=(const Font& f) const
-{
-    return !(*this == f);
-}
-
 const std::string& FtFont::path() const
 {
     return path_;

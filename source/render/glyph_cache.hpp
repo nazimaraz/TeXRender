@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <cstdint>
 #include <functional>
 #include <list>
 #include <string>
@@ -42,7 +41,7 @@ namespace TeXRender
         [[nodiscard]] const Glyph* glyph_index(std::uint32_t face_id, std::uint32_t glyph_index, int pixel_size);
 
     private:
-        enum class GlyphLoadMode
+        enum class GlyphLoadMode : std::uint8_t
         {
             codepoint,
             glyph_index
