@@ -6,6 +6,11 @@ endif ()
 if (NOT EMSCRIPTEN)
     find_package(raylib CONFIG QUIET)
 endif ()
+
+if (TARGET raylib)
+    set(raylib_FOUND TRUE)
+endif ()
+
 if (NOT raylib_FOUND)
     set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
     texrender_add_submodule_dependency(
