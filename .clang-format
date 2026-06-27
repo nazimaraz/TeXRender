@@ -8,7 +8,7 @@ AlignConsecutiveDeclarations: false
 AlignOperands: true
 AlignTrailingComments: false
 BreakTemplateDeclarations: Yes
-BraceWrapping: 
+BraceWrapping:
   AfterCaseLabel: true
   AfterClass: true
   AfterControlStatement: true
@@ -40,7 +40,7 @@ ColumnLimit: 132
 PackConstructorInitializers: Never
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
-IncludeCategories: 
+IncludeCategories:
   - Regex: '^<.*'
     Priority: 1
   - Regex: '^".*'

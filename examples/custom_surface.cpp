@@ -18,32 +18,36 @@ namespace
             ++colors;
         }
 
-        void draw_line(float, float, float, float, float) override
+        void draw_line(const float /*x1*/, const float /*y1*/, const float /*x2*/, const float /*y2*/,
+            const float /*width*/) override
         {
             ++lines;
         }
 
-        void draw_rect(float, float, float, float, float) override
+        void draw_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/, const float /*width*/) override
         {
             ++rects;
         }
 
-        void fill_rect(float, float, float, float) override
+        void fill_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/) override
         {
             ++rects;
         }
 
-        void draw_round_rect(float, float, float, float, float, float, float) override
+        void draw_round_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/, const float /*rx*/,
+            const float /*ry*/, const float /*width*/) override
         {
             ++rects;
         }
 
-        void fill_round_rect(float, float, float, float, float, float) override
+        void fill_round_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/, const float /*rx*/,
+            const float /*ry*/) override
         {
             ++rects;
         }
 
-        void draw_glyph(const TeXRender::GlyphBitmap& glyph, float, float, float) override
+        void draw_glyph(const TeXRender::GlyphBitmap& glyph, const float /*pen_x*/, const float /*pen_y*/,
+            const float /*angle*/) override
         {
             ++glyphs;
             if (glyph.width > 0 && glyph.height > 0)

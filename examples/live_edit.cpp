@@ -23,7 +23,7 @@ namespace
     constexpr auto button = Color{35, 87, 198, 255};
     constexpr auto button_hover = Color{24, 74, 180, 255};
 
-    enum class Focus
+    enum class Focus : std::uint8_t
     {
         none,
         latex

@@ -1,6 +1,5 @@
 #include <array>
 #include <cstdlib>
-#include <optional>
 #include <raylib.h>
 #include "texrender/latex_document.hpp"
 #ifndef TEXRENDER_RES_DIR
@@ -18,6 +17,12 @@ namespace
     };
     constexpr auto k_background = Color{250, 250, 250, 255};
     constexpr auto k_foreground = std::uint32_t{0xff1a1a2e};
+
+    [[nodiscard]] TeXRender::RenderHandle buildFormula(const TeXRender::LatexDocument& document, const std::size_t index,
+        const float text_size)
+    {
+        return document.render(k_samples.at(index), text_size, k_foreground);
+    }
 } // namespace
 
 int main()
@@ -26,44 +31,11 @@ int main()
     SetTargetFPS(60);
     const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR};
     auto index = std::size_t{0};
-    if (const auto* const start = std::getenv("TEXRENDER_SAMPLE"))
-    {
-        char* end{};
-        if (const auto value = std::strtol(start, &end, 10); end != start && value >= 0)
-            index = static_cast<std::size_t>(value) % k_samples.size();
-    }
-
     auto text_size = 50.f;
-    auto formula = std::optional<TeXRender::RenderHandle>{};
-    const auto rebuild = [&] {
-        formula = document.render(k_samples[index], text_size, k_foreground);
-    };
-    rebuild();
-    const auto draw_scene = [&] {
-        ClearBackground(k_background);
-        const auto x = std::max(0, (GetScreenWidth() - formula->width()) / 2);
-        const auto y = std::max(0, (GetScreenHeight() - formula->height()) / 2);
-        formula->draw(x, y);
-        DrawText("SPACE/<- ->: cycle    UP/DOWN: size    ESC: quit", 16, 16, 18, Color{120, 120, 130, 255});
-    };
-    if (const auto* const shot = std::getenv("TEXRENDER_SCREENSHOT"))
-    {
-        const auto target = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-        BeginTextureMode(target);
-        draw_scene();
-        EndTextureMode();
-        auto image = LoadImageFromTexture(target.texture);
-        ImageFlipVertical(&image);
-        ExportImage(image, shot);
-        UnloadImage(image);
-        UnloadRenderTexture(target);
-        CloseWindow();
-        return 0;
-    }
-
+    auto formula = buildFormula(document, index, text_size);
+    auto dirty = false;
     while (!WindowShouldClose())
     {
-        auto dirty = false;
         if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_RIGHT))
         {
             index = (index + 1) % k_samples.size();
@@ -89,10 +61,17 @@ int main()
         }
 
         if (dirty)
-            rebuild();
+        {
+            formula = buildFormula(document, index, text_size);
+            dirty = false;
+        }
 
         BeginDrawing();
-        draw_scene();
+        ClearBackground(k_background);
+        const auto x = std::max(0, (GetScreenWidth() - formula.width()) / 2);
+        const auto y = std::max(0, (GetScreenHeight() - formula.height()) / 2);
+        formula.draw(x, y);
+        DrawText("SPACE/<- ->: cycle    UP/DOWN: size    ESC: quit", 16, 16, 18, Color{120, 120, 130, 255});
         EndDrawing();
     }
 

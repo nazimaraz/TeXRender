@@ -16,7 +16,7 @@ namespace
     public:
         FormulaLabel(const TeXRender::LatexDocument& document, std::string latex, const float text_size, const std::uint32_t color)
             : document_{document}
-            , latex_{R"(\mathrm{Energy}=mc^2)"}
+            , latex_{std::move(latex)}
             , text_size_{text_size}
             , color_{color}
         {

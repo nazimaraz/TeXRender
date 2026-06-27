@@ -299,9 +299,9 @@ void SvgSurface::draw_line(const float x1, const float y1, const float x2, const
     if (!finite_line(x1, y1, x2, y2, stroke_width))
         return;
 
-    elements_.push_back(R"(<line x1=")" + number(x1) + R"(" y1=")" + number(y1) + R"(" x2=")" + number(x2) +
-                        R"(" y2=")" + number(y2) + R"(" )" + paint_attributes(color_, "stroke") +
-                        R"( stroke-width=")" + number(stroke_width) + R"(" stroke-linecap="round"/>)");
+    elements_.push_back(R"(<line x1=")" + number(x1) + R"(" y1=")" + number(y1) + R"(" x2=")" + number(x2) + R"(" y2=")" +
+                        number(y2) + R"(" )" + paint_attributes(color_, "stroke") + R"( stroke-width=")" + number(stroke_width) +
+                        R"(" stroke-linecap="round"/>)");
 }
 
 void SvgSurface::draw_rect(const float x, const float y, const float w, const float h, const float stroke_width)
@@ -309,9 +309,9 @@ void SvgSurface::draw_rect(const float x, const float y, const float w, const fl
     if (!finite_rect(x, y, w, h) || !std::isfinite(stroke_width))
         return;
 
-    elements_.push_back(R"(<rect x=")" + number(x) + R"(" y=")" + number(y) + R"(" width=")" + number(w) +
-                        R"(" height=")" + number(h) + R"(" fill="none" )" + paint_attributes(color_, "stroke") +
-                        R"( stroke-width=")" + number(stroke_width) + R"("/>)");
+    elements_.push_back(R"(<rect x=")" + number(x) + R"(" y=")" + number(y) + R"(" width=")" + number(w) + R"(" height=")" +
+                        number(h) + R"(" fill="none" )" + paint_attributes(color_, "stroke") + R"( stroke-width=")" +
+                        number(stroke_width) + R"("/>)");
 }
 
 void SvgSurface::fill_rect(const float x, const float y, const float w, const float h)
@@ -329,10 +329,9 @@ void SvgSurface::draw_round_rect(const float x, const float y, const float w, co
     if (!finite_rect(x, y, w, h) || !std::isfinite(rx) || !std::isfinite(ry) || !std::isfinite(stroke_width))
         return;
 
-    elements_.push_back(R"(<rect x=")" + number(x) + R"(" y=")" + number(y) + R"(" width=")" + number(w) +
-                        R"(" height=")" + number(h) + R"(" rx=")" + number(rx) + R"(" ry=")" + number(ry) +
-                        R"(" fill="none" )" + paint_attributes(color_, "stroke") + R"( stroke-width=")" +
-                        number(stroke_width) + R"("/>)");
+    elements_.push_back(R"(<rect x=")" + number(x) + R"(" y=")" + number(y) + R"(" width=")" + number(w) + R"(" height=")" +
+                        number(h) + R"(" rx=")" + number(rx) + R"(" ry=")" + number(ry) + R"(" fill="none" )" +
+                        paint_attributes(color_, "stroke") + R"( stroke-width=")" + number(stroke_width) + R"("/>)");
 }
 
 void SvgSurface::fill_round_rect(const float x, const float y, const float w, const float h, const float rx, const float ry)
@@ -389,8 +388,8 @@ std::string SvgSurface::svg() const
 {
     auto out = std::ostringstream{};
     out.imbue(std::locale::classic());
-    out << R"(<svg xmlns="http://www.w3.org/2000/svg" width=")" << width_ << R"(" height=")" << height_
-        << R"(" viewBox="0 0 )" << width_ << ' ' << height_ << R"(">)";
+    out << R"(<svg xmlns="http://www.w3.org/2000/svg" width=")" << width_ << R"(" height=")" << height_ << R"(" viewBox="0 0 )"
+        << width_ << ' ' << height_ << R"(">)";
     out << '\n';
     if (background_)
         out << R"(  <rect width="100%" height="100%" )" << paint_attributes(*background_, "fill") << R"(/>)" << '\n';

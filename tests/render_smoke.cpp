@@ -19,7 +19,7 @@ namespace
             return false;
         }
 
-        const auto margin = 8;
+        constexpr auto margin = 8;
         canvas.resize(result->width() + 2 * margin, result->height() + 2 * margin);
         canvas.clear(0x00000000);
         result->draw(margin, margin);
