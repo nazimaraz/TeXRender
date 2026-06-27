@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <cstdio>
 #include <initializer_list>
 #include <memory>
@@ -6,6 +7,7 @@
 #include <string_view>
 #include "texrender/headless_surface.hpp"
 #include "texrender/latex_document.hpp"
+#include "texrender/svg_surface.hpp"
 
 namespace
 {
@@ -55,6 +57,32 @@ namespace
         std::fprintf(stderr, "case failed: %s\n", name);
         return false;
     }
+
+    [[nodiscard]] std::size_t count_occurrences(const std::string& value, const std::string& needle)
+    {
+        auto count = std::size_t{0};
+        auto offset = std::size_t{0};
+        while ((offset = value.find(needle, offset)) != std::string::npos)
+        {
+            ++count;
+            offset += needle.size();
+        }
+
+        return count;
+    }
+
+    [[nodiscard]] bool svg_reuses_glyph_defs()
+    {
+        constexpr auto pixels = std::array<unsigned char, 4>{255u, 128u, 128u, 255u};
+        const auto glyph = TeXRender::GlyphBitmap{pixels.data(), 2, 2, 2, 0, 0, 42};
+        auto surface = TeXRender::SvgSurface{16, 16};
+        surface.set_color(0xff000000);
+        surface.draw_glyph(glyph, 1.f, 8.f, 0.f);
+        surface.draw_glyph(glyph, 5.f, 8.f, 0.f);
+        const auto svg = surface.svg();
+        return svg.find("<defs>") != std::string::npos && count_occurrences(svg, "data:image/png;base64,") == 1 &&
+               count_occurrences(svg, "<use href=\"#tr-glyph-0\"") == 2;
+    }
 } // namespace
 
 int main()
@@ -69,6 +97,7 @@ int main()
         {"text", R"(\text{OpenMath smoke test})"},
     };
     auto ok = true;
+    ok = run_case("svg-glyph-def-reuse", svg_reuses_glyph_defs()) && ok;
     for (const auto& [name, latex] : valid_cases)
         ok = run_case(name, render_non_empty(document, *canvas, latex)) && ok;
 

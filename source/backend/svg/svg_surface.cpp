@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cmath>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <limits>
 #include <locale>
@@ -9,6 +10,7 @@
 #include <optional>
 #include <sstream>
 #include <string_view>
+#include <utility>
 #include "backend/angle.hpp"
 #include "backend/glyph_bitmap_validation.hpp"
 
@@ -249,7 +251,45 @@ namespace
     {
         return std::isfinite(x) && std::isfinite(y) && std::isfinite(w) && std::isfinite(h) && w > 0.f && h > 0.f;
     }
+
+    [[nodiscard]] std::optional<std::string> encoded_glyph_href(const GlyphBitmap& glyph, const std::uint32_t argb)
+    {
+        const auto c = color_from_argb(argb);
+        auto rgba_size = std::size_t{0};
+        auto rgba = std::vector<unsigned char>{};
+        if (!byte_count_for_rgba(glyph.width, glyph.height, rgba.max_size(), rgba_size))
+            return std::nullopt;
+
+        rgba.resize(rgba_size);
+        for (auto row = 0; row < glyph.height; ++row)
+        {
+            for (auto col = 0; col < glyph.width; ++col)
+            {
+                const auto coverage = glyph.buffer[static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch) +
+                                                   static_cast<std::size_t>(col)];
+                const auto dst =
+                    (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
+                rgba[dst + 0] = c.r;
+                rgba[dst + 1] = c.g;
+                rgba[dst + 2] = c.b;
+                rgba[dst + 3] = static_cast<unsigned char>((static_cast<unsigned>(coverage) * static_cast<unsigned>(c.a)) / 255u);
+            }
+        }
+
+        const auto png = png_rgba(glyph.width, glyph.height, rgba);
+        if (!png)
+            return std::nullopt;
+
+        return "data:image/png;base64," + base64(*png);
+    }
 } // namespace
+
+std::size_t SvgSurface::GlyphDefKeyHash::operator()(const GlyphDefKey& key) const noexcept
+{
+    auto seed = std::hash<std::uint64_t>{}(key.glyph_key);
+    seed ^= std::hash<std::uint32_t>{}(key.argb) + 0x9e3779b9u + (seed << 6u) + (seed >> 2u);
+    return seed;
+}
 
 SvgSurface::SvgSurface(const int width, const int height)
 {
@@ -270,6 +310,8 @@ void SvgSurface::resize(const int width, const int height)
 void SvgSurface::clear(const std::uint32_t argb)
 {
     elements_.clear();
+    glyph_def_lookup_.clear();
+    glyph_defs_.clear();
     background_.reset();
     if (channel(argb, 24) != 0)
         background_ = argb;
@@ -288,6 +330,28 @@ int SvgSurface::height() const noexcept
 std::size_t SvgSurface::element_count() const noexcept
 {
     return elements_.size() + (background_.has_value() ? 1u : 0u);
+}
+
+std::optional<std::string> SvgSurface::glyph_def_id(const GlyphBitmap& glyph)
+{
+    if (!detail::valid_cacheable_glyph_bitmap_for_rgba(glyph))
+        return std::nullopt;
+
+    const auto key = GlyphDefKey{glyph.key, color_};
+    if (const auto found = glyph_def_lookup_.find(key); found != glyph_def_lookup_.end())
+        return glyph_defs_[found->second].id;
+
+    const auto href = encoded_glyph_href(glyph, color_);
+    if (!href)
+        return std::nullopt;
+
+    auto def = GlyphDef{};
+    def.id = "tr-glyph-" + std::to_string(glyph_defs_.size());
+    def.element = "<image id=\"" + def.id + "\" width=\"" + std::to_string(glyph.width) + "\" height=\"" +
+                  std::to_string(glyph.height) + "\" href=\"" + *href + "\"/>";
+    glyph_def_lookup_.emplace(key, glyph_defs_.size());
+    glyph_defs_.push_back(std::move(def));
+    return glyph_defs_.back().id;
 }
 
 void SvgSurface::draw_line(const float x1, const float y1, const float x2, const float y2, const float stroke_width)
@@ -344,27 +408,6 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
     if (!detail::valid_glyph_bitmap_for_rgba(glyph) || !std::isfinite(pen_x) || !std::isfinite(pen_y) || !std::isfinite(angle))
         return;
 
-    const auto c = color_from_argb(color_);
-    auto rgba_size = std::size_t{0};
-    auto rgba = std::vector<unsigned char>{};
-    if (!byte_count_for_rgba(glyph.width, glyph.height, rgba.max_size(), rgba_size))
-        return;
-    rgba.resize(rgba_size);
-    for (auto row = 0; row < glyph.height; ++row)
-    {
-        for (auto col = 0; col < glyph.width; ++col)
-        {
-            const auto coverage =
-                glyph.buffer[static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch) + static_cast<std::size_t>(col)];
-            const auto dst =
-                (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
-            rgba[dst + 0] = c.r;
-            rgba[dst + 1] = c.g;
-            rgba[dst + 2] = c.b;
-            rgba[dst + 3] = static_cast<unsigned char>((static_cast<unsigned>(coverage) * static_cast<unsigned>(c.a)) / 255u);
-        }
-    }
-
     const auto x = pen_x + static_cast<float>(glyph.left);
     const auto y = pen_y - static_cast<float>(glyph.top);
     auto transform = std::string{};
@@ -372,13 +415,17 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
         transform =
             " transform=\"rotate(" + number(detail::radians_to_degrees(angle)) + ' ' + number(pen_x) + ' ' + number(pen_y) + ")\"";
 
-    const auto png = png_rgba(glyph.width, glyph.height, rgba);
-    if (!png)
+    if (const auto id = glyph_def_id(glyph))
+    {
+        elements_.push_back("<use href=\"#" + *id + "\" x=\"" + number(x) + "\" y=\"" + number(y) + "\"" + transform + "/>");
         return;
+    }
 
+    const auto href = encoded_glyph_href(glyph, color_);
+    if (!href)
+        return;
     elements_.push_back("<image x=\"" + number(x) + "\" y=\"" + number(y) + "\" width=\"" + std::to_string(glyph.width) +
-                        "\" height=\"" + std::to_string(glyph.height) + "\" href=\"data:image/png;base64," + base64(*png) + "\"" +
-                        transform + "/>");
+                        "\" height=\"" + std::to_string(glyph.height) + "\" href=\"" + *href + "\"" + transform + "/>");
 }
 
 std::string SvgSurface::svg() const
@@ -390,6 +437,14 @@ std::string SvgSurface::svg() const
     out << '\n';
     if (background_)
         out << R"(  <rect width="100%" height="100%" )" << paint_attributes(*background_, "fill") << R"(/>)" << '\n';
+
+    if (!glyph_defs_.empty())
+    {
+        out << "  <defs>\n";
+        for (const auto& glyph_def : glyph_defs_)
+            out << "    " << glyph_def.element << '\n';
+        out << "  </defs>\n";
+    }
 
     for (const auto& element : elements_)
         out << "  " << element << '\n';

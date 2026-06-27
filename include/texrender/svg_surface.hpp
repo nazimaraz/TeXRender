@@ -1,8 +1,10 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include "texrender/draw_surface.hpp"
 #include "texrender/export.hpp"
@@ -31,10 +33,36 @@ namespace TeXRender
         [[nodiscard]] bool write_svg(const std::string& path) const;
 
     private:
+        struct GlyphDefKey
+        {
+            std::uint64_t glyph_key{};
+            std::uint32_t argb{};
+
+            [[nodiscard]] bool operator==(const GlyphDefKey& other) const noexcept
+            {
+                return glyph_key == other.glyph_key && argb == other.argb;
+            }
+        };
+
+        struct GlyphDefKeyHash
+        {
+            [[nodiscard]] std::size_t operator()(const GlyphDefKey& key) const noexcept;
+        };
+
+        struct GlyphDef
+        {
+            std::string id;
+            std::string element;
+        };
+
+        [[nodiscard]] std::optional<std::string> glyph_def_id(const GlyphBitmap& glyph);
+
         int width_{0};
         int height_{0};
         std::uint32_t color_{0xff000000};
         std::optional<std::uint32_t> background_;
+        std::unordered_map<GlyphDefKey, std::size_t, GlyphDefKeyHash> glyph_def_lookup_;
+        std::vector<GlyphDef> glyph_defs_;
         std::vector<std::string> elements_;
     };
 } // namespace TeXRender
