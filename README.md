@@ -87,7 +87,6 @@ git submodule update --init --recursive
 
 ```cmake
 add_subdirectory(third_party/texrender)
-
 add_executable(my_app main.cpp)
 target_link_libraries(my_app PRIVATE texrender::texrender)
 texrender_copy_resources(my_app)
@@ -187,7 +186,6 @@ TeXRender::RenderOptions options;
 options.text_size = 42.f;
 options.argb = 0xff202020;
 options.wrap_width = 800;
-
 auto result = document.try_render_detailed(user_input, options);
 if (result)
     result->draw(20, 20);
@@ -228,7 +226,6 @@ Use `HeadlessSurface` to render without opening a window:
 auto owned = std::make_unique<TeXRender::HeadlessSurface>();
 auto& canvas = *owned;
 TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
-
 auto formula = document.render(R"(\int_0^1 x^2\,dx)", 48.f, 0xff000000);
 canvas.resize(formula.width() + 20, formula.height() + 20);
 canvas.clear(0xffffffff);
@@ -246,7 +243,6 @@ Use `SvgSurface` the same way when you want SVG output:
 auto owned = std::make_unique<TeXRender::SvgSurface>();
 auto& svg = *owned;
 TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
-
 auto formula = document.render(R"(\sqrt{x+1})", 48.f, 0xff000000);
 svg.resize(formula.width() + 20, formula.height() + 20);
 svg.clear(0xffffffff);
