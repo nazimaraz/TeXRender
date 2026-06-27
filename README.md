@@ -102,6 +102,7 @@ texrender_copy_resources(my_app)
 TEXRENDER_BACKEND=headless|svg|raylib|sdl2
 TEXRENDER_BUILD_EXAMPLES=ON|OFF
 TEXRENDER_BUILD_TESTS=ON|OFF
+TEXRENDER_BUILD_BENCHMARKS=ON|OFF
 TEXRENDER_BUILD_WASM_EXAMPLE=ON|OFF
 TEXRENDER_USE_SUBMODULE_DEPENDENCIES=ON|OFF
 TEXRENDER_MICROTEX_LOGS=ON|OFF
@@ -113,6 +114,37 @@ with a different default backend, also link `texrender::headless_surface` or
 `texrender::svg_surface`.
 `TEXRENDER_BUILD_WASM_EXAMPLE` is enabled automatically only when configuring
 with Emscripten.
+
+## Performance
+
+TeXRender includes an opt-in benchmark executable that prints Markdown output
+ready to paste into this section. Run it from a Release build and include the
+machine/compiler details it prints with the numbers; benchmark results are a
+local baseline, not a cross-machine guarantee.
+
+```sh
+cmake -S . -B build-bench -DCMAKE_BUILD_TYPE=Release -DTEXRENDER_BACKEND=headless -DTEXRENDER_BUILD_BENCHMARKS=ON
+cmake --build build-bench --target texrender_benchmark -j
+./build-bench/texrender_benchmark
+```
+
+The benchmark reports first render plus draw, warm render plus draw, cached
+handle draw, SVG export, and batch throughput. The headless numbers are the
+best baseline for library overhead because they avoid window system, GPU driver,
+and vsync noise from interactive backends.
+
+Example local result from a Release build on an AMD Ryzen 7 7700X with Clang
+20.1.8:
+
+| Scenario | Median | p95 | Min | Max | Iterations |
+|---|---:|---:|---:|---:|---:|
+| document init | 2.810 ms | 2.810 ms | 2.810 ms | 2.810 ms | 1 |
+| first render+draw/headless | 0.232 ms | 0.436 ms | 0.153 ms | 0.436 ms | 6 |
+| warm render+draw/headless | 0.104 ms | 0.170 ms | 0.034 ms | 0.237 ms | 600 |
+| cached draw+clear/headless | 0.080 ms | 0.093 ms | 0.068 ms | 0.129 ms | 3000 |
+| render+draw+serialize/svg | 0.227 ms | 0.264 ms | 0.092 ms | 0.294 ms | 400 |
+
+Batch render+draw/headless: 16709.7 formulas/s (1000 formulas in 59.8 ms).
 
 ## Basic Usage
 
