@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <list>
 #include <unordered_map>
+#include <vector>
 #include "texrender/draw_surface.hpp"
 #include "texrender/export.hpp"
 
@@ -49,6 +50,7 @@ namespace TeXRender
         SDL_Renderer* renderer_{};
         std::unordered_map<std::uint64_t, CachedTexture> textures_;
         std::list<std::uint64_t> lru_;
+        std::vector<unsigned char> upload_pixels_;
         std::size_t max_textures_{1024};
         std::uint8_t r_{0};
         std::uint8_t g_{0};

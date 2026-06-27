@@ -18,9 +18,11 @@ namespace TeXRender::detail
         ~DocumentState();
 
         [[nodiscard]] IDrawSurface* surface() const;
+        [[nodiscard]] std::mutex& surface_mutex() noexcept;
 
     private:
         std::unique_ptr<IDrawSurface> surface_;
+        std::mutex surface_mutex_;
     };
 
     [[nodiscard]] std::recursive_mutex& render_mutex();

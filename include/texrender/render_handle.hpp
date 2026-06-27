@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <mutex>
 #include "texrender/export.hpp"
 
 namespace microtex
@@ -41,5 +42,6 @@ namespace TeXRender
 
         std::shared_ptr<detail::DocumentState> state_;
         std::unique_ptr<microtex::Render> render_;
+        std::shared_ptr<std::mutex> mutex_;
     };
 } // namespace TeXRender

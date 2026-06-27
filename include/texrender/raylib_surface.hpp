@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <raylib.h>
 #include <unordered_map>
+#include <vector>
 #include "texrender/draw_surface.hpp"
 #include "texrender/export.hpp"
 
@@ -42,6 +43,7 @@ namespace TeXRender
 
         std::unordered_map<std::uint64_t, CachedTexture> textures_;
         std::list<std::uint64_t> lru_;
+        std::vector<unsigned char> upload_pixels_;
         std::size_t max_textures_{1024};
         Color color_{0, 0, 0, 255};
     };

@@ -107,8 +107,10 @@ TEXRENDER_USE_SUBMODULE_DEPENDENCIES=ON|OFF
 TEXRENDER_MICROTEX_LOGS=ON|OFF
 ```
 
-The default backend is `headless`. `HeadlessSurface` and `SvgSurface` are always
-available to user code, even when the default backend is `raylib` or `sdl2`.
+The default backend is `headless`. The selected backend is linked into
+`texrender::texrender`; when you want to use `HeadlessSurface` or `SvgSurface`
+with a different default backend, also link `texrender::headless_surface` or
+`texrender::svg_surface`.
 `TEXRENDER_BUILD_WASM_EXAMPLE` is enabled automatically only when configuring
 with Emscripten.
 

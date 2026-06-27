@@ -117,6 +117,7 @@ const GlyphCache::Glyph* Graphics2DAdapter::raster(const microtex::u16 glyph_ind
 
 void Graphics2DAdapter::drawGlyph(const microtex::u16 glyph, const float x, const float y)
 {
+    const auto lock = std::scoped_lock{detail::glyph_cache_mutex()};
     const auto* const g = raster(glyph);
     if (!g || g->pixels.empty())
         return;

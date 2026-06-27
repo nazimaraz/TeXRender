@@ -26,6 +26,26 @@ option(TEXRENDER_USE_SUBMODULE_DEPENDENCIES "Use third_party dependency submodul
 include(cmake/Dependencies.cmake)
 set(TEXRENDER_RESOURCE_DIR "${MICROTEX_RES_DIR}" CACHE INTERNAL "texrender MicroTeX resource directory")
 include(cmake/texrenderHelpers.cmake)
+
+function(texrender_add_surface_component component_name component_source)
+    add_library(${component_name} OBJECT ${component_source})
+    target_include_directories(${component_name} PUBLIC include)
+    target_include_directories(${component_name} PRIVATE source)
+    target_compile_features(${component_name} PRIVATE cxx_std_17)
+endfunction()
+
+texrender_add_surface_component(texrender_headless_surface source/backend/headless/headless_surface.cpp)
+texrender_add_surface_component(texrender_svg_surface source/backend/svg/svg_surface.cpp)
+add_library(texrender::headless_surface ALIAS texrender_headless_surface)
+add_library(texrender::svg_surface ALIAS texrender_svg_surface)
+
+function(texrender_link_surface_component target_name component_backend)
+    if (NOT TEXRENDER_BACKEND STREQUAL component_backend)
+        target_link_libraries(${target_name} PRIVATE texrender_${component_backend}_surface)
+    endif ()
+endfunction()
+
+set(TEXRENDER_BACKEND_OBJECTS "")
 if (TEXRENDER_BACKEND STREQUAL "raylib")
     set(TEXRENDER_BACKEND_SOURCES
             source/backend/raylib/raylib_surface.cpp
@@ -34,9 +54,11 @@ if (TEXRENDER_BACKEND STREQUAL "raylib")
     set(TEXRENDER_BACKEND_LIBS raylib)
 elseif (TEXRENDER_BACKEND STREQUAL "headless")
     set(TEXRENDER_BACKEND_SOURCES source/backend/headless/headless_factory.cpp)
+    list(APPEND TEXRENDER_BACKEND_OBJECTS $<TARGET_OBJECTS:texrender_headless_surface>)
     set(TEXRENDER_BACKEND_LIBS "")
 elseif (TEXRENDER_BACKEND STREQUAL "svg")
     set(TEXRENDER_BACKEND_SOURCES source/backend/svg/svg_factory.cpp)
+    list(APPEND TEXRENDER_BACKEND_OBJECTS $<TARGET_OBJECTS:texrender_svg_surface>)
     set(TEXRENDER_BACKEND_LIBS "")
 elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
     set(TEXRENDER_BACKEND_SOURCES
@@ -59,9 +81,8 @@ add_library(texrender
         source/render/ft_font.cpp
         source/render/ft_text_layout.cpp
         source/render/graphics2d_adapter.cpp
-        source/backend/svg/svg_surface.cpp
-        source/backend/headless/headless_surface.cpp
         ${TEXRENDER_BACKEND_SOURCES}
+        ${TEXRENDER_BACKEND_OBJECTS}
 )
 add_library(texrender::texrender ALIAS texrender)
 target_include_directories(texrender PUBLIC include)
@@ -96,6 +117,11 @@ if (TEXRENDER_BUILD_EXAMPLES)
         list(POP_FRONT TEXRENDER_EXAMPLES example_name example_source)
         add_executable(${example_name} ${example_source})
         target_link_libraries(${example_name} PRIVATE texrender::texrender ${TEXRENDER_BACKEND_EXECUTABLE_LIBS})
+        if (example_name MATCHES "^(texrender_offscreen|texrender_headless_batch|texrender_untrusted_worker|texrender_formula_label_widget)$")
+            texrender_link_surface_component(${example_name} headless)
+        elseif (example_name STREQUAL "texrender_svg_export")
+            texrender_link_surface_component(${example_name} svg)
+        endif ()
         set_target_properties(${example_name} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
         texrender_copy_resources(${example_name})
     endwhile ()
@@ -109,6 +135,7 @@ if (TEXRENDER_BUILD_WASM_EXAMPLE)
     set(TEXRENDER_WASM_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/wasm")
     add_executable(texrender_wasm examples/wasm/texrender_wasm.cpp)
     target_link_libraries(texrender_wasm PRIVATE texrender::texrender)
+    texrender_link_surface_component(texrender_wasm svg)
     set_target_properties(texrender_wasm PROPERTIES
             CXX_STANDARD 17
             CXX_STANDARD_REQUIRED ON
@@ -169,6 +196,8 @@ if (TEXRENDER_BUILD_TESTS)
     if (BUILD_TESTING)
         add_executable(texrender_smoke_test tests/render_smoke.cpp)
         target_link_libraries(texrender_smoke_test PRIVATE texrender::texrender)
+        texrender_link_surface_component(texrender_smoke_test headless)
+        texrender_link_surface_component(texrender_smoke_test svg)
         set_target_properties(texrender_smoke_test PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
         texrender_copy_resources(texrender_smoke_test)
         add_test(NAME texrender_smoke_test COMMAND texrender_smoke_test)

@@ -9,6 +9,7 @@ using namespace TeXRender;
 RenderHandle::RenderHandle(microtex::Render* render, std::shared_ptr<detail::DocumentState> state)
     : state_{std::move(state)}
     , render_{render}
+    , mutex_{std::make_shared<std::mutex>()}
 {}
 
 RenderHandle::~RenderHandle() noexcept = default;
@@ -21,6 +22,7 @@ RenderHandle& RenderHandle::operator=(RenderHandle&& other) noexcept
     {
         render_ = std::move(other.render_);
         state_ = std::move(other.state_);
+        mutex_ = std::move(other.mutex_);
     }
 
     return *this;
@@ -63,7 +65,7 @@ void RenderHandle::set_foreground(const std::uint32_t argb) const
     if (!render_)
         return;
 
-    const auto lock = std::scoped_lock{detail::render_mutex()};
+    const auto lock = std::scoped_lock{*mutex_};
     render_->setForeground(argb);
 }
 
@@ -76,7 +78,7 @@ void RenderHandle::draw(const int x, const int y) const
     if (!surface)
         return;
 
-    const auto lock = std::scoped_lock{detail::render_mutex()};
+    const auto lock = std::scoped_lock{*mutex_, state_->surface_mutex()};
     auto adapter = Graphics2DAdapter{*surface};
     render_->draw(adapter, x, y);
 }

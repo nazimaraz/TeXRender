@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <functional>
 #include <list>
+#include <mutex>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -83,8 +84,7 @@ namespace TeXRender
         struct CachedGlyph
         {
             Glyph glyph;
-            GlyphLookup lookup;
-            std::list<std::uint64_t>::iterator lru_it;
+            std::list<GlyphLookup>::iterator lru_it;
         };
 
         [[nodiscard]] const Glyph* load_glyph(std::uint32_t face_id, std::uint32_t glyph_id, int pixel_size, GlyphLoadMode mode);
@@ -92,9 +92,8 @@ namespace TeXRender
         FT_LibraryRec_* library_{};
         std::unordered_map<std::string, FaceEntry> faces_;
         std::unordered_map<std::uint32_t, FT_FaceRec_*> faces_by_id_;
-        std::unordered_map<std::uint64_t, CachedGlyph> glyphs_;
-        std::unordered_map<GlyphLookup, std::uint64_t, GlyphLookupHash> glyph_ids_;
-        std::list<std::uint64_t> lru_;
+        std::unordered_map<GlyphLookup, CachedGlyph, GlyphLookupHash> glyphs_;
+        std::list<GlyphLookup> lru_;
         std::uint32_t next_face_id_ = 1;
         std::uint64_t next_glyph_key_ = 1;
     };
@@ -102,6 +101,7 @@ namespace TeXRender
     namespace detail
     {
         [[nodiscard]] GlyphCache& shared_cache();
+        [[nodiscard]] std::mutex& glyph_cache_mutex();
         void set_default_font_path(const std::string& path);
         [[nodiscard]] std::string default_font_path();
 

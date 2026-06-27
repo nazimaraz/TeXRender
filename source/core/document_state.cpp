@@ -51,6 +51,11 @@ namespace TeXRender::detail
         return surface_.get();
     }
 
+    std::mutex& DocumentState::surface_mutex() noexcept
+    {
+        return surface_mutex_;
+    }
+
     std::recursive_mutex& render_mutex()
     {
         static auto mutex = std::recursive_mutex{};

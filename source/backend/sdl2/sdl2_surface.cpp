@@ -215,7 +215,7 @@ SDL_Texture* Sdl2Surface::texture_for(const GlyphBitmap& glyph)
 
     try
     {
-        auto rgba = std::vector<unsigned char>(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
+        upload_pixels_.resize(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
         for (auto row = 0; row < glyph.height; ++row)
         {
             for (auto col = 0; col < glyph.width; ++col)
@@ -224,15 +224,15 @@ SDL_Texture* Sdl2Surface::texture_for(const GlyphBitmap& glyph)
                                                    static_cast<std::size_t>(col)];
                 const auto dst =
                     (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
-                rgba[dst + 0] = 255;
-                rgba[dst + 1] = 255;
-                rgba[dst + 2] = 255;
-                rgba[dst + 3] = coverage;
+                upload_pixels_[dst + 0] = 255;
+                upload_pixels_[dst + 1] = 255;
+                upload_pixels_[dst + 2] = 255;
+                upload_pixels_[dst + 3] = coverage;
             }
         }
 
-        auto* const surface =
-            SDL_CreateRGBSurfaceWithFormatFrom(rgba.data(), glyph.width, glyph.height, 32, glyph.width * 4, SDL_PIXELFORMAT_RGBA32);
+        auto* const surface = SDL_CreateRGBSurfaceWithFormatFrom(upload_pixels_.data(), glyph.width, glyph.height, 32,
+            glyph.width * 4, SDL_PIXELFORMAT_RGBA32);
         if (!surface)
         {
             detail::debug_log(std::string{"Sdl2Surface: SDL_CreateRGBSurfaceWithFormatFrom failed: "} + SDL_GetError());

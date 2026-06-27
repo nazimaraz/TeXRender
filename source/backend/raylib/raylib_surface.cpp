@@ -144,7 +144,7 @@ const Texture2D* RaylibSurface::texture_for(const GlyphBitmap& glyph)
         return &found->second.texture;
     }
 
-    auto rgba = std::vector<unsigned char>(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
+    upload_pixels_.resize(static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height) * 4u);
     for (auto row = 0; row < glyph.height; ++row)
     {
         for (auto col = 0; col < glyph.width; ++col)
@@ -153,15 +153,15 @@ const Texture2D* RaylibSurface::texture_for(const GlyphBitmap& glyph)
                 glyph.buffer[static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.pitch) + static_cast<std::size_t>(col)];
             const auto dst =
                 (static_cast<std::size_t>(row) * static_cast<std::size_t>(glyph.width) + static_cast<std::size_t>(col)) * 4u;
-            rgba[dst + 0] = 255;
-            rgba[dst + 1] = 255;
-            rgba[dst + 2] = 255;
-            rgba[dst + 3] = coverage;
+            upload_pixels_[dst + 0] = 255;
+            upload_pixels_[dst + 1] = 255;
+            upload_pixels_[dst + 2] = 255;
+            upload_pixels_[dst + 3] = coverage;
         }
     }
 
     auto image = Image{};
-    image.data = rgba.data();
+    image.data = upload_pixels_.data();
     image.width = glyph.width;
     image.height = glyph.height;
     image.mipmaps = 1;

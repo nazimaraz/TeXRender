@@ -66,7 +66,7 @@ namespace
     };
 } // namespace
 
-FtTextLayout::FtTextLayout(std::string text, std::string font_path, const float font_size)
+FtTextLayout::FtTextLayout(const std::string& text, std::string font_path, const float font_size)
     : codepoints_{decode_utf8_lossy(text)}
     , font_path_{std::move(font_path)}
     , font_size_{font_size}
@@ -74,7 +74,7 @@ FtTextLayout::FtTextLayout(std::string text, std::string font_path, const float 
 
 void FtTextLayout::getBounds(microtex::Rect& bounds)
 {
-    const auto lock = std::scoped_lock{detail::render_mutex()};
+    const auto lock = std::scoped_lock{detail::glyph_cache_mutex()};
     auto& cache = detail::shared_cache();
     const auto pixel_size = detail::safe_raster_pixel_size(font_size_);
     if (pixel_size <= 0)
@@ -113,20 +113,31 @@ void FtTextLayout::draw(microtex::Graphics2D& g2, const float x, const float y)
     g2.setFontSize(font_size_);
     const auto pixel_size = detail::safe_raster_pixel_size(font_size_);
     auto& cache = detail::shared_cache();
-    const auto face_id = cache.face_for(font_path_);
+    auto face_id = std::uint32_t{};
+    {
+        const auto lock = std::scoped_lock{detail::glyph_cache_mutex()};
+        face_id = cache.face_for(font_path_);
+    }
     auto pen_x = x;
     for (const auto codepoint : codepoints_)
     {
-        const auto glyph_index = cache.glyph_index_for(face_id, codepoint);
-        if (glyph_index == 0 || glyph_index > std::numeric_limits<microtex::u16>::max())
-            continue;
+        auto glyph_index = std::uint32_t{};
+        auto advance = 0.f;
+        {
+            const auto lock = std::scoped_lock{detail::glyph_cache_mutex()};
+            glyph_index = cache.glyph_index_for(face_id, codepoint);
+            if (glyph_index == 0 || glyph_index > std::numeric_limits<microtex::u16>::max())
+                continue;
 
-        const auto* const glyph = cache.glyph_index(face_id, glyph_index, pixel_size);
-        if (!glyph)
-            continue;
+            const auto* const glyph = cache.glyph_index(face_id, glyph_index, pixel_size);
+            if (!glyph)
+                continue;
+
+            advance = glyph->advance;
+        }
 
         g2.drawGlyph(static_cast<microtex::u16>(glyph_index), pen_x, y);
-        pen_x += glyph->advance;
+        pen_x += advance;
     }
 }
 

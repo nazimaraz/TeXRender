@@ -138,13 +138,7 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const std::uint32_t face_id, con
         return nullptr;
 
     const auto lookup = GlyphLookup{face_id, glyph_id, mode == GlyphLoadMode::glyph_index, pixel_size};
-    auto id_it = glyph_ids_.find(lookup);
-    const auto new_id = id_it == glyph_ids_.end();
-    if (new_id)
-        id_it = glyph_ids_.emplace(lookup, next_glyph_key_++).first;
-
-    const auto key = id_it->second;
-    if (const auto cached = glyphs_.find(key); cached != glyphs_.end())
+    if (const auto cached = glyphs_.find(lookup); cached != glyphs_.end())
     {
         lru_.splice(lru_.begin(), lru_, cached->second.lru_it);
         return &cached->second.glyph;
@@ -154,14 +148,11 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const std::uint32_t face_id, con
     if (FT_Set_Pixel_Sizes(face, 0, static_cast<FT_UInt>(pixel_size)) != 0)
     {
         detail::debug_log("failed to set FreeType pixel size");
-        if (new_id)
-            glyph_ids_.erase(lookup);
-
         return nullptr;
     }
 
     Glyph g;
-    g.key = key;
+    g.key = next_glyph_key_++;
     const auto ft_error = mode == GlyphLoadMode::glyph_index ? FT_Load_Glyph(face, glyph_id, FT_LOAD_RENDER)
                                                              : FT_Load_Char(face, glyph_id, FT_LOAD_RENDER);
     if (ft_error)
@@ -169,20 +160,23 @@ const GlyphCache::Glyph* GlyphCache::load_glyph(const std::uint32_t face_id, con
     else
         decode_glyph_bitmap(g, *face->glyph);
 
-    lru_.push_front(key);
-    const auto it = glyphs_.emplace(key, CachedGlyph{std::move(g), lookup, lru_.begin()}).first;
+    lru_.push_front(lookup);
+    const auto it = glyphs_.emplace(lookup, CachedGlyph{std::move(g), lru_.begin()}).first;
     const auto max_glyphs = std::max<std::size_t>(1, cache_limits().max_cpu_glyphs);
     for (auto excess = glyphs_.size(); excess > max_glyphs; --excess)
     {
         const auto oldest = lru_.back();
-        if (const auto old_glyph = glyphs_.find(oldest); old_glyph != glyphs_.end())
-            glyph_ids_.erase(old_glyph->second.lookup);
-
         glyphs_.erase(oldest);
         lru_.pop_back();
     }
 
     return &it->second.glyph;
+}
+
+std::mutex& detail::glyph_cache_mutex()
+{
+    static auto mutex = std::mutex{};
+    return mutex;
 }
 
 GlyphCache& detail::shared_cache()
