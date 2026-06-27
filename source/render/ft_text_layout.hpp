@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include "graphic/graphic.h"
 
 namespace TeXRender
@@ -14,7 +15,7 @@ namespace TeXRender
         void draw(microtex::Graphics2D& g2, float x, float y) override;
 
     private:
-        std::string text_;
+        std::vector<char32_t> codepoints_;
         std::string font_path_;
         float font_size_;
     };

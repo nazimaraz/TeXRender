@@ -15,6 +15,7 @@ namespace
     std::vector<char32_t> decode_utf8_lossy(const std::string& text)
     {
         auto out = std::vector<char32_t>{};
+        out.reserve(text.size());
         for (auto index = std::size_t{0}; index < text.size();)
         {
             if (const auto byte = static_cast<unsigned char>(text[index]); byte < 0x80u)
@@ -66,7 +67,7 @@ namespace
 } // namespace
 
 FtTextLayout::FtTextLayout(std::string text, std::string font_path, const float font_size)
-    : text_{std::move(text)}
+    : codepoints_{decode_utf8_lossy(text)}
     , font_path_{std::move(font_path)}
     , font_size_{font_size}
 {}
@@ -89,7 +90,7 @@ void FtTextLayout::getBounds(microtex::Rect& bounds)
     auto width = 0.f;
     auto ascent = 0;
     auto descent = 0;
-    for (const auto codepoint : decode_utf8_lossy(text_))
+    for (const auto codepoint : codepoints_)
     {
         const auto* const g = cache.glyph(face_id, codepoint, pixel_size);
         if (!g)
@@ -114,7 +115,7 @@ void FtTextLayout::draw(microtex::Graphics2D& g2, const float x, const float y)
     auto& cache = detail::shared_cache();
     const auto face_id = cache.face_for(font_path_);
     auto pen_x = x;
-    for (const auto codepoint : decode_utf8_lossy(text_))
+    for (const auto codepoint : codepoints_)
     {
         const auto glyph_index = cache.glyph_index_for(face_id, codepoint);
         if (glyph_index == 0 || glyph_index > std::numeric_limits<microtex::u16>::max())
