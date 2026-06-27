@@ -9,6 +9,7 @@
 #include <optional>
 #include <sstream>
 #include <string_view>
+#include "backend/angle.hpp"
 #include "backend/glyph_bitmap_validation.hpp"
 
 using namespace TeXRender;
@@ -239,11 +240,6 @@ namespace
         return output;
     }
 
-    [[nodiscard]] constexpr float to_degrees(const float radians)
-    {
-        return radians * (180.f / 3.14159265358979323846f);
-    }
-
     [[nodiscard]] bool finite_line(const float x1, const float y1, const float x2, const float y2, const float width)
     {
         return std::isfinite(x1) && std::isfinite(y1) && std::isfinite(x2) && std::isfinite(y2) && std::isfinite(width);
@@ -373,7 +369,8 @@ void SvgSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const f
     const auto y = pen_y - static_cast<float>(glyph.top);
     auto transform = std::string{};
     if (std::fabs(angle) > 0.0001f)
-        transform = " transform=\"rotate(" + number(to_degrees(angle)) + ' ' + number(pen_x) + ' ' + number(pen_y) + ")\"";
+        transform =
+            " transform=\"rotate(" + number(detail::radians_to_degrees(angle)) + ' ' + number(pen_x) + ' ' + number(pen_y) + ")\"";
 
     const auto png = png_rgba(glyph.width, glyph.height, rgba);
     if (!png)

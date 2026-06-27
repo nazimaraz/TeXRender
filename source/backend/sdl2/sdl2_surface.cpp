@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <SDL.h>
+#include "backend/angle.hpp"
 #include "backend/glyph_bitmap_validation.hpp"
 #include "render/glyph_cache.hpp"
 #include "texrender/cache_options.hpp"
@@ -15,11 +16,6 @@ using namespace TeXRender;
 namespace
 {
     std::atomic<SDL_Renderer*> g_default_renderer{nullptr};
-
-    [[nodiscard]] constexpr double to_degrees(const float radians)
-    {
-        return static_cast<double>(radians) * (180.0 / 3.14159265358979323846);
-    }
 
     [[nodiscard]] unsigned char channel(const std::uint32_t argb, const unsigned shift)
     {
@@ -283,5 +279,6 @@ void Sdl2Surface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, const 
     const auto dest = rect(pen_x + static_cast<float>(glyph.left), pen_y - static_cast<float>(glyph.top),
         static_cast<float>(glyph.width), static_cast<float>(glyph.height));
     const auto center = SDL_FPoint{static_cast<float>(-glyph.left), static_cast<float>(glyph.top)};
-    SDL_RenderCopyExF(renderer_, texture, nullptr, &dest, to_degrees(angle), &center, SDL_FLIP_NONE);
+    SDL_RenderCopyExF(renderer_, texture, nullptr, &dest, detail::radians_to_degrees(static_cast<double>(angle)), &center,
+        SDL_FLIP_NONE);
 }

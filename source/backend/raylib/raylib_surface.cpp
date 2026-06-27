@@ -4,6 +4,7 @@
 #include <cmath>
 #include <rlgl.h>
 #include <vector>
+#include "backend/angle.hpp"
 #include "backend/glyph_bitmap_validation.hpp"
 #include "render/glyph_cache.hpp"
 #include "texrender/cache_options.hpp"
@@ -12,11 +13,6 @@ using namespace TeXRender;
 
 namespace
 {
-    [[nodiscard]] constexpr float to_degrees(const float radians)
-    {
-        return radians * (180.f / 3.14159265358979323846f);
-    }
-
     [[nodiscard]] Color to_raylib(const std::uint32_t argb)
     {
         return {
@@ -196,5 +192,5 @@ void RaylibSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, cons
     const auto source = Rectangle{0.f, 0.f, static_cast<float>(glyph.width), static_cast<float>(glyph.height)};
     const auto dest = Rectangle{pen_x, pen_y, static_cast<float>(glyph.width), static_cast<float>(glyph.height)};
     const auto origin = Vector2{static_cast<float>(-glyph.left), static_cast<float>(glyph.top)};
-    DrawTexturePro(*texture, source, dest, origin, to_degrees(angle), color_);
+    DrawTexturePro(*texture, source, dest, origin, detail::radians_to_degrees(angle), color_);
 }
