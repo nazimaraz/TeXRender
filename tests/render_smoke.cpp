@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 #include "texrender/headless_surface.hpp"
 #include "texrender/latex_document.hpp"
 #include "texrender/svg_surface.hpp"
@@ -83,6 +84,38 @@ namespace
         return svg.find("<defs>") != std::string::npos && count_occurrences(svg, "data:image/png;base64,") == 1 &&
                count_occurrences(svg, "<use href=\"#tr-glyph-0\"") == 2;
     }
+
+    [[nodiscard]] bool headless_blends_common_paths()
+    {
+        auto surface = TeXRender::HeadlessSurface{};
+        surface.resize(1, 1);
+
+        constexpr auto opaque = std::array<unsigned char, 1>{255u};
+        const auto opaque_glyph = TeXRender::GlyphBitmap{opaque.data(), 1, 1, 1, 0, 0, 1};
+        surface.clear(0x00000000);
+        surface.set_color(0x80ff0000);
+        surface.draw_glyph(opaque_glyph, 0.f, 0.f, 0.f);
+        if (surface.pixels() != std::vector<unsigned char>{255u, 0u, 0u, 128u})
+            return false;
+
+        constexpr auto half = std::array<unsigned char, 1>{128u};
+        const auto half_glyph = TeXRender::GlyphBitmap{half.data(), 1, 1, 1, 0, 0, 2};
+        surface.clear(0x00000000);
+        surface.set_color(0xff00ff00);
+        surface.draw_glyph(half_glyph, 0.f, 0.f, 0.f);
+        if (surface.pixels() != std::vector<unsigned char>{0u, 255u, 0u, 128u})
+            return false;
+
+        surface.clear(0xffffffff);
+        surface.set_color(0x80000000);
+        surface.fill_rect(0.f, 0.f, 1.f, 1.f);
+        if (surface.pixels() != std::vector<unsigned char>{127u, 127u, 127u, 255u})
+            return false;
+
+        surface.set_color(0xff0000ff);
+        surface.draw_glyph(opaque_glyph, 0.f, 0.f, 0.f);
+        return surface.pixels() == std::vector<unsigned char>{0u, 0u, 255u, 255u};
+    }
 } // namespace
 
 int main()
@@ -98,6 +131,7 @@ int main()
     };
     auto ok = true;
     ok = run_case("svg-glyph-def-reuse", svg_reuses_glyph_defs()) && ok;
+    ok = run_case("headless-blend-common-paths", headless_blends_common_paths()) && ok;
     for (const auto& [name, latex] : valid_cases)
         ok = run_case(name, render_non_empty(document, *canvas, latex)) && ok;
 

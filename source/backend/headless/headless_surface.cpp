@@ -208,29 +208,52 @@ namespace
         return static_cast<bool>(file);
     }
 
-    void blend_pixel(std::vector<unsigned char>& pixels, const int width, const int height, const unsigned char r,
-        const unsigned char g, const unsigned char b, const unsigned char a, const int x, const int y, const float coverage)
+    [[nodiscard]] unsigned char scale_alpha(const unsigned char alpha, const unsigned char coverage) noexcept
     {
-        if (x < 0 || y < 0 || x >= width || y >= height || coverage <= 0.f)
+        return static_cast<unsigned char>((static_cast<unsigned>(alpha) * static_cast<unsigned>(coverage) + 127u) / 255u);
+    }
+
+    [[nodiscard]] unsigned char blend_channel(const unsigned char dst, const unsigned char src, const unsigned src_alpha,
+        const unsigned dst_alpha, const unsigned inverse_src_alpha, const unsigned out_alpha) noexcept
+    {
+        const auto numerator =
+            static_cast<unsigned>(src) * src_alpha * 255u + static_cast<unsigned>(dst) * dst_alpha * inverse_src_alpha;
+        const auto denominator = out_alpha * 255u;
+        return static_cast<unsigned char>((numerator + denominator / 2u) / denominator);
+    }
+
+    void blend_pixel(std::vector<unsigned char>& pixels, const int width, const int height, const unsigned char r,
+        const unsigned char g, const unsigned char b, const unsigned char src_alpha, const int x, const int y)
+    {
+        if (x < 0 || y < 0 || x >= width || y >= height || src_alpha == 0)
             return;
 
-        const auto src_alpha = std::clamp(coverage, 0.f, 1.f) * (static_cast<float>(a) / 255.f);
         const auto idx = (static_cast<std::size_t>(y) * static_cast<std::size_t>(width) + static_cast<std::size_t>(x)) * 4u;
-        const auto dst_alpha = static_cast<float>(pixels[idx + 3]) / 255.f;
-        const auto out_alpha = src_alpha + dst_alpha * (1.f - src_alpha);
-        if (out_alpha <= 0.f)
+        if (src_alpha == 255)
+        {
+            pixels[idx + 0] = r;
+            pixels[idx + 1] = g;
+            pixels[idx + 2] = b;
+            pixels[idx + 3] = 255;
             return;
+        }
 
-        const auto mix = [src_alpha, dst_alpha, out_alpha](const unsigned char dst, const unsigned char src) {
-            const auto src_channel = static_cast<float>(src) / 255.f;
-            const auto dst_channel = static_cast<float>(dst) / 255.f;
-            const auto out_channel = (src_channel * src_alpha + dst_channel * dst_alpha * (1.f - src_alpha)) / out_alpha;
-            return static_cast<unsigned char>(std::lround(std::clamp(out_channel, 0.f, 1.f) * 255.f));
-        };
-        pixels[idx + 0] = mix(pixels[idx + 0], r);
-        pixels[idx + 1] = mix(pixels[idx + 1], g);
-        pixels[idx + 2] = mix(pixels[idx + 2], b);
-        pixels[idx + 3] = static_cast<unsigned char>(std::lround(std::clamp(out_alpha, 0.f, 1.f) * 255.f));
+        const auto dst_alpha = static_cast<unsigned>(pixels[idx + 3]);
+        if (dst_alpha == 0)
+        {
+            pixels[idx + 0] = r;
+            pixels[idx + 1] = g;
+            pixels[idx + 2] = b;
+            pixels[idx + 3] = src_alpha;
+            return;
+        }
+
+        const auto inverse_src_alpha = 255u - static_cast<unsigned>(src_alpha);
+        const auto out_alpha = static_cast<unsigned>(src_alpha) + (dst_alpha * inverse_src_alpha + 127u) / 255u;
+        pixels[idx + 0] = blend_channel(pixels[idx + 0], r, src_alpha, dst_alpha, inverse_src_alpha, out_alpha);
+        pixels[idx + 1] = blend_channel(pixels[idx + 1], g, src_alpha, dst_alpha, inverse_src_alpha, out_alpha);
+        pixels[idx + 2] = blend_channel(pixels[idx + 2], b, src_alpha, dst_alpha, inverse_src_alpha, out_alpha);
+        pixels[idx + 3] = static_cast<unsigned char>(out_alpha);
     }
 } // namespace
 
@@ -308,7 +331,7 @@ void HeadlessSurface::fill_rect(const float x, const float y, const float w, con
     for (auto py = y0; py < y1; ++py)
     {
         for (auto px = x0; px < x1; ++px)
-            blend_pixel(pixels_, width_, height_, r_, g_, b_, a_, px, py, 1.f);
+            blend_pixel(pixels_, width_, height_, r_, g_, b_, a_, px, py);
     }
 }
 
@@ -380,8 +403,7 @@ void HeadlessSurface::draw_glyph(const GlyphBitmap& glyph, const float pen_x, co
             const auto y = origin_y + static_cast<double>(row);
             if (x < 0.0 || y < 0.0 || x >= static_cast<double>(width_) || y >= static_cast<double>(height_))
                 continue;
-            blend_pixel(pixels_, width_, height_, r_, g_, b_, a_, static_cast<int>(x), static_cast<int>(y),
-                static_cast<float>(src[col]) / 255.f);
+            blend_pixel(pixels_, width_, height_, r_, g_, b_, scale_alpha(a_, src[col]), static_cast<int>(x), static_cast<int>(y));
         }
     }
 }
