@@ -7,11 +7,20 @@ function(texrender_copy_resources target)
         message(FATAL_ERROR "texrender_copy_resources: TEXRENDER_RESOURCE_DIR is not set")
     endif()
 
-    set(resource_output "$<TARGET_FILE_DIR:${target}>/texrender-res/${target}")
+    if (EMSCRIPTEN)
+        set(resource_output "/texrender-res/${target}")
+        set(host_resource_output "$<TARGET_FILE_DIR:${target}>/texrender-res/${target}")
+        target_link_options("${target}" PRIVATE
+                "--preload-file" "${TEXRENDER_RESOURCE_DIR}@${resource_output}")
+    else ()
+        set(resource_output "$<TARGET_FILE_DIR:${target}>/texrender-res/${target}")
+        set(host_resource_output "${resource_output}")
+    endif ()
+
     target_compile_definitions("${target}" PRIVATE "TEXRENDER_RES_DIR=\"${resource_output}\"")
     add_custom_command(TARGET "${target}" POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${TEXRENDER_RESOURCE_DIR}" "${resource_output}"
+                "${TEXRENDER_RESOURCE_DIR}" "${host_resource_output}"
         COMMENT "Copying texrender MicroTeX resources for ${target}"
         VERBATIM)
 endfunction()
