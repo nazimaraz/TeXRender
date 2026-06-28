@@ -86,6 +86,10 @@ add_library(texrender
         ${TEXRENDER_BACKEND_OBJECTS}
 )
 add_library(texrender::texrender ALIAS texrender)
+set_target_properties(texrender PROPERTIES
+        CXX_VISIBILITY_PRESET hidden
+        VISIBILITY_INLINES_HIDDEN ON
+)
 target_include_directories(texrender PUBLIC include)
 target_include_directories(texrender PRIVATE source)
 target_include_directories(texrender SYSTEM PRIVATE ${MICROTEX_SRC})

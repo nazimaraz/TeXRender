@@ -5,6 +5,7 @@ if (NOT EMSCRIPTEN)
     set(Freetype_FIND_REQUIRED "${_texrender_freetype_find_required}")
     unset(_texrender_freetype_find_required)
 endif ()
+
 if (NOT Freetype_FOUND)
     set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
     texrender_add_submodule_dependency(
