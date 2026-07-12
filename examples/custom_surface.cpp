@@ -1,0 +1,77 @@
+#include <memory>
+#include <cstddef>
+#include <texrender/draw_surface.hpp>
+#include <texrender/glyph_bitmap.hpp>
+#include <texrender/latex_document.hpp>
+#ifndef TEXRENDER_RES_DIR
+#   define TEXRENDER_RES_DIR "res"
+#endif
+
+namespace
+{
+    class CountingSurface final : public TeXRender::IDrawSurface
+    {
+    public:
+        void set_color(const std::uint32_t argb) override
+        {
+            last_color = argb;
+            ++colors;
+        }
+
+        void draw_line(const float /*x1*/, const float /*y1*/, const float /*x2*/, const float /*y2*/,
+            const float /*width*/) override
+        {
+            ++lines;
+        }
+
+        void draw_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/, const float /*width*/) override
+        {
+            ++rects;
+        }
+
+        void fill_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/) override
+        {
+            ++rects;
+        }
+
+        void draw_round_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/, const float /*rx*/,
+            const float /*ry*/, const float /*width*/) override
+        {
+            ++rects;
+        }
+
+        void fill_round_rect(const float /*x*/, const float /*y*/, const float /*w*/, const float /*h*/, const float /*rx*/,
+            const float /*ry*/) override
+        {
+            ++rects;
+        }
+
+        void draw_glyph(const TeXRender::GlyphBitmap& glyph, const float /*pen_x*/, const float /*pen_y*/,
+            const float /*angle*/) override
+        {
+            ++glyphs;
+            if (glyph.width > 0 && glyph.height > 0)
+                covered_pixels += static_cast<std::size_t>(glyph.width) * static_cast<std::size_t>(glyph.height);
+        }
+
+        std::uint32_t last_color = 0;
+        int colors = 0;
+        int lines = 0;
+        int rects = 0;
+        int glyphs = 0;
+        std::size_t covered_pixels = 0;
+    };
+} // namespace
+
+int main()
+{
+    auto owned = std::make_unique<CountingSurface>();
+    const auto* const stats = owned.get();
+    const auto document = TeXRender::LatexDocument{TEXRENDER_RES_DIR, std::move(owned)};
+    const auto formula = document.render(R"(\frac{a^2+b^2}{c})", 48.f, 0xff223344);
+    formula.draw(0, 0);
+    std::printf("formula: %dx%d baseline %.1f\n", formula.width(), formula.height(), formula.baseline());
+    std::printf("draw calls: colors=%d lines=%d rects=%d glyphs=%d covered=%zu last_color=0x%08x\n", stats->colors, stats->lines,
+        stats->rects, stats->glyphs, stats->covered_pixels, stats->last_color);
+    return stats->glyphs > 0 ? 0 : 1;
+}

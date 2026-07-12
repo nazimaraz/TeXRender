@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security issue
+    url: https://github.com/nazimaraz/latex-renderer/security/advisories/new
+    about: Please report vulnerabilities privately.
+  - name: Documentation
+    url: https://nazimaraz.github.io/latex-renderer/api/
+    about: Check the hosted API reference and project docs.

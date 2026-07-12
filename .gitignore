@@ -1,0 +1,29 @@
+# Build output
+build/
+build-*/
+cmake-build-*/
+out/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+_deps/
+
+# IDE / local tooling
+.idea/
+.vscode/
+.claude/
+*.user
+
+# OS
+.DS_Store
+
+# Local verification screenshots (the README image lives in docs/)
+/texgui_shot.png
+/shot_*.png
+
+# Default output of the offscreen example
+/formula.png
+/formula.ppm
+/formula-*.png
+/formula-label-widget.png

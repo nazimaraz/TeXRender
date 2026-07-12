@@ -1,0 +1,51 @@
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  cppcoreguidelines-*,
+  performance-*,
+  portability-*,
+  cert-*,
+  misc-*,
+  modernize-*,
+  readability-*,
+  -fuchsia-*,
+  -hicpp-*,
+  -google-*,
+  -*-use-trailing-return-type,
+  -*-braces-around-statements,
+  -*-avoid-do-while,
+  -*-pro-type-reinterpret-cast,
+  -*-implicit-widening-of-multiplication-result,
+  -*-pro-bounds-pointer-arithmetic,
+  -*-math-missing-parentheses,
+  -*-implicit-bool-conversion,
+  -*-pro-type-const-cast,
+  -*-qualified-auto,
+  -*-avoid-c-arrays,
+  -*-uppercase-literal-suffix,
+  -*-pro-bounds-array-to-pointer-decay,
+  -*-owning-memory,
+  -*-easily-swappable-parameters,
+  -*-identifier-length,
+  -*-function-cognitive-complexity,
+  -*-avoid-const-or-ref-data-members,
+  -*-use-designated-initializers,
+  -*-avoid-magic-numbers,
+  -*-magic-numbers,
+  -*-throwing-static-initialization,
+  -*-pro-type-union-access,
+  -*-err58-cpp,
+  -*-include-cleaner,
+  -*-avoid-pragma-once,
+  -*-non-private-member-variables-in-classes
+
+CheckOptions:
+  misc-include-cleaner.UnusedIncludes: true
+  misc-include-cleaner.MissingIncludes: true
+  misc-include-cleaner.IgnoreHeaders: 'Windows\.h|gtest/.*|gmock/.*'
+  modernize-deprecated-headers.CheckHeaderFile: true
+  cppcoreguidelines-pro-type-member-init.IgnorePOD: false
+  cppcoreguidelines-pro-type-member-init.IgnoreArrays: false
+
+HeaderFilterRegex: '.*'
+FormatStyle: file
