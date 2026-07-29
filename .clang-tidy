@@ -37,7 +37,8 @@ Checks: >
   -*-err58-cpp,
   -*-include-cleaner,
   -*-avoid-pragma-once,
-  -*-non-private-member-variables-in-classes
+  -*-non-private-member-variables-in-classes,
+  -*-signed-bitwise
 
 CheckOptions:
   misc-include-cleaner.UnusedIncludes: true

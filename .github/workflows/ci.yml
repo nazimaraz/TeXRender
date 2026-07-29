@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        backend: [svg, raylib, sdl2]
+        backend: [svg, raylib, sdl2, imgui]
 
     steps:
       - name: Checkout

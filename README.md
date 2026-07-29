@@ -4,8 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![C++17](https://img.shields.io/badge/C%2B%2B-17-brightgreen.svg)](CMakeLists.txt)
 
-Render LaTeX math from C++ into raylib/SDL2 windows, offscreen RGBA buffers, or
-SVG files.
+Render LaTeX math from C++ into raylib/SDL2 windows, Dear ImGui windows,
+offscreen RGBA buffers, or SVG files.
 
 TeXRender uses [MicroTeX](https://github.com/NanoMichael/MicroTeX)'s
 `openmath` branch for parsing and formula layout, then draws the result through
@@ -14,6 +14,7 @@ into:
 
 - a raylib window
 - an SDL2 renderer
+- a Dear ImGui draw list
 - a dependency-light in-memory `HeadlessSurface`
 - a self-contained `SvgSurface`
 - a custom `IDrawSurface`
@@ -38,6 +39,14 @@ cmake --build build-raylib -j
 ./build-raylib/texrender_minimal
 ./build-raylib/texrender_realtime_values
 ./build-raylib/live_edit
+```
+
+Build the Dear ImGui demo:
+
+```sh
+cmake -S . -B build-imgui -DTEXRENDER_BACKEND=imgui
+cmake --build build-imgui -j
+./build-imgui/texrender_imgui_minimal
 ```
 
 Build the WebAssembly demo with Emscripten:
@@ -72,8 +81,11 @@ packages, then falls back to the pinned submodules when
 
 Installed packages are optional. They can make configure/build faster or let you
 use system versions, but they are not required for the normal submodule-based
-build. The raylib and SDL2 dependencies are needed only when their backends are
-selected, and they can also come from initialized submodules.
+build. The raylib, SDL2, and Dear ImGui dependencies are needed only when their
+backends are selected, and they can also come from initialized submodules.
+
+The `imgui` backend needs Dear ImGui 1.92 or newer, because it registers its
+glyph atlas through the texture API that shipped with that release.
 
 ## Use From CMake
 
@@ -98,7 +110,7 @@ texrender_copy_resources(my_app)
 ## CMake Options
 
 ```text
-TEXRENDER_BACKEND=headless|svg|raylib|sdl2
+TEXRENDER_BACKEND=headless|svg|raylib|sdl2|imgui
 TEXRENDER_BUILD_EXAMPLES=ON|OFF
 TEXRENDER_BUILD_TESTS=ON|OFF
 TEXRENDER_BUILD_BENCHMARKS=ON|OFF
@@ -214,6 +226,50 @@ TeXRender::LatexDocument document(TEXRENDER_RES_DIR);
 
 If you package resources yourself, pass that path to `LatexDocument`.
 
+## Dear ImGui
+
+`ImGuiSurface` records into a Dear ImGui draw list, so formulas follow the usual
+window clipping and z-order. When no draw list is set it resolves the current
+window's draw list at draw time, so nothing else needs wiring up:
+
+```cpp
+#include <memory>
+#include <texrender/imgui_surface.hpp>
+#include <texrender/latex_document.hpp>
+
+auto owned = std::make_unique<TeXRender::ImGuiSurface>();
+auto& canvas = *owned;
+const TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
+const auto formula = document.render(R"(e^{i\pi} + 1 = 0)", 48.f, 0xff101820);
+
+// inside your frame
+if (ImGui::Begin("Formulas"))
+    TeXRender::imgui_formula(canvas, formula);
+ImGui::End();
+```
+
+`imgui_formula()` draws at the current cursor position and reserves layout space
+for the formula. To place a formula yourself, pick a draw list and a screen-space
+origin, then call `RenderHandle::draw` as usual:
+
+```cpp
+canvas.set_draw_list(ImGui::GetBackgroundDrawList());
+canvas.set_origin(ImVec2{40.f, 40.f});
+formula.draw(0, 0);
+```
+
+Glyphs are packed into one growing RGBA atlas that TeXRender registers with
+ImGui, so the renderer backend uploads it and a whole formula usually costs a
+single draw call. That needs a renderer backend which sets
+`ImGuiBackendFlags_RendererHasTextures` (any 1.92+ backend does);
+`ImGuiSurface::textures_supported()` reports whether one is active, and glyphs
+are skipped while it is false.
+
+Destroying a document retires its atlas, and ImGui frees it once the renderer
+backend reports the GPU texture as destroyed, which takes a frame. Call
+`TeXRender::imgui_collect_retired_textures()` after your backend's `Shutdown()`
+and before `ImGui::DestroyContext()` to release the last one.
+
 ## Offscreen Rendering
 
 Use `HeadlessSurface` to render without opening a window:
@@ -263,6 +319,7 @@ The main examples are:
 - `examples/formula_label_widget.cpp`: baseline/layout helper example
 - `examples/custom_surface.cpp`: minimal custom backend
 - `examples/sdl2_minimal.cpp`: SDL2 renderer example
+- `examples/imgui_minimal.cpp`: Dear ImGui window example (SDL2 backends)
 - `examples/wasm/`: SVG and raylib WebAssembly demos
 - `examples/untrusted_worker.cpp`: process-boundary pattern for untrusted input
 
@@ -288,6 +345,7 @@ IDrawSurface
     |
     +--> RaylibSurface
     +--> Sdl2Surface
+    +--> ImGuiSurface
     +--> HeadlessSurface
     +--> SvgSurface
     +--> your custom surface
@@ -333,6 +391,9 @@ The test executables cover distinct parts of the library:
   clipping, and covered-pixel accounting.
 - `texrender_render_options_tests` verifies input validation and detailed error
   reporting for malformed UTF-8, invalid options, and configured limits.
+- `texrender_imgui_surface_tests` runs ImGui frames against a stub renderer
+  backend and checks glyph atlas packing, reuse, uploads, and teardown. It is
+  built only with `-DTEXRENDER_BACKEND=imgui`.
 
 ## Adding a Backend
 
@@ -350,5 +411,5 @@ surface implementation and a small `make_surface` factory under
 ## License
 
 TeXRender is released under the [MIT License](LICENSE). It builds on MicroTeX,
-raylib, SDL2, FreeType, TinyXML2, and bundled TeX/OpenType fonts, each with its
-own license. Check third-party license files before redistributing binaries.
+raylib, SDL2, Dear ImGui, FreeType, TinyXML2, and bundled TeX/OpenType fonts,
+each with its own license. Check third-party license files before redistributing binaries.

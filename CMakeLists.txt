@@ -4,8 +4,8 @@ project(TeXRender VERSION 0.1.0 DESCRIPTION "Render LaTeX formulas via MicroTeX 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(TEXRENDER_BACKEND "headless" CACHE STRING "Rendering backend to build (headless, svg, raylib, sdl2)")
-set_property(CACHE TEXRENDER_BACKEND PROPERTY STRINGS raylib headless svg sdl2)
+set(TEXRENDER_BACKEND "headless" CACHE STRING "Rendering backend to build (headless, svg, raylib, sdl2, imgui)")
+set_property(CACHE TEXRENDER_BACKEND PROPERTY STRINGS raylib headless svg sdl2 imgui)
 set(TEXRENDER_BUILD_EXAMPLES_DEFAULT "${PROJECT_IS_TOP_LEVEL}")
 set(TEXRENDER_BUILD_TESTS_DEFAULT "${PROJECT_IS_TOP_LEVEL}")
 if (EMSCRIPTEN)
@@ -68,8 +68,14 @@ elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
     )
     set(TEXRENDER_BACKEND_LIBS "${TEXRENDER_SDL2_TARGET}")
     set(TEXRENDER_BACKEND_EXECUTABLE_LIBS "${TEXRENDER_SDL2MAIN_TARGET}")
+elseif (TEXRENDER_BACKEND STREQUAL "imgui")
+    set(TEXRENDER_BACKEND_SOURCES
+            source/backend/imgui/imgui_surface.cpp
+            source/backend/imgui/imgui_factory.cpp
+    )
+    set(TEXRENDER_BACKEND_LIBS "${TEXRENDER_IMGUI_TARGET}")
 else ()
-    message(FATAL_ERROR "Unsupported TEXRENDER_BACKEND='${TEXRENDER_BACKEND}'. Supported: 'raylib', 'headless', 'svg', 'sdl2'.")
+    message(FATAL_ERROR "Unsupported TEXRENDER_BACKEND='${TEXRENDER_BACKEND}'. Supported: 'raylib', 'headless', 'svg', 'sdl2', 'imgui'.")
 endif ()
 
 add_library(texrender
@@ -116,6 +122,16 @@ if (TEXRENDER_BUILD_EXAMPLES)
         )
     elseif (TEXRENDER_BACKEND STREQUAL "sdl2")
         list(APPEND TEXRENDER_EXAMPLES texrender_sdl2_minimal examples/sdl2_minimal.cpp)
+    elseif (TEXRENDER_BACKEND STREQUAL "imgui")
+        # Dear ImGui needs a platform/renderer backend pair; the examples use the SDL2 ones it ships with.
+        add_library(texrender_imgui_backends STATIC
+                "${TEXRENDER_IMGUI_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp"
+                "${TEXRENDER_IMGUI_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.cpp"
+        )
+        target_include_directories(texrender_imgui_backends SYSTEM PUBLIC "${TEXRENDER_IMGUI_SOURCE_DIR}/backends")
+        target_link_libraries(texrender_imgui_backends PUBLIC ${TEXRENDER_IMGUI_TARGET} ${TEXRENDER_SDL2_TARGET})
+        target_compile_features(texrender_imgui_backends PRIVATE cxx_std_17)
+        list(APPEND TEXRENDER_EXAMPLES texrender_imgui_minimal examples/imgui_minimal.cpp)
     endif ()
 
     while (TEXRENDER_EXAMPLES)
@@ -130,6 +146,10 @@ if (TEXRENDER_BUILD_EXAMPLES)
         set_target_properties(${example_name} PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
         texrender_copy_resources(${example_name})
     endwhile ()
+
+    if (TARGET texrender_imgui_minimal)
+        target_link_libraries(texrender_imgui_minimal PRIVATE texrender_imgui_backends ${TEXRENDER_SDL2MAIN_TARGET})
+    endif ()
 endif ()
 
 if (TEXRENDER_BUILD_WASM_EXAMPLE)
@@ -213,6 +233,9 @@ if (TEXRENDER_BUILD_TESTS)
         texrender_add_test_executable(texrender_smoke_test tests/render_smoke.cpp)
         texrender_add_test_executable(texrender_surface_tests tests/surface_tests.cpp)
         texrender_add_test_executable(texrender_render_options_tests tests/render_options_tests.cpp)
+        if (TEXRENDER_BACKEND STREQUAL "imgui")
+            texrender_add_test_executable(texrender_imgui_surface_tests tests/imgui_surface_tests.cpp)
+        endif ()
     endif ()
 endif ()
 
