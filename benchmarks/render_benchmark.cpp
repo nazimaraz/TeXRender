@@ -192,8 +192,8 @@ namespace
     void print_summary_row(const std::string_view scenario, const Summary& summary)
     {
         std::cout << "| " << scenario << " | " << std::fixed << std::setprecision(3) << summary.median_ms << " ms | "
-                  << summary.p95_ms << " ms | " << summary.min_ms << " ms | " << summary.max_ms << " ms | "
-                  << summary.iterations << " |\n";
+                  << summary.p95_ms << " ms | " << summary.min_ms << " ms | " << summary.max_ms << " ms | " << summary.iterations
+                  << " |\n";
     }
 } // namespace
 

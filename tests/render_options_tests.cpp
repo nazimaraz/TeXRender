@@ -36,16 +36,16 @@ namespace
         auto options = base_options();
         options.text_size = 600.f;
         options.max_text_size = 512.f;
-        return TeXRender::Test::expect_render_error(
-            document, R"(\text{too large})", options, TeXRender::RenderErrorCode::text_size_too_large);
+        return TeXRender::Test::expect_render_error(document, R"(\text{too large})", options,
+            TeXRender::RenderErrorCode::text_size_too_large);
     }
 
     [[nodiscard]] bool rejects_input_limit(const TeXRender::LatexDocument& document)
     {
         auto options = base_options();
         options.max_input_bytes = 4;
-        return TeXRender::Test::expect_render_error(
-            document, R"(\frac{1}{2})", options, TeXRender::RenderErrorCode::input_too_large);
+        return TeXRender::Test::expect_render_error(document, R"(\frac{1}{2})", options,
+            TeXRender::RenderErrorCode::input_too_large);
     }
 
     [[nodiscard]] bool rejects_wrap_limit(const TeXRender::LatexDocument& document)
@@ -53,16 +53,16 @@ namespace
         auto options = base_options();
         options.wrap_width = 100000;
         options.max_wrap_width = 4096;
-        return TeXRender::Test::expect_render_error(
-            document, R"(\text{wrap})", options, TeXRender::RenderErrorCode::wrap_width_too_large);
+        return TeXRender::Test::expect_render_error(document, R"(\text{wrap})", options,
+            TeXRender::RenderErrorCode::wrap_width_too_large);
     }
 
     [[nodiscard]] bool rejects_invalid_options(const TeXRender::LatexDocument& document)
     {
         auto options = base_options();
         options.text_size = 0.f;
-        return TeXRender::Test::expect_render_error(
-            document, R"(\text{invalid})", options, TeXRender::RenderErrorCode::invalid_options);
+        return TeXRender::Test::expect_render_error(document, R"(\text{invalid})", options,
+            TeXRender::RenderErrorCode::invalid_options);
     }
 } // namespace
 

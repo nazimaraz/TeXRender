@@ -1,6 +1,5 @@
 #include "texrender/imgui_surface.hpp"
 #include <algorithm>
-#include <cmath>
 #include <vector>
 #include <imgui_internal.h>
 #include "backend/glyph_bitmap_validation.hpp"

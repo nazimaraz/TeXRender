@@ -16,8 +16,7 @@ namespace
         surface.draw_glyph(glyph, 1.f, 8.f, 0.f);
         surface.draw_glyph(glyph, 5.f, 8.f, 0.f);
         const auto svg = surface.svg();
-        return svg.find("<defs>") != std::string::npos &&
-               TeXRender::Test::count_occurrences(svg, "data:image/png;base64,") == 1 &&
+        return svg.find("<defs>") != std::string::npos && TeXRender::Test::count_occurrences(svg, "data:image/png;base64,") == 1 &&
                TeXRender::Test::count_occurrences(svg, "<use href=\"#tr-glyph-0\"") == 2;
     }
 
