@@ -23,5 +23,9 @@ namespace TeXRender
         virtual void draw_round_rect(float x, float y, float w, float h, float rx, float ry, float width) = 0;
         virtual void fill_round_rect(float x, float y, float w, float h, float rx, float ry) = 0;
         virtual void draw_glyph(const GlyphBitmap& glyph, float pen_x, float pen_y, float angle) = 0;
+
+        // Pixel density glyphs are rasterized at. A surface returning 2 receives bitmaps twice the size
+        // of the layout and draws them at 1/2 scale, which keeps text sharp on high-DPI displays.
+        [[nodiscard]] virtual float glyph_scale() const noexcept;
     };
 } // namespace TeXRender

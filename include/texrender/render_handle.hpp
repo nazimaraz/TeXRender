@@ -36,6 +36,8 @@ namespace TeXRender
         [[nodiscard]] TEXRENDER_EXPORT float baseline() const noexcept;
         TEXRENDER_EXPORT void set_foreground(std::uint32_t argb) const;
         TEXRENDER_EXPORT void draw(int x, int y) const;
+        // Sub-pixel placement, for toolkits such as Dear ImGui whose layout positions are fractional.
+        TEXRENDER_EXPORT void draw(float x, float y) const;
 
     private:
         RenderHandle(microtex::Render* render, std::shared_ptr<detail::DocumentState> state);

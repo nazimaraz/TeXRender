@@ -107,7 +107,7 @@ const GlyphCache::Glyph* Graphics2DAdapter::raster(const microtex::u16 glyph_ind
     if (!font)
         return nullptr;
 
-    const auto pixel_size = detail::safe_raster_pixel_size(font_size_, transform_.scale_y());
+    const auto pixel_size = detail::safe_raster_pixel_size(font_size_, transform_.scale_y() * surface_.glyph_scale());
     if (pixel_size <= 0)
         return nullptr;
 

@@ -237,38 +237,45 @@ window's draw list at draw time, so nothing else needs wiring up:
 #include <texrender/imgui_surface.hpp>
 #include <texrender/latex_document.hpp>
 
-auto owned = std::make_unique<TeXRender::ImGuiSurface>();
-auto& canvas = *owned;
-const TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::move(owned));
+const TeXRender::LatexDocument document(TEXRENDER_RES_DIR, std::make_unique<TeXRender::ImGuiSurface>());
 const auto formula = document.render(R"(e^{i\pi} + 1 = 0)", 48.f, 0xff101820);
 
 // inside your frame
 if (ImGui::Begin("Formulas"))
-    TeXRender::imgui_formula(canvas, formula);
+    TeXRender::imgui_formula(formula);
 ImGui::End();
 ```
 
 `imgui_formula()` draws at the current cursor position and reserves layout space
-for the formula. To place a formula yourself, pick a draw list and a screen-space
-origin, then call `RenderHandle::draw` as usual:
+for the formula. To place a formula yourself, pick a draw list and pass screen
+coordinates to `RenderHandle::draw`; its `float` overload keeps ImGui's
+fractional positions instead of rounding them:
 
 ```cpp
+auto& canvas = static_cast<TeXRender::ImGuiSurface&>(document.surface());
 canvas.set_draw_list(ImGui::GetBackgroundDrawList());
-canvas.set_origin(ImVec2{40.f, 40.f});
-formula.draw(0, 0);
+formula.draw(40.f, 40.f);
 ```
 
-Glyphs are packed into one growing RGBA atlas that TeXRender registers with
-ImGui, so the renderer backend uploads it and a whole formula usually costs a
-single draw call. That needs a renderer backend which sets
-`ImGuiBackendFlags_RendererHasTextures` (any 1.92+ backend does);
-`ImGuiSurface::textures_supported()` reports whether one is active, and glyphs
-are skipped while it is false.
+`set_origin()` adds a fixed screen-space offset to everything a surface draws,
+including `imgui_formula()`; it defaults to zero.
 
-Destroying a document retires its atlas, and ImGui frees it once the renderer
-backend reports the GPU texture as destroyed, which takes a frame. Call
+Glyphs are packed into RGBA atlas pages that TeXRender registers with ImGui, so
+the renderer backend uploads them and a whole formula usually costs a single
+draw call. A page grows up to `set_max_atlas_size()` (4096 by default); beyond
+that, overflow goes to extra pages, and pages nothing was drawn from for 120
+frames are released. Glyphs are rasterized at `io.DisplayFramebufferScale`, so
+they stay as sharp as ImGui's own text on high-DPI displays. All of this needs a
+renderer backend which sets `ImGuiBackendFlags_RendererHasTextures` (any 1.92+
+backend does); `ImGuiSurface::textures_supported()` reports whether one is
+active, and glyphs are skipped while it is false.
+
+Pages belong to the ImGui context they were drawn in. Destroying a document
+retires its pages, and ImGui frees them once the renderer backend reports the
+GPU textures as destroyed, which takes a frame. Call
 `TeXRender::imgui_collect_retired_textures()` after your backend's `Shutdown()`
-and before `ImGui::DestroyContext()` to release the last one.
+and before `ImGui::DestroyContext()` to release them promptly; anything still
+pending is released when the context is destroyed.
 
 ## Offscreen Rendering
 
@@ -392,7 +399,8 @@ The test executables cover distinct parts of the library:
 - `texrender_render_options_tests` verifies input validation and detailed error
   reporting for malformed UTF-8, invalid options, and configured limits.
 - `texrender_imgui_surface_tests` runs ImGui frames against a stub renderer
-  backend and checks glyph atlas packing, reuse, uploads, and teardown. It is
+  backend and checks glyph atlas packing, reuse, uploads, paging, high-DPI
+  rasterization, sub-pixel placement, and teardown across contexts. It is
   built only with `-DTEXRENDER_BACKEND=imgui`.
 
 ## Adding a Backend

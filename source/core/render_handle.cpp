@@ -2,6 +2,7 @@
 #include "document_state.hpp"
 #include "render/render.h"
 #include "render/graphics2d_adapter.hpp"
+#include <cmath>
 #include <mutex>
 
 using namespace TeXRender;
@@ -81,4 +82,19 @@ void RenderHandle::draw(const int x, const int y) const
     const auto lock = std::scoped_lock{*mutex_, state_->surface_mutex()};
     auto adapter = Graphics2DAdapter{*surface};
     render_->draw(adapter, x, y);
+}
+
+void RenderHandle::draw(const float x, const float y) const
+{
+    if (!render_ || !state_ || !std::isfinite(x) || !std::isfinite(y))
+        return;
+
+    auto* const surface = state_->surface();
+    if (!surface)
+        return;
+
+    const auto lock = std::scoped_lock{*mutex_, state_->surface_mutex()};
+    auto adapter = Graphics2DAdapter{*surface};
+    adapter.translate(x, y);
+    render_->draw(adapter, 0, 0);
 }

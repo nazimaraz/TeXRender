@@ -18,8 +18,8 @@ int main(int, char**)
         return 1;
     }
 
-    auto* const window =
-        SDL_CreateWindow("texrender ImGui", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 760, 460, SDL_WINDOW_SHOWN);
+    auto* const window = SDL_CreateWindow("texrender ImGui", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 760, 460,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
     if (!window)
     {
         std::fprintf(stderr, "SDL_CreateWindow failed: %s\n", SDL_GetError());
@@ -68,10 +68,10 @@ int main(int, char**)
             if (ImGui::Begin("Formulas"))
             {
                 ImGui::TextUnformatted("Euler's identity");
-                TeXRender::imgui_formula(canvas, identity);
+                TeXRender::imgui_formula(identity);
                 ImGui::Separator();
                 ImGui::TextUnformatted("The Basel problem");
-                TeXRender::imgui_formula(canvas, basel);
+                TeXRender::imgui_formula(basel);
                 ImGui::Separator();
                 ImGui::Text("Glyph atlas: %dx%d, %zu glyphs", canvas.atlas_size(), canvas.atlas_size(), canvas.cached_glyphs());
             }
